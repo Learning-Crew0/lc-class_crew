@@ -64,7 +64,7 @@ export default function CourseCard({
 
         <div className="mt-4 border-t border-[var(--secondary)] pt-2 flex justify-between items-center text-sm font-bold text-[var(--primary)]">
           <span className="text-[var(--primary)] text-[12px] font-normal">
-            {course.date}
+            {course.date instanceof Date ? course.date.toLocaleDateString() : course.date}
           </span>
           <span className="text-[var(--primary)] text-[20px] font-semibold">
             {course.price}

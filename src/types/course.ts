@@ -1,11 +1,18 @@
+
+
 export interface Course {
   id: string;
-  tagColor: string;
-  tagText: string;
-  category: string;
   title: string;
   description: string;
+  price: number;      
+  priceText?: string; 
+  date: Date;         
+  category: string;
+  tagText: string;
+  tagColor: string;
   tags: string[];
-  date: string;
-  price: string;
+  image: string;     
+  target: string;    
+  duration: string;   
+  location: string;   
 }
