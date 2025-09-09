@@ -1,0 +1,80 @@
+"use client";
+
+import ReusableTable from "@/components/ui/TableProps/Table";
+import Image from "next/image";
+import dropdown from "../../../../../public/My page/drop-down.svg";
+import downloadIcon from "../../../../../public/My page/symbols_download.svg";
+
+export default function PaymentHistory() {
+  const columns = [
+    { key: "no", label: "No." },
+    { key: "course", label: "과정명" },
+    { key: "date", label: "결제일" },
+    { key: "price", label: "결제금액" },
+    { key: "refundDate", label: "취소/환불일" },
+    { key: "fee", label: "위약금" },
+    { key: "refundTotal", label: "총 환불금액" },
+    { key: "status", label: "상태" },
+  ];
+
+  const rows = [
+    {
+      no: 2,
+      course: "[중분류] 교육 과정명",
+      date: "2025.00.00",
+      price: "300,000 원",
+      refundDate: "2025.00.00",
+      fee: "30,000 원",
+      refundTotal: "270,000 원",
+      status: "완료",
+    },
+    {
+      no: 1,
+      course: "[중분류] 교육 과정명",
+      date: "2025.00.00",
+      price: "300,000 원",
+      refundDate: "2025.00.00",
+      fee: "0 원",
+      refundTotal: "300,000 원",
+      status: "진행중",
+    },
+  ];
+
+  return (
+    <div className="w-full mt-10">
+      {/* Dropdown */}
+      <div className="w-full flex justify-end mt-14 pr-4">
+        <span className="text-[14px] font-bold">조회기간 설정</span>
+        <Image
+          src={dropdown}
+          alt="Dropdown"
+          width={16}
+          height={20}
+          className="ml-1 h-[20px]"
+        />
+      </div>
+
+      {/* Table */}
+      <div className="w-[1320px] flex mt-10 ml-10">
+        <ReusableTable columns={columns} rows={rows} />
+
+        {/* Right-side icons */}
+        <div className="flex flex-col items-center justify-center gap-4 ml-6">
+          <Image
+            src="/My page/up-arrow.svg"
+            alt="Up Arrow"
+            width={20}
+            height={20}
+          />
+          <Image
+            src="/My page/search.svg"
+            alt="Search"
+            width={20}
+            height={20}
+          />
+          <Image src="/My page/chat.svg" alt="Chat" width={20} height={20} />
+        </div>
+      </div>
+    </div>
+  );
+}
