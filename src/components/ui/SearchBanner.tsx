@@ -189,7 +189,7 @@ export default function SearchBanner({
 
             <motion.select
               value={filter.value}
-              onChange={(e) => filter.onChange(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => filter.onChange(e.target.value)}
               className="bg-transparent/80 backdrop-blur-sm border border-white/70 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-white/90 hover:border-white/80"
               variants={selectVariants}
               whileHover="hover"

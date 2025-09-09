@@ -5,7 +5,7 @@ import { BiSolidDownload } from "react-icons/bi";
 import { FaCaretDown } from "react-icons/fa";
 import { X } from "lucide-react";
 
-export default function StudentForm() {
+export default function ClassApplication() {
   const [file, setFile] = useState<File | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("무통장입금");
   const [taxInvoice, setTaxInvoice] = useState<string>("발행");
@@ -25,7 +25,6 @@ export default function StudentForm() {
   return (
     <main className="w-[1270px] mx-auto mt-6 flex flex-col items-center mb-10">
       <div className="w-full">
-        {/* Title */}
         <h2 className="text-[36px] font-extrabold mb-6 text-black">
           수강생정보
         </h2>
@@ -81,7 +80,6 @@ export default function StudentForm() {
             </div>
           </div>
 
-          {/* 이메일 */}
           <div className="flex items-center gap-4">
             <label className="w-[94px] h-[24px] text-[18px] font-bold text-[rgba(0,0,0,0.72)] after:content-['*'] after:text-[#FF0000]">
               이메일
@@ -114,7 +112,6 @@ export default function StudentForm() {
             </div>
           </div>
 
-          {/* 소속 */}
           <div className="flex items-center gap-4">
             <label className="w-[94px] h-[24px] text-[18px] font-bold text-[rgba(0,0,0,0.72)]">
               소속
@@ -127,7 +124,6 @@ export default function StudentForm() {
           </div>
           <div className="border border-b-0.5 text-black"></div>
 
-          {/* 직급 */}
           <div className="flex items-center gap-4">
             <label className="w-[94px] h-[24px] text-[18px] font-bold text-[rgba(0,0,0,0.72)]">
               직급
@@ -222,7 +218,7 @@ export default function StudentForm() {
       </div>
 
       <div className="w-full mt-20">
-        {/* Title 2 */}
+        {/* Title 2 */}  
         <h2 className="text-[36px] font-extrabold mb-6 text-black">
           결제정보입력
         </h2>
