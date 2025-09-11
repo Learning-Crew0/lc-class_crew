@@ -52,10 +52,10 @@ export default function Navbar() {
         >
           {[
             { href: "/class", label: "CLASS" },
-            { href: "#", label: "캘린더" },
-            { href: "#", label: "STORE" },
-            { href: "#", label: "제휴" },
-            { href: "#", label: "고객센터" },
+            { href: "/calender", label: "캘린더" },
+            { href: "/store", label: "STORE" },
+            { href: "/coalition", label: "제휴" },
+            { href: "customerservicecenter/announcement", label: "고객센터" },
           ].map((item, index) => (
             <motion.li
               key={item.label}
@@ -178,11 +178,11 @@ export default function Navbar() {
           </motion.li>
 
           {/* Message Icon */}
-          <motion.li whileHover={{ scale: 1.1 }}>
+          <motion.li whileHover={{ scale: 1.5 }}>
             <motion.button
               className="w-8 h-8 transition"
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.6 }}
+              whileHover={{ rotate: 180 }}
+              transition={{ duration: 0.6}}
             >
               <img src="/msg.png" alt="messages" />
             </motion.button>
