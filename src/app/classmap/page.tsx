@@ -1,11 +1,14 @@
 "use client";
 
+import Navbar from "@/components/layout/navbar/page";
 import { main } from "framer-motion/client";
 import React from "react";
 
 export default function ClassMap() {
   return (
-    <main className="w-[1270px] mx-auto mt-6 flex flex-col items-center mb-10">
+    <>
+    <Navbar/>
+    <main className="w-[1270px] mx-auto  flex flex-col items-center mb-10 mt-14">
     <div className="w-full  py-12 flex flex-col items-center">
       {/* Title */}
       <h2 className="text-[36px] font-extrabold mb-10 text-black">CLASS MAP</h2>
@@ -71,5 +74,6 @@ export default function ClassMap() {
       </div>
     </div>
     </main>
+    </>
   );
 }

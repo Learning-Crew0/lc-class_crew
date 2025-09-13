@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FaCaretDown } from 'react-icons/fa';
 
 export default function NoticeTable() {
   const [notices] = useState([
@@ -12,40 +13,53 @@ export default function NoticeTable() {
   ]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full mx-auto mt-15">
       {/* Table */}
       <table className="w-full border-t border-black">
         <thead>
           <tr className="bg-black text-white text-center">
-            <th className="w-20 py-3 font-semibold">NO.</th>
-            <th className="py-3 font-semibold">제목</th>
-            <th className="w-40 py-3 font-semibold">등록일</th>
+            <th className="w-20 py-3 font-bold text-[18px]">NO.</th>
+            <th className="w-96 py-3 font-bold text-[18px]">제목</th>
+            <th className="w-20 py-3 font-bold text-[18px]">등록일</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody >
           {notices.map((notice) => (
             <tr key={notice.id} className="border-b hover:bg-gray-100 text-center">
-              <td className="py-3">{notice.id}</td>
-              <td className="py-3 text-left px-4">
+              <td className="py-3 font-bold text-[18px] text-black">{notice.id}</td>
+              <td className="py-3  px-4 font-bold text-[18px] text-black">
                 <span>{notice.title}</span>
                 {notice.isNew && (
-                  <span className="ml-2 bg-black text-white text-xs px-2 py-0.5 rounded">
+                  <span className="w-[51px] h-[19px] ml-3 bg-black text-white text-xs px-2 py-1 ">
                     NEW
                   </span>
                 )}
               </td>
-              <td className="py-3">{notice.date}</td>
+              <td className="py-3 font-bold text-[18px] text-black">{notice.date}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* Load More Button */}
-      <div className="flex justify-center mt-6">
-        <button className="border rounded px-4 py-2 flex items-center gap-1">
-          더보기 <span className="text-xs">▼</span>
-        </button>
-      </div>
+    <div className="flex justify-center mt-6">
+  <div className="relative w-[134px]">
+    <select
+      className="border w-full h-[44px] text-black rounded px-3 text-[18px] font-semibold appearance-none bg-white cursor-pointer"
+    >
+      <option>더보기</option>
+      <option>옵션 1</option>
+      <option>옵션 2</option>
+      <option>옵션 3</option>
+    </select>
+
+    {/* Custom dropdown arrow */}
+    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[18px] font-semibold pointer-events-none">
+      <FaCaretDown/>
+    </span>
+  </div>
+</div>
+
+
     </div>
   );
 }

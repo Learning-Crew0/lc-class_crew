@@ -1,8 +1,14 @@
+//part 3 login
+
+import Navbar from "@/components/layout/navbar/page";
+import Login from "@/components/login/page";
+
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-2xl font-bold">Login Page</h1>
-    </div>
+    <>
+
+      <Navbar />
+       <Login />
+    </>
   );
 }
-
