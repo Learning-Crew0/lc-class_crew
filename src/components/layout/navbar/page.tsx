@@ -18,7 +18,6 @@ export default function Navbar() {
       className="w-full h-[67px] bg-primary text-white shadow-lg fixed top-0 left-0 z-50"
     >
       <div className="max-w-full ml-14 mr-10 pt-1 mx-auto flex items-center justify-between px-6 md:px-10 h-full">
-        {/* Logo */}
         <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
           <Link href="/" className="flex items-center group">
             <motion.span
@@ -43,7 +42,6 @@ export default function Navbar() {
           </Link>
         </motion.div>
 
-        {/* Desktop Menu */}
         <motion.ul
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -108,7 +106,6 @@ export default function Navbar() {
           </motion.li>
         </motion.ul>
 
-        {/* Mobile Menu Button */}
         <motion.button
           className="md:hidden flex items-center justify-center p-2"
           onClick={() => setIsOpen(!isOpen)}
@@ -120,7 +117,6 @@ export default function Navbar() {
         </motion.button>
       </div>
 
-      {/* Mobile Dropdown */}
       <motion.div
         initial={false}
         animate={{
@@ -159,7 +155,6 @@ export default function Navbar() {
             </motion.li>
           ))}
 
-          {/* Profile */}
           <motion.li whileHover={{ scale: 1.02 }}>
             <motion.div
               className="relative flex items-center gap-2 text-[16px]"
@@ -177,7 +172,6 @@ export default function Navbar() {
             </motion.div>
           </motion.li>
 
-          {/* Message Icon */}
           <motion.li whileHover={{ scale: 1.5 }}>
             <motion.button
               className="w-8 h-8 transition"

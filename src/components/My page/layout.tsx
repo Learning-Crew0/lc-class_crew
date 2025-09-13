@@ -11,7 +11,6 @@ export default function MyPageLayout({
 }) {
   const pathname = usePathname();
 
-  // Banner config by route
   const bannerConfig: Record<string, { image: string; text: string }> = {
     "/mypage/learning-status": {
       image: "/My page/banner.png",
@@ -31,7 +30,6 @@ export default function MyPageLayout({
     },
   };
 
-  // Pick correct banner (default fallback)
   const banner =
     bannerConfig[
       Object.keys(bannerConfig).find((key) => pathname.startsWith(key)) ??
@@ -47,7 +45,6 @@ export default function MyPageLayout({
 
   return (
     <main className="w-[1270px] mx-auto mt-30 flex flex-col items-center justify-center mb-10">
-      {/* Banner */}
       <div className="relative w-full">
         <Image
           src={banner.image}
@@ -61,7 +58,6 @@ export default function MyPageLayout({
         </h1>
       </div>
 
-      {/* Tabs */}
       <nav className="flex justify-between gap-8 border-b border-gray-300 w-[1270px] mt-8">
         {tabs.map((tab) => (
           <Link
@@ -76,7 +72,6 @@ export default function MyPageLayout({
         ))}
       </nav>
 
-      {/* Page Content */}
       {children}
     </main>
   );
