@@ -1,0 +1,415 @@
+{
+  "info": {
+    "name": "ClassCrew - Banner & Thumbnail API",
+    "description": "API collection for testing Banner and Thumbnail endpoints with image uploads",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Banner API",
+      "item": [
+        {
+          "name": "Create Banner",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "headline",
+                  "value": "다가오는 가을 대비!",
+                  "type": "text"
+                },
+                {
+                  "key": "subText",
+                  "value": "날씨는 쌀쌀해지지만 마음은 따듯하게!",
+                  "type": "text"
+                },
+                {
+                  "key": "mainText",
+                  "value": "힐링&자기계발 과정 20% 할인",
+                  "type": "text"
+                },
+                {
+                  "key": "buttonText",
+                  "value": "Explore",
+                  "type": "text"
+                },
+                {
+                  "key": "linkUrl",
+                  "value": "/courses",
+                  "type": "text"
+                },
+                {
+                  "key": "displayPeriod[start]",
+                  "value": "2024-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "displayPeriod[end]",
+                  "value": "2024-12-31",
+                  "type": "text"
+                },
+                {
+                  "key": "order",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/banner",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "banner"]
+            },
+            "description": "Create a new banner with image upload"
+          }
+        },
+        {
+          "name": "Get All Active Banners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/banner",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "banner"]
+            },
+            "description": "Get all active banners sorted by order"
+          }
+        },
+        {
+          "name": "Update Banner",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                },
+                {
+                  "key": "headline",
+                  "value": "Updated Headline",
+                  "type": "text"
+                },
+                {
+                  "key": "mainText",
+                  "value": "Updated Main Text",
+                  "type": "text"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/banner/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "banner", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "REPLACE_WITH_BANNER_ID"
+                }
+              ]
+            },
+            "description": "Update a banner by ID. Replace :id with actual banner ID"
+          }
+        },
+        {
+          "name": "Delete Banner",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/banner/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "banner", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "REPLACE_WITH_BANNER_ID"
+                }
+              ]
+            },
+            "description": "Delete a banner by ID. Replace :id with actual banner ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Thumbnail API",
+      "item": [
+        {
+          "name": "Create Thumbnail",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "courseId",
+                  "value": "64a1b2c3d4e5f6789012345",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "title",
+                  "value": "Leadership Mastery Course",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "POPULAR",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "리더십",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "비즈니스 스킬",
+                  "type": "text"
+                },
+                {
+                  "key": "level",
+                  "value": "LEVEL UP",
+                  "type": "text"
+                },
+                {
+                  "key": "instructor",
+                  "value": "John Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "schedule",
+                  "value": "25.08.01~25.08.02",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "600000",
+                  "type": "text"
+                },
+                {
+                  "key": "buttonText",
+                  "value": "Apply Now",
+                  "type": "text"
+                },
+                {
+                  "key": "order",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/thumbnail",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "thumbnail"]
+            },
+            "description": "Create a new thumbnail with image upload"
+          }
+        },
+        {
+          "name": "Get Thumbnails - ALL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/thumbnail",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "thumbnail"]
+            },
+            "description": "Get all active thumbnails"
+          }
+        },
+        {
+          "name": "Get Thumbnails - POPULAR",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/thumbnail?category=POPULAR",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "thumbnail"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "POPULAR"
+                }
+              ]
+            },
+            "description": "Get thumbnails with POPULAR category"
+          }
+        },
+        {
+          "name": "Get Thumbnails - NEWEST",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/thumbnail?category=NEWEST",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "thumbnail"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "NEWEST"
+                }
+              ]
+            },
+            "description": "Get thumbnails with NEWEST category"
+          }
+        },
+        {
+          "name": "Update Thumbnail",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                },
+                {
+                  "key": "title",
+                  "value": "Updated Leadership Course",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "700000",
+                  "type": "text"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/thumbnail/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "thumbnail", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "REPLACE_WITH_THUMBNAIL_ID"
+                }
+              ]
+            },
+            "description": "Update a thumbnail by ID. Replace :id with actual thumbnail ID"
+          }
+        },
+        {
+          "name": "Delete Thumbnail",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/thumbnail/:id",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "thumbnail", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "REPLACE_WITH_THUMBNAIL_ID"
+                }
+              ]
+            },
+            "description": "Delete a thumbnail by ID. Replace :id with actual thumbnail ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Category API",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/category",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "category"]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Leadership\",\n  \"description\": \"Leadership and management courses\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/category",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "category"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
