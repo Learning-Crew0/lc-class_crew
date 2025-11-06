@@ -16,60 +16,97 @@ const settingsController = require("../controllers/settings.controller");
 
 // Validators
 const { validate } = require("../middlewares/validate.middleware");
-const { loginSchema } = require("../validators/auth.validators");
+const { adminLoginSchema } = require("../validators/auth.validators");
 const {
-  createCourseSchema,
-  updateCourseSchema,
+    createAdminSchema,
+    updateAdminSchema,
+    updateAdminStatusSchema,
+    updateAdminPasswordSchema,
+} = require("../validators/admin.validators");
+const {
+    registerSchema,
+    updateUserSchema,
+    toggleUserStatusSchema,
+} = require("../validators/user.validators");
+const {
+    createCourseSchema,
+    updateCourseSchema,
 } = require("../validators/course.validators");
 const {
-  updateStatusSchema,
-  markAttendanceSchema,
-  addAssessmentSchema,
+    updateStatusSchema,
+    markAttendanceSchema,
+    addAssessmentSchema,
 } = require("../validators/enrollment.validators");
 const {
-  createProductSchema,
-  updateProductSchema,
+    createProductSchema,
+    updateProductSchema,
 } = require("../validators/product.validators");
 const {
-  updateInquirySchema,
-  assignInquirySchema,
-  respondSchema,
-  addNoteSchema,
+    updateInquirySchema,
+    assignInquirySchema,
+    respondSchema,
+    addNoteSchema,
 } = require("../validators/inquiry.validators");
 const {
-  createNoticeSchema,
-  updateNoticeSchema,
+    createNoticeSchema,
+    updateNoticeSchema,
 } = require("../validators/notice.validators");
 const {
-  createFAQSchema,
-  updateFAQSchema,
+    createFAQSchema,
+    updateFAQSchema,
 } = require("../validators/faq.validators");
 const {
-  createBannerSchema,
-  updateBannerSchema,
+    createBannerSchema,
+    updateBannerSchema,
 } = require("../validators/banner.validators");
 const {
-  createSettingSchema,
-  updateSettingSchema,
+    createSettingSchema,
+    updateSettingSchema,
 } = require("../validators/settings.validators");
 
 // Middleware
 const { authenticate } = require("../middlewares/auth.middleware");
 const requireAdmin = require("../middlewares/admin.middleware");
 const {
-  uploadSingle,
-  uploadMultiple,
+    uploadSingle,
+    uploadMultiple,
 } = require("../middlewares/upload.middleware");
 
-// === ADMIN AUTH ===
-// POST /api/v1/admin/login - Admin login (public)
-router.post("/login", validate(loginSchema), adminController.login);
+router.post("/login", validate(adminLoginSchema), adminController.login);
 
-// Apply authentication and admin check to all routes below
 router.use(authenticate, requireAdmin);
 
-// GET /api/v1/admin/profile - Get admin profile
 router.get("/profile", adminController.getProfile);
+
+router.put(
+    "/password",
+    validate(updateAdminPasswordSchema),
+    adminController.updateAdminPassword
+);
+
+router.get("/admins", adminController.getAllAdmins);
+
+router.get("/admins/:id", adminController.getAdminById);
+
+router.post(
+    "/admins",
+    validate(createAdminSchema),
+    adminController.createAdmin
+);
+
+router.put(
+    "/admins/:id",
+    validate(updateAdminSchema),
+    adminController.updateAdmin
+);
+
+router.delete("/admins/:id", adminController.deleteAdmin);
+
+router.patch(
+    "/admins/:id/status",
+    validate(updateAdminStatusSchema),
+    adminController.updateAdminStatus
+);
 
 // === USERS MANAGEMENT ===
 // GET /api/v1/admin/users - Get all users
@@ -78,17 +115,22 @@ router.get("/users", usersController.getAllUsers);
 // GET /api/v1/admin/users/:id - Get user by ID
 router.get("/users/:id", usersController.getUserById);
 
-// POST /api/v1/admin/users - Create user
-router.post("/users", usersController.createUser);
+router.post("/users", validate(registerSchema), usersController.createUser);
 
-// PUT /api/v1/admin/users/:id - Update user
-router.put("/users/:id", usersController.updateUser);
+router.put(
+    "/users/:id",
+    validate(updateUserSchema),
+    usersController.updateUser
+);
 
 // DELETE /api/v1/admin/users/:id - Delete user
 router.delete("/users/:id", usersController.deleteUser);
 
-// PATCH /api/v1/admin/users/:id/toggle-status - Toggle user status
-router.patch("/users/:id/toggle-status", usersController.toggleStatus);
+router.patch(
+    "/users/:id/toggle-status",
+    validate(toggleUserStatusSchema),
+    usersController.toggleStatus
+);
 
 // === COURSES MANAGEMENT ===
 // GET /api/v1/admin/courses - Get all courses
@@ -99,16 +141,16 @@ router.get("/courses/:id", coursesController.getCourseById);
 
 // POST /api/v1/admin/courses - Create course
 router.post(
-  "/courses",
-  validate(createCourseSchema),
-  coursesController.createCourse
+    "/courses",
+    validate(createCourseSchema),
+    coursesController.createCourse
 );
 
 // PUT /api/v1/admin/courses/:id - Update course
 router.put(
-  "/courses/:id",
-  validate(updateCourseSchema),
-  coursesController.updateCourse
+    "/courses/:id",
+    validate(updateCourseSchema),
+    coursesController.updateCourse
 );
 
 // DELETE /api/v1/admin/courses/:id - Delete course
@@ -126,35 +168,35 @@ router.get("/enrollments/:id", enrollmentsController.getEnrollmentById);
 
 // PATCH /api/v1/admin/enrollments/:id/status - Update enrollment status
 router.patch(
-  "/enrollments/:id/status",
-  validate(updateStatusSchema),
-  enrollmentsController.updateStatus
+    "/enrollments/:id/status",
+    validate(updateStatusSchema),
+    enrollmentsController.updateStatus
 );
 
 // POST /api/v1/admin/enrollments/:id/attendance - Mark attendance
 router.post(
-  "/enrollments/:id/attendance",
-  validate(markAttendanceSchema),
-  enrollmentsController.markAttendance
+    "/enrollments/:id/attendance",
+    validate(markAttendanceSchema),
+    enrollmentsController.markAttendance
 );
 
 // POST /api/v1/admin/enrollments/:id/assessments - Add assessment
 router.post(
-  "/enrollments/:id/assessments",
-  validate(addAssessmentSchema),
-  enrollmentsController.addAssessment
+    "/enrollments/:id/assessments",
+    validate(addAssessmentSchema),
+    enrollmentsController.addAssessment
 );
 
 // GET /api/v1/admin/enrollments/:id/eligibility - Check eligibility
 router.get(
-  "/enrollments/:id/eligibility",
-  enrollmentsController.checkEligibility
+    "/enrollments/:id/eligibility",
+    enrollmentsController.checkEligibility
 );
 
 // POST /api/v1/admin/enrollments/:id/certificate - Issue certificate
 router.post(
-  "/enrollments/:id/certificate",
-  enrollmentsController.issueCertificate
+    "/enrollments/:id/certificate",
+    enrollmentsController.issueCertificate
 );
 
 // DELETE /api/v1/admin/enrollments/:id - Delete enrollment
@@ -169,16 +211,16 @@ router.get("/products/:id", productsController.getProductById);
 
 // POST /api/v1/admin/products - Create product
 router.post(
-  "/products",
-  validate(createProductSchema),
-  productsController.createProduct
+    "/products",
+    validate(createProductSchema),
+    productsController.createProduct
 );
 
 // PUT /api/v1/admin/products/:id - Update product
 router.put(
-  "/products/:id",
-  validate(updateProductSchema),
-  productsController.updateProduct
+    "/products/:id",
+    validate(updateProductSchema),
+    productsController.updateProduct
 );
 
 // DELETE /api/v1/admin/products/:id - Delete product
@@ -199,30 +241,30 @@ router.get("/inquiries/:id", inquiriesController.getInquiryById);
 
 // PATCH /api/v1/admin/inquiries/:id - Update inquiry
 router.patch(
-  "/inquiries/:id",
-  validate(updateInquirySchema),
-  inquiriesController.updateStatus
+    "/inquiries/:id",
+    validate(updateInquirySchema),
+    inquiriesController.updateStatus
 );
 
 // POST /api/v1/admin/inquiries/:id/assign - Assign inquiry
 router.post(
-  "/inquiries/:id/assign",
-  validate(assignInquirySchema),
-  inquiriesController.assignInquiry
+    "/inquiries/:id/assign",
+    validate(assignInquirySchema),
+    inquiriesController.assignInquiry
 );
 
 // POST /api/v1/admin/inquiries/:id/respond - Respond to inquiry
 router.post(
-  "/inquiries/:id/respond",
-  validate(respondSchema),
-  inquiriesController.respondToInquiry
+    "/inquiries/:id/respond",
+    validate(respondSchema),
+    inquiriesController.respondToInquiry
 );
 
 // POST /api/v1/admin/inquiries/:id/notes - Add note
 router.post(
-  "/inquiries/:id/notes",
-  validate(addNoteSchema),
-  inquiriesController.addNote
+    "/inquiries/:id/notes",
+    validate(addNoteSchema),
+    inquiriesController.addNote
 );
 
 // DELETE /api/v1/admin/inquiries/:id - Delete inquiry
@@ -237,16 +279,16 @@ router.get("/notices/:id", noticesController.getNoticeById);
 
 // POST /api/v1/admin/notices - Create notice
 router.post(
-  "/notices",
-  validate(createNoticeSchema),
-  noticesController.createNotice
+    "/notices",
+    validate(createNoticeSchema),
+    noticesController.createNotice
 );
 
 // PUT /api/v1/admin/notices/:id - Update notice
 router.put(
-  "/notices/:id",
-  validate(updateNoticeSchema),
-  noticesController.updateNotice
+    "/notices/:id",
+    validate(updateNoticeSchema),
+    noticesController.updateNotice
 );
 
 // DELETE /api/v1/admin/notices/:id - Delete notice
@@ -286,16 +328,16 @@ router.get("/banners/:id", bannersController.getBannerById);
 
 // POST /api/v1/admin/banners - Create banner
 router.post(
-  "/banners",
-  validate(createBannerSchema),
-  bannersController.createBanner
+    "/banners",
+    validate(createBannerSchema),
+    bannersController.createBanner
 );
 
 // PUT /api/v1/admin/banners/:id - Update banner
 router.put(
-  "/banners/:id",
-  validate(updateBannerSchema),
-  bannersController.updateBanner
+    "/banners/:id",
+    validate(updateBannerSchema),
+    bannersController.updateBanner
 );
 
 // DELETE /api/v1/admin/banners/:id - Delete banner
@@ -307,16 +349,16 @@ router.patch("/banners/:id/toggle-active", bannersController.toggleActive);
 // === UPLOADS ===
 // POST /api/v1/admin/uploads/single - Upload single file
 router.post(
-  "/uploads/single",
-  uploadSingle("file"),
-  uploadsController.uploadSingle
+    "/uploads/single",
+    uploadSingle("file"),
+    uploadsController.uploadSingle
 );
 
 // POST /api/v1/admin/uploads/multiple - Upload multiple files
 router.post(
-  "/uploads/multiple",
-  uploadMultiple("files", 10),
-  uploadsController.uploadMultiple
+    "/uploads/multiple",
+    uploadMultiple("files", 10),
+    uploadsController.uploadMultiple
 );
 
 // DELETE /api/v1/admin/uploads/:filename - Delete file
@@ -334,16 +376,16 @@ router.get("/settings/:key", settingsController.getSettingByKey);
 
 // POST /api/v1/admin/settings - Create setting
 router.post(
-  "/settings",
-  validate(createSettingSchema),
-  settingsController.createSetting
+    "/settings",
+    validate(createSettingSchema),
+    settingsController.createSetting
 );
 
 // PUT /api/v1/admin/settings/:key - Update setting
 router.put(
-  "/settings/:key",
-  validate(updateSettingSchema),
-  settingsController.updateSetting
+    "/settings/:key",
+    validate(updateSettingSchema),
+    settingsController.updateSetting
 );
 
 // DELETE /api/v1/admin/settings/:key - Delete setting

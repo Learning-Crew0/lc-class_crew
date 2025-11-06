@@ -3,170 +3,209 @@ const Admin = require("../models/admin.model");
 const { generateToken, generateRefreshToken } = require("../utils/crypto.util");
 const ApiError = require("../utils/apiError.util");
 
-/**
- * Register a new user
- */
 const register = async (userData) => {
-  const existingUser = await User.findOne({ email: userData.email });
+    const existingEmail = await User.findOne({ email: userData.email });
+    if (existingEmail) {
+        throw ApiError.conflict("이미 등록된 이메일입니다");
+    }
 
-  if (existingUser) {
-    throw ApiError.conflict("Email already registered");
-  }
+    const existingUsername = await User.findOne({
+        username: userData.username,
+    });
+    if (existingUsername) {
+        throw ApiError.conflict("이미 사용 중인 사용자 ID입니다");
+    }
 
-  const user = await User.create(userData);
+    const existingPhone = await User.findOne({ phone: userData.phone });
+    if (existingPhone) {
+        throw ApiError.conflict("이미 등록된 휴대전화 번호입니다");
+    }
 
-  const token = generateToken({ id: user._id, role: "user" });
-  const refreshToken = generateRefreshToken({ id: user._id, role: "user" });
+    const user = await User.create(userData);
 
-  return {
-    user,
-    token,
-    refreshToken,
-  };
+    const token = generateToken({ id: user._id, role: "user" });
+    const refreshToken = generateRefreshToken({ id: user._id, role: "user" });
+
+    return {
+        user: {
+            _id: user._id,
+            id: user._id,
+            email: user.email,
+            username: user.username,
+            fullName: user.fullName,
+            memberType: user.memberType,
+            role: user.role,
+        },
+        token,
+        refreshToken,
+    };
 };
 
-/**
- * User login
- */
-const login = async (email, password) => {
-  const user = await User.findOne({ email }).select("+password");
+const login = async (emailOrUsername, password) => {
+    const user = await User.findOne({
+        $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
+    }).select("+password");
 
-  if (!user) {
-    throw ApiError.unauthorized("Invalid credentials");
-  }
+    if (!user) {
+        throw ApiError.unauthorized(
+            "사용자 ID 또는 비밀번호가 올바르지 않습니다"
+        );
+    }
 
-  if (!user.isActive) {
-    throw ApiError.forbidden("Account is deactivated");
-  }
+    if (!user.isActive) {
+        throw ApiError.forbidden("비활성화된 계정입니다");
+    }
 
-  const isPasswordValid = await user.comparePassword(password);
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+        throw ApiError.unauthorized(
+            "사용자 ID 또는 비밀번호가 올바르지 않습니다"
+        );
+    }
 
-  if (!isPasswordValid) {
-    throw ApiError.unauthorized("Invalid credentials");
-  }
+    user.lastLogin = Date.now();
+    await user.save();
 
-  // Update last login
-  user.lastLogin = Date.now();
-  await user.save();
+    const token = generateToken({ id: user._id, role: "user" });
+    const refreshToken = generateRefreshToken({ id: user._id, role: "user" });
 
-  const token = generateToken({ id: user._id, role: "user" });
-  const refreshToken = generateRefreshToken({ id: user._id, role: "user" });
-
-  // Remove password from response
-  user.password = undefined;
-
-  return {
-    user,
-    token,
-    refreshToken,
-  };
+    return {
+        user: {
+            _id: user._id,
+            id: user._id,
+            email: user.email,
+            username: user.username,
+            fullName: user.fullName,
+            gender: user.gender,
+            phone: user.phone,
+            dob: user.dob,
+            memberType: user.memberType,
+            role: user.role,
+            isVerified: user.isVerified,
+            profilePicture: user.profilePicture,
+            createdAt: user.createdAt,
+        },
+        token,
+        refreshToken,
+    };
 };
 
-/**
- * Admin login
- */
-const adminLogin = async (email, password) => {
-  const admin = await Admin.findOne({ email }).select("+password");
+const adminLogin = async (identifier, password) => {
+    const query = identifier.email
+        ? { email: identifier.email }
+        : { username: identifier.username };
 
-  if (!admin) {
-    throw ApiError.unauthorized("Invalid credentials");
-  }
+    const admin = await Admin.findOne(query).select("+password");
 
-  if (!admin.isActive) {
-    throw ApiError.forbidden("Account is deactivated");
-  }
+    if (!admin) {
+        throw ApiError.unauthorized("관리자 정보가 올바르지 않습니다");
+    }
 
-  const isPasswordValid = await admin.comparePassword(password);
+    if (!admin.isActive) {
+        throw ApiError.forbidden("비활성화된 계정입니다");
+    }
 
-  if (!isPasswordValid) {
-    throw ApiError.unauthorized("Invalid credentials");
-  }
+    const isPasswordValid = await admin.comparePassword(password);
+    if (!isPasswordValid) {
+        throw ApiError.unauthorized("관리자 정보가 올바르지 않습니다");
+    }
 
-  // Update last login
-  admin.lastLogin = Date.now();
-  await admin.save();
+    admin.lastLogin = Date.now();
+    await admin.save();
 
-  const token = generateToken({ id: admin._id, role: "admin" });
-  const refreshToken = generateRefreshToken({ id: admin._id, role: "admin" });
+    const token = generateToken({ id: admin._id, role: "admin" });
+    const refreshToken = generateRefreshToken({ id: admin._id, role: "admin" });
 
-  // Remove password from response
-  admin.password = undefined;
-
-  return {
-    admin,
-    token,
-    refreshToken,
-  };
+    return {
+        admin: {
+            _id: admin._id,
+            id: admin._id,
+            email: admin.email,
+            username: admin.username,
+            fullName: admin.fullName,
+            role: admin.role,
+            isActive: admin.isActive,
+            createdAt: admin.createdAt,
+        },
+        token,
+        refreshToken,
+    };
 };
 
-/**
- * Get current user profile
- */
 const getProfile = async (userId, role) => {
-  let user;
+    let user;
 
-  if (role === "admin") {
-    user = await Admin.findById(userId);
-  } else {
-    user = await User.findById(userId);
-  }
+    if (role === "admin") {
+        user = await Admin.findById(userId);
+    } else {
+        user = await User.findById(userId);
+    }
 
-  if (!user) {
-    throw ApiError.notFound("User not found");
-  }
+    if (!user) {
+        throw ApiError.notFound("사용자를 찾을 수 없습니다");
+    }
 
-  return user;
+    return user;
 };
 
-/**
- * Update user profile
- */
 const updateProfile = async (userId, updates) => {
-  const user = await User.findByIdAndUpdate(userId, updates, {
-    new: true,
-    runValidators: true,
-  });
+    const restrictedFields = [
+        "password",
+        "email",
+        "username",
+        "role",
+        "memberType",
+        "agreements",
+    ];
+    restrictedFields.forEach((field) => delete updates[field]);
 
-  if (!user) {
-    throw ApiError.notFound("User not found");
-  }
+    const user = await User.findByIdAndUpdate(userId, updates, {
+        new: true,
+        runValidators: true,
+    });
 
-  return user;
+    if (!user) {
+        throw ApiError.notFound("사용자를 찾을 수 없습니다");
+    }
+
+    return user;
 };
 
-/**
- * Change password
- */
 const changePassword = async (userId, currentPassword, newPassword, role) => {
-  let user;
+    let user;
 
-  if (role === "admin") {
-    user = await Admin.findById(userId).select("+password");
-  } else {
-    user = await User.findById(userId).select("+password");
-  }
+    if (role === "admin") {
+        user = await Admin.findById(userId).select("+password");
+    } else {
+        user = await User.findById(userId).select("+password");
+    }
 
-  if (!user) {
-    throw ApiError.notFound("User not found");
-  }
+    if (!user) {
+        throw ApiError.notFound("사용자를 찾을 수 없습니다");
+    }
 
-  const isPasswordValid = await user.comparePassword(currentPassword);
+    const isPasswordValid = await user.comparePassword(currentPassword);
+    if (!isPasswordValid) {
+        throw ApiError.badRequest("현재 비밀번호가 올바르지 않습니다");
+    }
 
-  if (!isPasswordValid) {
-    throw ApiError.badRequest("Current password is incorrect");
-  }
+    if (currentPassword === newPassword) {
+        throw ApiError.badRequest(
+            "새 비밀번호는 현재 비밀번호와 달라야 합니다"
+        );
+    }
 
-  user.password = newPassword;
-  await user.save();
+    user.password = newPassword;
+    await user.save();
 
-  return { message: "Password changed successfully" };
+    return { message: "비밀번호가 성공적으로 변경되었습니다" };
 };
 
 module.exports = {
-  register,
-  login,
-  adminLogin,
-  getProfile,
-  updateProfile,
-  changePassword,
+    register,
+    login,
+    adminLogin,
+    getProfile,
+    updateProfile,
+    changePassword,
 };

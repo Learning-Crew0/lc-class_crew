@@ -20,8 +20,8 @@ const { optionalAuth } = require("../middlewares/auth.middleware");
 // === COURSES ===
 // GET /api/v1/public/courses - Get all published courses
 router.get("/courses", (req, res, next) => {
-  req.query.publicOnly = true;
-  coursesController.getAllCourses(req, res, next);
+    req.query.publicOnly = true;
+    coursesController.getAllCourses(req, res, next);
 });
 
 // GET /api/v1/public/courses/featured - Get featured courses
@@ -33,8 +33,8 @@ router.get("/courses/:id", coursesController.getCourseById);
 // === PRODUCTS ===
 // GET /api/v1/public/products - Get all published products
 router.get("/products", (req, res, next) => {
-  req.query.publicOnly = true;
-  productsController.getAllProducts(req, res, next);
+    req.query.publicOnly = true;
+    productsController.getAllProducts(req, res, next);
 });
 
 // GET /api/v1/public/products/featured - Get featured products
@@ -46,8 +46,8 @@ router.get("/products/:id", productsController.getProductById);
 // === FAQs ===
 // GET /api/v1/public/faqs - Get all published FAQs
 router.get("/faqs", (req, res, next) => {
-  req.query.publicOnly = true;
-  faqsController.getAllFAQs(req, res, next);
+    req.query.publicOnly = true;
+    faqsController.getAllFAQs(req, res, next);
 });
 
 // GET /api/v1/public/faqs/category/:category - Get FAQs by category
@@ -58,16 +58,16 @@ router.get("/faqs/:id", faqsController.getFAQById);
 
 // POST /api/v1/public/faqs/:id/helpful - Mark FAQ as helpful
 router.post(
-  "/faqs/:id/helpful",
-  validate(markHelpfulSchema),
-  faqsController.markHelpful
+    "/faqs/:id/helpful",
+    validate(markHelpfulSchema),
+    faqsController.markHelpful
 );
 
 // === NOTICES ===
 // GET /api/v1/public/notices - Get all published notices
 router.get("/notices", (req, res, next) => {
-  req.query.publicOnly = true;
-  noticesController.getAllNotices(req, res, next);
+    req.query.publicOnly = true;
+    noticesController.getAllNotices(req, res, next);
 });
 
 // GET /api/v1/public/notices/:id - Get notice by ID
@@ -76,8 +76,8 @@ router.get("/notices/:id", noticesController.getNoticeById);
 // === BANNERS ===
 // GET /api/v1/public/banners - Get all active banners
 router.get("/banners", (req, res, next) => {
-  req.query.publicOnly = true;
-  bannersController.getAllBanners(req, res, next);
+    req.query.publicOnly = true;
+    bannersController.getAllBanners(req, res, next);
 });
 
 // POST /api/v1/public/banners/:id/impression - Track banner impression
@@ -89,10 +89,10 @@ router.post("/banners/:id/click", bannersController.trackClick);
 // === INQUIRIES ===
 // POST /api/v1/public/inquiries - Submit inquiry (optional auth)
 router.post(
-  "/inquiries",
-  optionalAuth,
-  validate(createInquirySchema),
-  inquiriesController.createInquiry
+    "/inquiries",
+    optionalAuth,
+    validate(createInquirySchema),
+    inquiriesController.createInquiry
 );
 
 module.exports = router;

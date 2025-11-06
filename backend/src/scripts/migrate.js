@@ -15,32 +15,32 @@ const config = require("../config/env");
 const logger = require("../config/logger");
 
 const connectDB = async () => {
-  try {
-    await mongoose.connect(config.mongodb.uri);
-    logger.info("MongoDB connected");
-  } catch (error) {
-    logger.error("MongoDB connection failed:", error.message);
-    process.exit(1);
-  }
+    try {
+        await mongoose.connect(config.mongodb.uri);
+        logger.info("MongoDB connected");
+    } catch (error) {
+        logger.error("MongoDB connection failed:", error.message);
+        process.exit(1);
+    }
 };
 
 const runMigrations = async () => {
-  try {
-    await connectDB();
+    try {
+        await connectDB();
 
-    logger.info("Running migrations...");
+        logger.info("Running migrations...");
 
-    // Add your migration logic here
-    // Example:
-    // await migrateSomething();
+        // Add your migration logic here
+        // Example:
+        // await migrateSomething();
 
-    logger.info("✅ Migrations completed successfully");
+        logger.info("✅ Migrations completed successfully");
 
-    process.exit(0);
-  } catch (error) {
-    logger.error("❌ Migration failed:", error.message);
-    process.exit(1);
-  }
+        process.exit(0);
+    } catch (error) {
+        logger.error("❌ Migration failed:", error.message);
+        process.exit(1);
+    }
 };
 
 runMigrations();

@@ -10,17 +10,15 @@ const inquiriesController = require("../controllers/inquiries.controller");
 // Validators
 const { validate } = require("../middlewares/validate.middleware");
 const {
-  updateProfileSchema,
-  changePasswordSchema,
+    updateProfileSchema,
+    changePasswordSchema,
 } = require("../validators/auth.validators");
 const {
-  createEnrollmentSchema,
-  markAttendanceSchema,
-  addAssessmentSchema,
+    createEnrollmentSchema,
 } = require("../validators/enrollment.validators");
 const {
-  addToCartSchema,
-  updateCartItemSchema,
+    addToCartSchema,
+    updateCartItemSchema,
 } = require("../validators/cart.validators");
 
 // Middleware
@@ -35,16 +33,16 @@ router.get("/profile", authController.getProfile);
 
 // PUT /api/v1/user/profile - Update profile
 router.put(
-  "/profile",
-  validate(updateProfileSchema),
-  authController.updateProfile
+    "/profile",
+    validate(updateProfileSchema),
+    authController.updateProfile
 );
 
 // POST /api/v1/user/change-password - Change password
 router.post(
-  "/change-password",
-  validate(changePasswordSchema),
-  authController.changePassword
+    "/change-password",
+    validate(changePasswordSchema),
+    authController.changePassword
 );
 
 // === ENROLLMENTS ===
@@ -53,9 +51,9 @@ router.get("/enrollments", enrollmentsController.getUserEnrollments);
 
 // POST /api/v1/user/enrollments - Create enrollment
 router.post(
-  "/enrollments",
-  validate(createEnrollmentSchema),
-  enrollmentsController.createEnrollment
+    "/enrollments",
+    validate(createEnrollmentSchema),
+    enrollmentsController.createEnrollment
 );
 
 // GET /api/v1/user/enrollments/:id - Get enrollment by ID
@@ -66,8 +64,8 @@ router.get("/enrollments/:id/progress", enrollmentsController.getProgress);
 
 // GET /api/v1/user/enrollments/:id/eligibility - Check certificate eligibility
 router.get(
-  "/enrollments/:id/eligibility",
-  enrollmentsController.checkEligibility
+    "/enrollments/:id/eligibility",
+    enrollmentsController.checkEligibility
 );
 
 // === CART ===
@@ -79,9 +77,9 @@ router.post("/cart", validate(addToCartSchema), cartController.addToCart);
 
 // PUT /api/v1/user/cart/:productId - Update cart item
 router.put(
-  "/cart/:productId",
-  validate(updateCartItemSchema),
-  cartController.updateCartItem
+    "/cart/:productId",
+    validate(updateCartItemSchema),
+    cartController.updateCartItem
 );
 
 // DELETE /api/v1/user/cart/:productId - Remove item from cart
@@ -93,8 +91,8 @@ router.delete("/cart", cartController.clearCart);
 // === INQUIRIES ===
 // GET /api/v1/user/inquiries - Get user's inquiries
 router.get("/inquiries", (req, res, next) => {
-  req.query.userId = req.user.id;
-  inquiriesController.getAllInquiries(req, res, next);
+    req.query.userId = req.user.id;
+    inquiriesController.getAllInquiries(req, res, next);
 });
 
 // GET /api/v1/user/inquiries/:id - Get inquiry by ID

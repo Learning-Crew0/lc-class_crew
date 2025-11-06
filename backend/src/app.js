@@ -24,12 +24,12 @@ app.use(rateLimiter);
 
 // Health check
 app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "success",
-    message: "Server is running",
-    timestamp: new Date().toISOString(),
-    environment: config.env,
-  });
+    res.status(200).json({
+        status: "success",
+        message: "Server is running",
+        timestamp: new Date().toISOString(),
+        environment: config.env,
+    });
 });
 
 // API routes
@@ -37,10 +37,10 @@ app.use(`/api/${config.apiVersion}`, routes);
 
 // 404 handler
 app.use("*", (req, res) => {
-  res.status(404).json({
-    status: "error",
-    message: `Cannot ${req.method} ${req.originalUrl}`,
-  });
+    res.status(404).json({
+        status: "error",
+        message: `Cannot ${req.method} ${req.originalUrl}`,
+    });
 });
 
 // Error handling middleware (must be last)

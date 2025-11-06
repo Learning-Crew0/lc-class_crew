@@ -1,16 +1,13 @@
 module.exports = {
-  testEnvironment: 'node',
-  coverageDirectory: 'coverage',
+  testEnvironment: "node",
+  coverageDirectory: "coverage",
   collectCoverageFrom: [
-    'src/**/*.js',
-    '!src/test/**',
-    '!src/seeds/**',
-    '!src/scripts/**'
+    "src/**/*.js",
+    "!src/test/**",
+    "!src/seeds/**",
+    "!src/scripts/**",
   ],
-  testMatch: [
-    '**/test/**/*.test.js'
-  ],
-  setupFilesAfterEnv: [],
-  testTimeout: 10000
+  testMatch: ["**/src/test/**/*.test.js"],
+  testTimeout: 10000,
+  verbose: true,
 };
-
