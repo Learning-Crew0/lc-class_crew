@@ -1,5 +1,0 @@
-title,category,tagColor,tagText,tags,shortDescription,longDescription,target,duration,location,hours,price,priceText,field,date,refundOptions,learningGoals,mainImage,isActive,isFeatured
-React Fundamentals,Programming,#FF5733,Hot,"React,JavaScript,Frontend",Learn React from scratch,Comprehensive React course covering hooks and state management,입사 3년차 미만 주니어,12시간,러닝크루 성수 CLASS,40,600000,60만원(중식 포함),Web Development,20240115,30-day money back,Build modern React apps,https://example.com/react.jpg,true,false
-UI/UX Design Basics,Design,#4CAF50,New,"Design,UI,UX",Learn design fundamentals,Complete guide to modern UI/UX design principles,초급 디자이너,16시간,온라인,32,450000,45만원,Design,20240120,14-day refund,Create beautiful interfaces,https://example.com/design.jpg,true,true
-Digital Marketing,Marketing,#2196F3,Popular,"Marketing,SEO,Social Media",Master digital marketing,Learn SEO and social media marketing strategies,마케팅 담당자,20시간,하이브리드,40,500000,50만원,Marketing,20240125,7-day refund,Grow your business online,https://example.com/marketing.jpg,true,false
-

@@ -1,0 +1,26 @@
+const pino = require("pino");
+const config = require("./env");
+
+const logger = pino({
+  level: config.logLevel,
+  transport:
+    config.env === "development"
+      ? {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:standard",
+            ignore: "pid,hostname",
+            singleLine: false,
+          },
+        }
+      : undefined,
+  formatters: {
+    level: (label) => {
+      return { level: label };
+    },
+  },
+  timestamp: pino.stdTimeFunctions.isoTime,
+});
+
+module.exports = logger;
