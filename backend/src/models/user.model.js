@@ -88,7 +88,7 @@ userSchema.methods.toJSON = function () {
 };
 
 // Indexes
-userSchema.index({ email: 1 });
+// Note: email already has unique index from schema definition
 userSchema.index({ membershipType: 1 });
 
 const User = mongoose.model("User", userSchema);

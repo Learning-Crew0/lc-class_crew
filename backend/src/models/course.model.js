@@ -194,7 +194,7 @@ courseSchema.pre("save", function (next) {
 
 // Indexes
 courseSchema.index({ title: "text", description: "text" });
-courseSchema.index({ slug: 1 });
+// Note: slug already has unique index from schema definition
 courseSchema.index({ category: 1 });
 courseSchema.index({ isPublished: 1 });
 

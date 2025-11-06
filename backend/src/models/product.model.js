@@ -135,7 +135,7 @@ productSchema.virtual("inStock").get(function () {
 
 // Indexes
 productSchema.index({ name: "text", description: "text" });
-productSchema.index({ slug: 1 });
+// Note: slug already has unique index from schema definition
 productSchema.index({ category: 1 });
 productSchema.index({ isPublished: 1 });
 

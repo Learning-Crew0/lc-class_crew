@@ -63,7 +63,7 @@ cartSchema.virtual("subtotal").get(function () {
 });
 
 // Indexes
-cartSchema.index({ user: 1 });
+// Note: user already has unique index from schema definition
 
 const Cart = mongoose.model("Cart", cartSchema);
 

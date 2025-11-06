@@ -63,15 +63,22 @@ npm install
 
 ### 2. Setup Environment
 
-```bash
-# Copy the example env file
-cp .env.example .env
+A default `.env` file has been created for local development. For production or custom setup:
 
-# Edit .env with your settings
-# - MongoDB connection string
-# - JWT secrets
-# - Port, etc.
+```bash
+# View the comprehensive example
+cat .env.example
+
+# Or follow the detailed guide
+# See ENV_SETUP.md for complete configuration guide
 ```
+
+**Quick Start** - The `.env` file is already configured with development defaults:
+- MongoDB: `localhost:27017`
+- Port: `5000`
+- JWT secrets: Development values (change for production!)
+
+**For Production**: See [ENV_SETUP.md](./ENV_SETUP.md) for detailed configuration
 
 ### 3. Seed Database
 

@@ -31,7 +31,7 @@ const settingsSchema = new mongoose.Schema(
 );
 
 // Indexes
-settingsSchema.index({ key: 1 });
+// Note: key already has unique index from schema definition
 settingsSchema.index({ category: 1 });
 
 const Settings = mongoose.model("Settings", settingsSchema);

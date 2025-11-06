@@ -6,7 +6,7 @@ const connectDB = require("./config/db");
 // Handle uncaught exceptions
 process.on("uncaughtException", (err) => {
   logger.error("UNCAUGHT EXCEPTION! Shutting down...");
-  logger.error(err.name, err.message);
+  logger.error({ name: err.name, message: err.message, stack: err.stack });
   process.exit(1);
 });
 
@@ -24,7 +24,7 @@ const server = app.listen(config.port, () => {
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
   logger.error("UNHANDLED REJECTION! Shutting down...");
-  logger.error(err.name, err.message);
+  logger.error({ name: err.name, message: err.message, stack: err.stack });
   server.close(() => {
     process.exit(1);
   });
