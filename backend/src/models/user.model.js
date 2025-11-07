@@ -154,8 +154,6 @@ userSchema.methods.toJSON = function () {
 };
 
 userSchema.index({ memberType: 1 });
-userSchema.index({ username: 1 });
-userSchema.index({ phone: 1 });
 userSchema.index({ createdAt: -1 });
 
 const User = mongoose.model("User", userSchema);

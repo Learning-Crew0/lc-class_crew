@@ -72,7 +72,6 @@ adminSchema.methods.toJSON = function () {
     return obj;
 };
 
-adminSchema.index({ username: 1 });
 adminSchema.index({ createdAt: -1 });
 
 const Admin = mongoose.model("Admin", adminSchema);
