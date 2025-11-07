@@ -7,7 +7,7 @@ const createAnnouncement = asyncHandler(async (req, res) => {
     if (!req.user || !req.user.id) {
         throw ApiError.unauthorized("Authentication required");
     }
-    
+
     const announcement = await announcementService.createAnnouncement(
         req.body,
         req.files,
@@ -43,7 +43,7 @@ const updateAnnouncement = asyncHandler(async (req, res) => {
     if (!req.user || !req.user.id) {
         throw ApiError.unauthorized("Authentication required");
     }
-    
+
     const announcement = await announcementService.updateAnnouncement(
         req.params.id,
         req.body,
