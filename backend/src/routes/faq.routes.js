@@ -40,6 +40,21 @@ router.delete(
     faqController.deleteFAQCategory
 );
 
+router.get(
+    "/admin/stats",
+    authenticate,
+    requireAdmin,
+    faqController.getFAQStats
+);
+
+router.post(
+    "/bulk-delete",
+    authenticate,
+    requireAdmin,
+    validate(bulkDeleteSchema),
+    faqController.bulkDeleteFAQs
+);
+
 router.get("/", faqController.getAllFAQs);
 
 router.get("/category/:categoryKey", faqController.getFAQsByCategory);
@@ -70,15 +85,4 @@ router.post(
     faqController.markHelpful
 );
 
-router.post(
-    "/bulk-delete",
-    authenticate,
-    requireAdmin,
-    validate(bulkDeleteSchema),
-    faqController.bulkDeleteFAQs
-);
-
-router.get("/admin/stats", authenticate, requireAdmin, faqController.getFAQStats);
-
 module.exports = router;
-

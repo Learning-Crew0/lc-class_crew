@@ -12,24 +12,22 @@ const getPersonalCourseHistory = async (inquiryData) => {
     });
 
     if (!user) {
-        throw ApiError.notFound(
-            "No user found with the provided information"
-        );
+        throw ApiError.notFound("No user found with the provided information");
     }
 
-    const enrollments = await Enrollment.find({ userId: user._id })
-        .populate("courseId", "title category")
-        .populate("scheduleId", "scheduleName startDate endDate")
+    const enrollments = await Enrollment.find({ user: user._id })
+        .populate("course", "title category")
+        .populate("schedule", "scheduleName startDate endDate")
         .sort({ enrollmentDate: -1 });
 
     const courseHistory = enrollments.map((enrollment, index) => {
         let trainingDate = "N/A";
-        if (enrollment.scheduleId) {
-            const startDate = enrollment.scheduleId.startDate
+        if (enrollment.schedule) {
+            const startDate = enrollment.schedule.startDate
                 .toISOString()
                 .split("T")[0]
                 .replace(/-/g, ".");
-            const endDate = enrollment.scheduleId.endDate
+            const endDate = enrollment.schedule.endDate
                 .toISOString()
                 .split("T")[0]
                 .replace(/-/g, ".");
@@ -39,8 +37,8 @@ const getPersonalCourseHistory = async (inquiryData) => {
         return {
             no: index + 1,
             enrollmentId: enrollment._id,
-            courseId: enrollment.courseId._id,
-            courseName: enrollment.courseId.title,
+            courseId: enrollment.course._id,
+            courseName: enrollment.course.title,
             trainingDate,
             status: enrollment.status,
             certificateAvailable:
@@ -107,25 +105,23 @@ const getCorporateCourseHistory = async (inquiryData) => {
     }
 
     const enrollments = await Enrollment.find(query)
-        .populate("userId", "fullName email phone organization")
-        .populate("courseId", "title category")
-        .populate("scheduleId", "scheduleName startDate endDate")
+        .populate("user", "fullName email phone organization")
+        .populate("course", "title category")
+        .populate("schedule", "scheduleName startDate endDate")
         .sort({ enrollmentDate: -1 });
 
     if (enrollments.length === 0) {
-        throw ApiError.notFound(
-            "No enrollment records found for this company"
-        );
+        throw ApiError.notFound("No enrollment records found for this company");
     }
 
     const courseHistory = enrollments.map((enrollment, index) => {
         let trainingDate = "N/A";
-        if (enrollment.scheduleId) {
-            const startDate = enrollment.scheduleId.startDate
+        if (enrollment.schedule) {
+            const startDate = enrollment.schedule.startDate
                 .toISOString()
                 .split("T")[0]
                 .replace(/-/g, ".");
-            const endDate = enrollment.scheduleId.endDate
+            const endDate = enrollment.schedule.endDate
                 .toISOString()
                 .split("T")[0]
                 .replace(/-/g, ".");
@@ -134,10 +130,10 @@ const getCorporateCourseHistory = async (inquiryData) => {
 
         return {
             no: index + 1,
-            employeeName: enrollment.userId?.fullName || "Unknown",
+            employeeName: enrollment.user?.fullName || "Unknown",
             department: department || "N/A",
             position: "N/A",
-            courseName: enrollment.courseId?.title || "Unknown",
+            courseName: enrollment.course?.title || "Unknown",
             trainingDate,
             status: enrollment.status,
             certificateAvailable:
@@ -165,7 +161,7 @@ const getCorporateCourseHistory = async (inquiryData) => {
     );
 
     const uniqueEmployees = [
-        ...new Set(enrollments.map((e) => e.userId?._id?.toString())),
+        ...new Set(enrollments.map((e) => e.user?._id?.toString())),
     ].filter(Boolean);
 
     return {
@@ -195,7 +191,7 @@ const requestCorporateVerification = async (verificationData) => {
 
 const getCertificate = async (enrollmentId) => {
     const enrollment = await Enrollment.findById(enrollmentId).populate(
-        "userId",
+        "user",
         "fullName email"
     );
 
@@ -219,4 +215,3 @@ module.exports = {
     requestCorporateVerification,
     getCertificate,
 };
-
