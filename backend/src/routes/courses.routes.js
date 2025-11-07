@@ -4,8 +4,8 @@ const coursesController = require("../controllers/courses.controller");
 const categoryController = require("../controllers/category.controller");
 const enrollmentController = require("../controllers/enrollment.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
-const { isAdmin } = require("../middlewares/role.middleware");
-const { validate } = require("../middlewares/validation.middleware");
+const requireAdmin = require("../middlewares/admin.middleware");
+const { validate } = require("../middlewares/validate.middleware");
 const {
     courseUploads,
     promotionUploads,
@@ -57,7 +57,7 @@ router.get("/categories/:id/courses", categoryController.getCategoryWithCourses)
 router.post(
     "/categories",
     authenticate,
-    isAdmin,
+    requireAdmin,
     validate(createCategorySchema),
     categoryController.createCategory
 );
@@ -65,7 +65,7 @@ router.post(
 router.put(
     "/categories/:id",
     authenticate,
-    isAdmin,
+    requireAdmin,
     validate(updateCategorySchema),
     categoryController.updateCategory
 );
@@ -73,7 +73,7 @@ router.put(
 router.delete(
     "/categories/:id",
     authenticate,
-    isAdmin,
+    requireAdmin,
     categoryController.deleteCategory
 );
 
@@ -83,7 +83,7 @@ router.get("/courses/:id", coursesController.getCourseById);
 router.post(
     "/courses",
     authenticate,
-    isAdmin,
+    requireAdmin,
     courseUploads,
     validate(createCourseSchema),
     coursesController.createCourse
@@ -92,7 +92,7 @@ router.post(
 router.put(
     "/courses/:id",
     authenticate,
-    isAdmin,
+    requireAdmin,
     courseUploads,
     validate(updateCourseSchema),
     coursesController.updateCourse
@@ -101,7 +101,7 @@ router.put(
 router.delete(
     "/courses/:id",
     authenticate,
-    isAdmin,
+    requireAdmin,
     coursesController.deleteCourse
 );
 
@@ -113,7 +113,7 @@ router.get(
 router.post(
     "/courses/:courseId/training-schedules",
     authenticate,
-    isAdmin,
+    requireAdmin,
     validate(createTrainingScheduleSchema),
     coursesController.createTrainingSchedule
 );
@@ -121,7 +121,7 @@ router.post(
 router.put(
     "/courses/:courseId/training-schedules/:scheduleId",
     authenticate,
-    isAdmin,
+    requireAdmin,
     validate(updateTrainingScheduleSchema),
     coursesController.updateTrainingSchedule
 );
@@ -129,7 +129,7 @@ router.put(
 router.delete(
     "/courses/:courseId/training-schedules/:scheduleId",
     authenticate,
-    isAdmin,
+    requireAdmin,
     coursesController.deleteTrainingSchedule
 );
 
@@ -145,7 +145,7 @@ router.get("/courses/:courseId/curriculum", coursesController.getCurriculum);
 router.post(
     "/courses/:courseId/curriculum",
     authenticate,
-    isAdmin,
+    requireAdmin,
     validate(createCurriculumSchema),
     coursesController.upsertCurriculum
 );
@@ -155,7 +155,7 @@ router.get("/courses/:courseId/instructors", coursesController.getInstructors);
 router.post(
     "/courses/:courseId/instructors",
     authenticate,
-    isAdmin,
+    requireAdmin,
     instructorUploads,
     validate(createInstructorSchema),
     coursesController.createInstructor
@@ -164,7 +164,7 @@ router.post(
 router.put(
     "/courses/:courseId/instructors/:instructorId",
     authenticate,
-    isAdmin,
+    requireAdmin,
     instructorUploads,
     validate(updateInstructorSchema),
     coursesController.updateInstructor
@@ -173,7 +173,7 @@ router.put(
 router.delete(
     "/courses/:courseId/instructors/:instructorId",
     authenticate,
-    isAdmin,
+    requireAdmin,
     coursesController.deleteInstructor
 );
 
@@ -182,7 +182,7 @@ router.get("/courses/:courseId/promotions", coursesController.getPromotions);
 router.post(
     "/courses/:courseId/promotions",
     authenticate,
-    isAdmin,
+    requireAdmin,
     promotionUploads,
     coursesController.createPromotion
 );
@@ -190,14 +190,14 @@ router.post(
 router.put(
     "/courses/:courseId/promotions/:promotionId",
     authenticate,
-    isAdmin,
+    requireAdmin,
     coursesController.updatePromotion
 );
 
 router.delete(
     "/courses/:courseId/promotions/:promotionId",
     authenticate,
-    isAdmin,
+    requireAdmin,
     coursesController.deletePromotion
 );
 
@@ -213,7 +213,7 @@ router.post(
 router.put(
     "/courses/:courseId/reviews/:reviewId",
     authenticate,
-    isAdmin,
+    requireAdmin,
     validate(updateCourseReviewSchema),
     coursesController.updateReview
 );
@@ -221,7 +221,7 @@ router.put(
 router.delete(
     "/courses/:courseId/reviews/:reviewId",
     authenticate,
-    isAdmin,
+    requireAdmin,
     coursesController.deleteReview
 );
 
@@ -230,7 +230,7 @@ router.get("/courses/:courseId/notice", coursesController.getNotice);
 router.post(
     "/courses/:courseId/notice",
     authenticate,
-    isAdmin,
+    requireAdmin,
     noticeUploads,
     validate(createCourseNoticeSchema),
     coursesController.upsertNotice
@@ -251,7 +251,7 @@ router.get(
 router.patch(
     "/enrollments/:id/status",
     authenticate,
-    isAdmin,
+    requireAdmin,
     validate(updateEnrollmentStatusSchema),
     enrollmentController.updateEnrollmentStatus
 );
@@ -273,7 +273,7 @@ router.post(
 router.patch(
     "/enrollments/:id/refund/process",
     authenticate,
-    isAdmin,
+    requireAdmin,
     validate(processRefundSchema),
     enrollmentController.processRefund
 );

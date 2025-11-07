@@ -26,27 +26,15 @@ const {
 const {
     registerSchema,
     updateUserSchema,
-    toggleUserStatusSchema,
 } = require("../validators/user.validators");
 const {
     createCourseSchema,
     updateCourseSchema,
 } = require("../validators/course.validators");
 const {
-    updateStatusSchema,
-    markAttendanceSchema,
-    addAssessmentSchema,
-} = require("../validators/enrollment.validators");
-const {
     createProductSchema,
     updateProductSchema,
 } = require("../validators/product.validators");
-const {
-    updateInquirySchema,
-    assignInquirySchema,
-    respondSchema,
-    addNoteSchema,
-} = require("../validators/inquiry.validators");
 const {
     createNoticeSchema,
     updateNoticeSchema,
@@ -126,12 +114,6 @@ router.put(
 // DELETE /api/v1/admin/users/:id - Delete user
 router.delete("/users/:id", usersController.deleteUser);
 
-router.patch(
-    "/users/:id/toggle-status",
-    validate(toggleUserStatusSchema),
-    usersController.toggleStatus
-);
-
 // === COURSES MANAGEMENT ===
 // GET /api/v1/admin/courses - Get all courses
 router.get("/courses", coursesController.getAllCourses);
@@ -156,51 +138,8 @@ router.put(
 // DELETE /api/v1/admin/courses/:id - Delete course
 router.delete("/courses/:id", coursesController.deleteCourse);
 
-// PATCH /api/v1/admin/courses/:id/toggle-publish - Toggle publish status
-router.patch("/courses/:id/toggle-publish", coursesController.togglePublish);
-
 // === ENROLLMENTS MANAGEMENT ===
-// GET /api/v1/admin/enrollments - Get all enrollments
-router.get("/enrollments", enrollmentsController.getAllEnrollments);
-
-// GET /api/v1/admin/enrollments/:id - Get enrollment by ID
-router.get("/enrollments/:id", enrollmentsController.getEnrollmentById);
-
-// PATCH /api/v1/admin/enrollments/:id/status - Update enrollment status
-router.patch(
-    "/enrollments/:id/status",
-    validate(updateStatusSchema),
-    enrollmentsController.updateStatus
-);
-
-// POST /api/v1/admin/enrollments/:id/attendance - Mark attendance
-router.post(
-    "/enrollments/:id/attendance",
-    validate(markAttendanceSchema),
-    enrollmentsController.markAttendance
-);
-
-// POST /api/v1/admin/enrollments/:id/assessments - Add assessment
-router.post(
-    "/enrollments/:id/assessments",
-    validate(addAssessmentSchema),
-    enrollmentsController.addAssessment
-);
-
-// GET /api/v1/admin/enrollments/:id/eligibility - Check eligibility
-router.get(
-    "/enrollments/:id/eligibility",
-    enrollmentsController.checkEligibility
-);
-
-// POST /api/v1/admin/enrollments/:id/certificate - Issue certificate
-router.post(
-    "/enrollments/:id/certificate",
-    enrollmentsController.issueCertificate
-);
-
-// DELETE /api/v1/admin/enrollments/:id - Delete enrollment
-router.delete("/enrollments/:id", enrollmentsController.deleteEnrollment);
+// Note: Enrollment routes moved to /api/v1/enrollments (see courses.routes.js)
 
 // === PRODUCTS MANAGEMENT ===
 // GET /api/v1/admin/products - Get all products
@@ -226,46 +165,12 @@ router.put(
 // DELETE /api/v1/admin/products/:id - Delete product
 router.delete("/products/:id", productsController.deleteProduct);
 
-// PATCH /api/v1/admin/products/:id/toggle-publish - Toggle publish status
-router.patch("/products/:id/toggle-publish", productsController.togglePublish);
-
-// PATCH /api/v1/admin/products/:id/stock - Update stock
-router.patch("/products/:id/stock", productsController.updateStock);
-
 // === INQUIRIES MANAGEMENT ===
 // GET /api/v1/admin/inquiries - Get all inquiries
 router.get("/inquiries", inquiriesController.getAllInquiries);
 
 // GET /api/v1/admin/inquiries/:id - Get inquiry by ID
 router.get("/inquiries/:id", inquiriesController.getInquiryById);
-
-// PATCH /api/v1/admin/inquiries/:id - Update inquiry
-router.patch(
-    "/inquiries/:id",
-    validate(updateInquirySchema),
-    inquiriesController.updateStatus
-);
-
-// POST /api/v1/admin/inquiries/:id/assign - Assign inquiry
-router.post(
-    "/inquiries/:id/assign",
-    validate(assignInquirySchema),
-    inquiriesController.assignInquiry
-);
-
-// POST /api/v1/admin/inquiries/:id/respond - Respond to inquiry
-router.post(
-    "/inquiries/:id/respond",
-    validate(respondSchema),
-    inquiriesController.respondToInquiry
-);
-
-// POST /api/v1/admin/inquiries/:id/notes - Add note
-router.post(
-    "/inquiries/:id/notes",
-    validate(addNoteSchema),
-    inquiriesController.addNote
-);
 
 // DELETE /api/v1/admin/inquiries/:id - Delete inquiry
 router.delete("/inquiries/:id", inquiriesController.deleteInquiry);
@@ -294,12 +199,6 @@ router.put(
 // DELETE /api/v1/admin/notices/:id - Delete notice
 router.delete("/notices/:id", noticesController.deleteNotice);
 
-// PATCH /api/v1/admin/notices/:id/toggle-publish - Toggle publish status
-router.patch("/notices/:id/toggle-publish", noticesController.togglePublish);
-
-// PATCH /api/v1/admin/notices/:id/toggle-pin - Toggle pin status
-router.patch("/notices/:id/toggle-pin", noticesController.togglePin);
-
 // === FAQS MANAGEMENT ===
 // GET /api/v1/admin/faqs - Get all FAQs
 router.get("/faqs", faqsController.getAllFAQs);
@@ -315,9 +214,6 @@ router.put("/faqs/:id", validate(updateFAQSchema), faqsController.updateFAQ);
 
 // DELETE /api/v1/admin/faqs/:id - Delete FAQ
 router.delete("/faqs/:id", faqsController.deleteFAQ);
-
-// PATCH /api/v1/admin/faqs/:id/toggle-publish - Toggle publish status
-router.patch("/faqs/:id/toggle-publish", faqsController.togglePublish);
 
 // === BANNERS MANAGEMENT ===
 // GET /api/v1/admin/banners - Get all banners
@@ -343,21 +239,18 @@ router.put(
 // DELETE /api/v1/admin/banners/:id - Delete banner
 router.delete("/banners/:id", bannersController.deleteBanner);
 
-// PATCH /api/v1/admin/banners/:id/toggle-active - Toggle active status
-router.patch("/banners/:id/toggle-active", bannersController.toggleActive);
-
 // === UPLOADS ===
 // POST /api/v1/admin/uploads/single - Upload single file
 router.post(
     "/uploads/single",
-    uploadSingle("file"),
+    uploadSingle("TEMP", "file"),
     uploadsController.uploadSingle
 );
 
 // POST /api/v1/admin/uploads/multiple - Upload multiple files
 router.post(
     "/uploads/multiple",
-    uploadMultiple("files", 10),
+    uploadMultiple("TEMP", "files", 10),
     uploadsController.uploadMultiple
 );
 

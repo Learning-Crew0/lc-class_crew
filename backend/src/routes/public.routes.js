@@ -20,12 +20,16 @@ const { optionalAuth } = require("../middlewares/auth.middleware");
 // === COURSES ===
 // GET /api/v1/public/courses - Get all published courses
 router.get("/courses", (req, res, next) => {
-    req.query.publicOnly = true;
+    req.query.isActive = true;
     coursesController.getAllCourses(req, res, next);
 });
 
 // GET /api/v1/public/courses/featured - Get featured courses
-router.get("/courses/featured", coursesController.getFeatured);
+router.get("/courses/featured", (req, res, next) => {
+    req.query.isActive = true;
+    req.query.isFeatured = true;
+    coursesController.getAllCourses(req, res, next);
+});
 
 // GET /api/v1/public/courses/:id - Get course by ID or slug
 router.get("/courses/:id", coursesController.getCourseById);
@@ -37,9 +41,6 @@ router.get("/products", (req, res, next) => {
     productsController.getAllProducts(req, res, next);
 });
 
-// GET /api/v1/public/products/featured - Get featured products
-router.get("/products/featured", productsController.getFeatured);
-
 // GET /api/v1/public/products/:id - Get product by ID or slug
 router.get("/products/:id", productsController.getProductById);
 
@@ -49,9 +50,6 @@ router.get("/faqs", (req, res, next) => {
     req.query.publicOnly = true;
     faqsController.getAllFAQs(req, res, next);
 });
-
-// GET /api/v1/public/faqs/category/:category - Get FAQs by category
-router.get("/faqs/category/:category", faqsController.getByCategory);
 
 // GET /api/v1/public/faqs/:id - Get FAQ by ID
 router.get("/faqs/:id", faqsController.getFAQById);
@@ -79,12 +77,6 @@ router.get("/banners", (req, res, next) => {
     req.query.publicOnly = true;
     bannersController.getAllBanners(req, res, next);
 });
-
-// POST /api/v1/public/banners/:id/impression - Track banner impression
-router.post("/banners/:id/impression", bannersController.trackImpression);
-
-// POST /api/v1/public/banners/:id/click - Track banner click
-router.post("/banners/:id/click", bannersController.trackClick);
 
 // === INQUIRIES ===
 // POST /api/v1/public/inquiries - Submit inquiry (optional auth)
