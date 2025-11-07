@@ -1,0 +1,840 @@
+{
+    "info": {
+        "name": "ClassCrew Course Management APIs",
+        "description": "Complete API collection for ClassCrew course management system",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5000/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "adminToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "userToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "categoryId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "courseId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "scheduleId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "enrollmentId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Admin Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('adminToken', response.data.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"classcrew_admin\",\n  \"password\": \"admin123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "User Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"테스트 사용자\",\n  \"gender\": \"male\",\n  \"phone\": \"01012345678\",\n  \"dob\": \"1990-01-15\",\n  \"memberType\": \"job_seeker\",\n  \"agreements\": {\n    \"termsOfService\": true,\n    \"privacyPolicy\": true,\n    \"marketingConsent\": false\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "register"]
+                        }
+                    }
+                },
+                {
+                    "name": "User Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('userToken', response.data.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"emailOrUsername\": \"testuser\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "login"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Categories",
+            "item": [
+                {
+                    "name": "Get All Categories",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/categories?page=1&limit=10",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["categories"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Category",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('categoryId', response.data._id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"IT & 프로그래밍\",\n  \"description\": \"IT 및 소프트웨어 개발 관련 코스\",\n  \"level\": 1,\n  \"order\": 1,\n  \"isActive\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/categories",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["categories"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Category",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"IT & 데이터 사이언스\",\n  \"order\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/{{categoryId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["categories", "{{categoryId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Category",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/categories/{{categoryId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["categories", "{{categoryId}}"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Courses",
+            "item": [
+                {
+                    "name": "Get All Courses",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/courses?page=1&limit=10",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Course by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Course",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('courseId', response.data._id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "title",
+                                    "value": "성과관리 기획 실무",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "성과관리의 모든 것을 배우는 코스",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "{{categoryId}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "price",
+                                    "value": "600000",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "tags",
+                                    "value": "환급,모여듣기,얼리버드 할인",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "level",
+                                    "value": "intermediate",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "mainImage",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Course",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "title",
+                                    "value": "업데이트된 코스 제목",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "price",
+                                    "value": "550000",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Course",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Training Schedules",
+            "item": [
+                {
+                    "name": "Get Schedules",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "courses",
+                                "{{courseId}}",
+                                "training-schedules"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Schedule",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('scheduleId', response.data._id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"scheduleName\": \"2025년 1월 주말반\",\n  \"startDate\": \"2025-01-15T09:00:00.000Z\",\n  \"endDate\": \"2025-01-16T18:00:00.000Z\",\n  \"availableSeats\": 30,\n  \"status\": \"upcoming\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "courses",
+                                "{{courseId}}",
+                                "training-schedules"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Enroll in Schedule",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('enrollmentId', response.data._id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{userToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"amountPaid\": 600000,\n  \"paymentMethod\": \"card\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules/{{scheduleId}}/enroll",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "courses",
+                                "{{courseId}}",
+                                "training-schedules",
+                                "{{scheduleId}}",
+                                "enroll"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Curriculum",
+            "item": [
+                {
+                    "name": "Get Curriculum",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/curriculum",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "curriculum"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create/Update Curriculum",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"keywords\": [\"성과는기획이다\", \"리더의미션\"],\n  \"modules\": [\n    {\n      \"name\": \"성과관리 이해하기\",\n      \"content\": \"성과관리의 정의\\n성과관리 프로세스\",\n      \"order\": 1\n    }\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/curriculum",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "curriculum"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Instructors",
+            "item": [
+                {
+                    "name": "Get Instructors",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/instructors",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "instructors"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Instructor",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "name",
+                                    "value": "김성과",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "bio",
+                                    "value": "20년 경력의 성과관리 전문가",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "professionalField",
+                                    "value": "인사관리, 성과관리",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "profileImage",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/instructors",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "instructors"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Promotions",
+            "item": [
+                {
+                    "name": "Get Promotions",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/promotions",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "promotions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Promotion",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "title",
+                                    "value": "얼리버드 할인 이벤트",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "선착순 10명 30% 할인",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "images",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/promotions",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "promotions"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Reviews",
+            "item": [
+                {
+                    "name": "Get Reviews",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/reviews",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "reviews"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Review",
+                    "request": {
+                        "method": "POST",
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "reviewerName",
+                                    "value": "김수강",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "text",
+                                    "value": "정말 유익한 강의였습니다!",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "rating",
+                                    "value": "5",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/reviews",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "reviews"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Notice",
+            "item": [
+                {
+                    "name": "Get Notice",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/notice",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "notice"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create/Update Notice",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "title",
+                                    "value": "중요 공지사항",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "noticeDesc",
+                                    "value": "일정이 변경되었습니다",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "noticeImage",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}/notice",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["courses", "{{courseId}}", "notice"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Enrollments",
+            "item": [
+                {
+                    "name": "Get My Enrollments",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{userToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollments",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enrollments"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Progress",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{userToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"progress\": 75\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollments/{{enrollmentId}}/progress",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "enrollments",
+                                "{{enrollmentId}}",
+                                "progress"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Request Refund",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{userToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"refundReason\": \"개인 사정으로 인한 취소\",\n  \"refundAmount\": 600000\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollments/{{enrollmentId}}/refund",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "enrollments",
+                                "{{enrollmentId}}",
+                                "refund"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

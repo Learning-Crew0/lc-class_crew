@@ -1,123 +1,95 @@
 const Joi = require("joi");
 
 const createCourseSchema = Joi.object({
-    title: Joi.string().trim().required(),
-    description: Joi.string().required(),
-    shortDescription: Joi.string().max(200).optional(),
-    instructor: Joi.string().trim().required(),
-    duration: Joi.object({
-        value: Joi.number().positive().required(),
-        unit: Joi.string()
-            .valid("hours", "days", "weeks", "months")
-            .default("weeks"),
-    }).required(),
-    price: Joi.number().min(0).required(),
-    thumbnail: Joi.string().uri().optional(),
-    images: Joi.array().items(Joi.string().uri()).optional(),
-    category: Joi.string().trim().optional(),
-    tags: Joi.array().items(Joi.string().trim()).optional(),
-    level: Joi.string()
-        .valid("beginner", "intermediate", "advanced")
-        .default("beginner"),
-    maxStudents: Joi.number().positive().default(30),
-    startDate: Joi.date().required(),
-    endDate: Joi.date().greater(Joi.ref("startDate")).required(),
-    schedulePattern: Joi.object({
-        daysOfWeek: Joi.array()
-            .items(
-                Joi.string().valid(
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday",
-                    "Sunday"
-                )
-            )
-            .min(1)
-            .required(),
-        startTime: Joi.string()
-            .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-            .required(),
-        endTime: Joi.string()
-            .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-            .required(),
-    }).optional(),
-    sessions: Joi.array()
-        .items(
-            Joi.object({
-                sessionNumber: Joi.number().required(),
-                title: Joi.string().trim().required(),
-                date: Joi.date().required(),
-                startTime: Joi.string().required(),
-                endTime: Joi.string().required(),
-                description: Joi.string().optional(),
-            })
-        )
+    title: Joi.string().trim().min(3).max(200).required().messages({
+        "string.empty": "코스 제목을 입력해주세요",
+        "string.min": "코스 제목은 최소 3자 이상이어야 합니다",
+        "any.required": "코스 제목은 필수입니다",
+    }),
+    shortDescription: Joi.string().trim().max(500).optional(),
+    longDescription: Joi.string().trim().optional(),
+    description: Joi.string().trim().optional(),
+    category: Joi.string().hex().length(24).required().messages({
+        "string.empty": "카테고리를 선택해주세요",
+        "any.required": "카테고리는 필수입니다",
+    }),
+    tagText: Joi.string().trim().max(50).optional(),
+    tagColor: Joi.string().trim().default("text-blue-500"),
+    tags: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
         .optional(),
-    prerequisites: Joi.array().items(Joi.string()).optional(),
-    learningOutcomes: Joi.array().items(Joi.string()).optional(),
-    certificateEligibility: Joi.object({
-        enabled: Joi.boolean().default(true),
-        criteria: Joi.object({
-            minAttendance: Joi.number().min(0).max(100).default(80),
-            minAssignmentScore: Joi.number().min(0).max(100).default(70),
-            minTestScore: Joi.number().min(0).max(100).default(70),
-        }),
-    }).optional(),
-    isPublished: Joi.boolean().default(false),
+    price: Joi.number().min(0).required().messages({
+        "number.base": "가격은 숫자여야 합니다",
+        "number.min": "가격은 0 이상이어야 합니다",
+        "any.required": "가격은 필수입니다",
+    }),
+    priceText: Joi.string().trim().optional(),
+    date: Joi.string().trim().optional(),
+    duration: Joi.string().trim().optional(),
+    location: Joi.string().trim().optional(),
+    hours: Joi.number().min(0).optional(),
+    target: Joi.string().trim().optional(),
+    recommendedAudience: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
+    learningGoals: Joi.alternatives()
+        .try(Joi.string().trim(), Joi.array().items(Joi.string().trim()))
+        .optional(),
+    whatYouWillLearn: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
+    requirements: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
+    field: Joi.string().trim().optional(),
+    processName: Joi.string().trim().optional(),
+    refundOptions: Joi.string().trim().optional(),
+    level: Joi.string()
+        .valid("beginner", "intermediate", "advanced", "all")
+        .default("all"),
+    language: Joi.string().trim().default("Korean"),
+    isActive: Joi.boolean().default(true),
     isFeatured: Joi.boolean().default(false),
 });
 
 const updateCourseSchema = Joi.object({
-    title: Joi.string().trim().optional(),
-    description: Joi.string().optional(),
-    shortDescription: Joi.string().max(200).optional(),
-    instructor: Joi.string().trim().optional(),
-    duration: Joi.object({
-        value: Joi.number().positive(),
-        unit: Joi.string().valid("hours", "days", "weeks", "months"),
-    }).optional(),
+    title: Joi.string().trim().min(3).max(200).optional(),
+    shortDescription: Joi.string().trim().max(500).optional(),
+    longDescription: Joi.string().trim().optional(),
+    description: Joi.string().trim().optional(),
+    category: Joi.string().hex().length(24).optional(),
+    tagText: Joi.string().trim().max(50).optional(),
+    tagColor: Joi.string().trim().optional(),
+    tags: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
     price: Joi.number().min(0).optional(),
-    thumbnail: Joi.string().uri().optional(),
-    images: Joi.array().items(Joi.string().uri()).optional(),
-    category: Joi.string().trim().optional(),
-    tags: Joi.array().items(Joi.string().trim()).optional(),
+    priceText: Joi.string().trim().optional(),
+    date: Joi.string().trim().optional(),
+    duration: Joi.string().trim().optional(),
+    location: Joi.string().trim().optional(),
+    hours: Joi.number().min(0).optional(),
+    target: Joi.string().trim().optional(),
+    recommendedAudience: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
+    learningGoals: Joi.alternatives()
+        .try(Joi.string().trim(), Joi.array().items(Joi.string().trim()))
+        .optional(),
+    whatYouWillLearn: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
+    requirements: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
+    field: Joi.string().trim().optional(),
+    processName: Joi.string().trim().optional(),
+    refundOptions: Joi.string().trim().optional(),
     level: Joi.string()
-        .valid("beginner", "intermediate", "advanced")
+        .valid("beginner", "intermediate", "advanced", "all")
         .optional(),
-    maxStudents: Joi.number().positive().optional(),
-    startDate: Joi.date().optional(),
-    endDate: Joi.date().optional(),
-    schedulePattern: Joi.object({
-        daysOfWeek: Joi.array().items(Joi.string()),
-        startTime: Joi.string(),
-        endTime: Joi.string(),
-    }).optional(),
-    sessions: Joi.array()
-        .items(
-            Joi.object({
-                sessionNumber: Joi.number(),
-                title: Joi.string().trim(),
-                date: Joi.date(),
-                startTime: Joi.string(),
-                endTime: Joi.string(),
-                description: Joi.string(),
-            })
-        )
-        .optional(),
-    prerequisites: Joi.array().items(Joi.string()).optional(),
-    learningOutcomes: Joi.array().items(Joi.string()).optional(),
-    certificateEligibility: Joi.object({
-        enabled: Joi.boolean(),
-        criteria: Joi.object({
-            minAttendance: Joi.number().min(0).max(100),
-            minAssignmentScore: Joi.number().min(0).max(100),
-            minTestScore: Joi.number().min(0).max(100),
-        }),
-    }).optional(),
-    isPublished: Joi.boolean().optional(),
+    language: Joi.string().trim().optional(),
+    isActive: Joi.boolean().optional(),
     isFeatured: Joi.boolean().optional(),
 });
 

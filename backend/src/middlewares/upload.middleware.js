@@ -1,63 +1,89 @@
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
 const config = require("../config/env");
+const { getUploadPath, UPLOAD_FOLDERS } = require("../config/fileStorage");
 
-// Ensure upload directory exists
-const uploadDir = path.join(__dirname, "../../", config.upload.uploadDir);
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+const createStorage = (folderType) => {
+    return multer.diskStorage({
+        destination: (req, file, cb) => {
+            const uploadPath = getUploadPath(folderType);
+            cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix =
+                Date.now() + "-" + Math.round(Math.random() * 1e9);
+            const ext = path.extname(file.originalname);
+            const sanitizedFieldname = file.fieldname.replace(
+                /[^a-zA-Z0-9]/g,
+                "_"
+            );
+            cb(null, `${sanitizedFieldname}-${uniqueSuffix}${ext}`);
+        },
+    });
+};
 
-// Storage configuration for local storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        const ext = path.extname(file.originalname);
-        cb(null, file.fieldname + "-" + uniqueSuffix + ext);
-    },
-});
-
-// File filter
 const fileFilter = (req, file, cb) => {
-    if (config.upload.allowedTypes.includes(file.mimetype)) {
+    const allowedTypes = config.upload?.allowedTypes || [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "application/pdf",
+    ];
+
+    if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
         cb(new Error(`File type ${file.mimetype} not allowed`), false);
     }
 };
 
-// Multer configuration
-const upload = multer({
-    storage,
-    fileFilter,
-    limits: {
-        fileSize: config.upload.maxFileSize,
-    },
-});
+const createUpload = (folderType) => {
+    return multer({
+        storage: createStorage(folderType),
+        fileFilter,
+        limits: {
+            fileSize: config.upload?.maxFileSize || 10 * 1024 * 1024,
+        },
+    });
+};
 
-/**
- * Upload single file
- */
-const uploadSingle = (fieldName) => upload.single(fieldName);
+const uploadSingle = (folderType, fieldName) => {
+    return createUpload(folderType).single(fieldName);
+};
 
-/**
- * Upload multiple files
- */
-const uploadMultiple = (fieldName, maxCount = 10) =>
-    upload.array(fieldName, maxCount);
+const uploadMultiple = (folderType, fieldName, maxCount = 10) => {
+    return createUpload(folderType).array(fieldName, maxCount);
+};
 
-/**
- * Upload multiple fields
- */
-const uploadFields = (fields) => upload.fields(fields);
+const uploadFields = (folderType, fields) => {
+    return createUpload(folderType).fields(fields);
+};
+
+const courseUploads = uploadFields("COURSES", [
+    { name: "mainImage", maxCount: 1 },
+    { name: "hoverImage", maxCount: 1 },
+]);
+
+const promotionUploads = uploadMultiple("PROMOTIONS", "images", 10);
+
+const instructorUploads = uploadSingle("INSTRUCTORS", "profileImage");
+
+const noticeUploads = uploadSingle("NOTICES", "noticeImage");
+
+const reviewUploads = uploadSingle("REVIEWS", "avatar");
+
+const categoryUploads = uploadSingle("CATEGORIES", "icon");
 
 module.exports = {
     uploadSingle,
     uploadMultiple,
     uploadFields,
-    upload,
+    courseUploads,
+    promotionUploads,
+    instructorUploads,
+    noticeUploads,
+    reviewUploads,
+    categoryUploads,
+    UPLOAD_FOLDERS,
 };

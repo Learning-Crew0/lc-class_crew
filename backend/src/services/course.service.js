@@ -1,43 +1,60 @@
 const Course = require("../models/course.model");
-const {
-    getPaginationParams,
-    createPaginationMeta,
-} = require("../utils/pagination.util");
+const Category = require("../models/category.model");
+const ApiError = require("../utils/apiError.util");
+const { getPaginationParams, createPaginationMeta } = require("../utils/pagination.util");
+const { getFileUrl, deleteFileByUrl } = require("../config/fileStorage");
 
-/**
- * Get all courses with pagination and filters
- */
+const normalizeArrayFields = (data) => {
+    const arrayFields = ["tags", "recommendedAudience", "whatYouWillLearn", "requirements"];
+    
+    arrayFields.forEach(field => {
+        if (data[field]) {
+            if (typeof data[field] === "string") {
+                data[field] = data[field].split(",").map(item => item.trim()).filter(Boolean);
+            }
+        }
+    });
+
+    if (data.learningGoals) {
+        if (typeof data.learningGoals === "string") {
+            try {
+                data.learningGoals = JSON.parse(data.learningGoals);
+            } catch (e) {
+                data.learningGoals = data.learningGoals.split(",").map(item => item.trim()).filter(Boolean);
+            }
+        }
+    }
+
+    return data;
+};
+
 const getAllCourses = async (query) => {
     const { page, limit, skip } = getPaginationParams(query);
-
     const filter = {};
-
-    // Public routes should only see published courses
-    if (query.publicOnly) {
-        filter.isPublished = true;
-    }
 
     if (query.category) {
         filter.category = query.category;
     }
 
-    if (query.level) {
+    if (query.level && query.level !== "all") {
         filter.level = query.level;
-    }
-
-    if (query.isFeatured !== undefined) {
-        filter.isFeatured = query.isFeatured === "true";
     }
 
     if (query.search) {
         filter.$text = { $search: query.search };
     }
 
-    const sortBy = query.sortBy || "createdAt";
-    const sortOrder = query.sortOrder === "asc" ? 1 : -1;
+    if (query.isActive !== undefined) {
+        filter.isActive = query.isActive === "true";
+    }
+
+    if (query.isFeatured !== undefined) {
+        filter.isFeatured = query.isFeatured === "true";
+    }
 
     const courses = await Course.find(filter)
-        .sort({ [sortBy]: sortOrder })
+        .populate("category", "title")
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -49,91 +66,116 @@ const getAllCourses = async (query) => {
     };
 };
 
-/**
- * Get course by ID or slug
- */
-const getCourseById = async (identifier) => {
-    let course;
+const getCourseById = async (courseId, includeRelated = false) => {
+    let query = Course.findById(courseId).populate("category", "title description");
 
-    // Check if identifier is a valid ObjectId
-    if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
-        course = await Course.findById(identifier);
-    } else {
-        course = await Course.findOne({ slug: identifier });
+    if (includeRelated) {
+        query = query
+            .populate("trainingSchedules")
+            .populate("curriculum")
+            .populate("instructors")
+            .populate({ path: "promotions", match: { isActive: true } })
+            .populate({ path: "reviews", match: { isApproved: true } })
+            .populate("notice");
     }
+
+    const course = await query;
 
     if (!course) {
-        throw new Error("Course not found");
+        throw ApiError.notFound("코스를 찾을 수 없습니다");
     }
 
     return course;
 };
 
-/**
- * Create a new course
- */
-const createCourse = async (courseData) => {
-    const course = await Course.create(courseData);
-    return course;
-};
+const createCourse = async (courseData, files) => {
+    const normalizedData = normalizeArrayFields(courseData);
 
-/**
- * Update course
- */
-const updateCourse = async (courseId, updates) => {
-    const course = await Course.findByIdAndUpdate(courseId, updates, {
-        new: true,
-        runValidators: true,
+    const category = await Category.findById(normalizedData.category);
+    if (!category) {
+        throw ApiError.notFound("카테고리를 찾을 수 없습니다");
+    }
+
+    if (files?.mainImage) {
+        normalizedData.mainImage = getFileUrl("COURSES", files.mainImage[0].filename);
+        normalizedData.image = normalizedData.mainImage;
+    }
+
+    if (files?.hoverImage) {
+        normalizedData.hoverImage = getFileUrl("COURSES", files.hoverImage[0].filename);
+    }
+
+    const course = await Course.create(normalizedData);
+
+    await Category.findByIdAndUpdate(normalizedData.category, {
+        $inc: { courseCount: 1 },
     });
 
-    if (!course) {
-        throw new Error("Course not found");
-    }
-
     return course;
 };
 
-/**
- * Delete course
- */
-const deleteCourse = async (courseId) => {
-    const course = await Course.findByIdAndDelete(courseId);
-
-    if (!course) {
-        throw new Error("Course not found");
-    }
-
-    return { message: "Course deleted successfully" };
-};
-
-/**
- * Toggle course published status
- */
-const togglePublishStatus = async (courseId) => {
+const updateCourse = async (courseId, updates, files) => {
     const course = await Course.findById(courseId);
-
     if (!course) {
-        throw new Error("Course not found");
+        throw ApiError.notFound("코스를 찾을 수 없습니다");
     }
 
-    course.isPublished = !course.isPublished;
-    await course.save();
+    const normalizedUpdates = normalizeArrayFields(updates);
 
-    return course;
+    if (normalizedUpdates.category && normalizedUpdates.category !== course.category.toString()) {
+        const category = await Category.findById(normalizedUpdates.category);
+        if (!category) {
+            throw ApiError.notFound("카테고리를 찾을 수 없습니다");
+        }
+
+        await Category.findByIdAndUpdate(course.category, { $inc: { courseCount: -1 } });
+        await Category.findByIdAndUpdate(normalizedUpdates.category, { $inc: { courseCount: 1 } });
+    }
+
+    if (files?.mainImage) {
+        if (course.mainImage) {
+            deleteFileByUrl(course.mainImage);
+        }
+        normalizedUpdates.mainImage = getFileUrl("COURSES", files.mainImage[0].filename);
+        normalizedUpdates.image = normalizedUpdates.mainImage;
+    }
+
+    if (files?.hoverImage) {
+        if (course.hoverImage) {
+            deleteFileByUrl(course.hoverImage);
+        }
+        normalizedUpdates.hoverImage = getFileUrl("COURSES", files.hoverImage[0].filename);
+    }
+
+    const updatedCourse = await Course.findByIdAndUpdate(courseId, normalizedUpdates, {
+        new: true,
+        runValidators: true,
+    }).populate("category", "title");
+
+    return updatedCourse;
 };
 
-/**
- * Get featured courses
- */
-const getFeaturedCourses = async (limit = 6) => {
-    const courses = await Course.find({
-        isPublished: true,
-        isFeatured: true,
-    })
-        .sort({ enrollmentCount: -1 })
-        .limit(limit);
+const deleteCourse = async (courseId) => {
+    const course = await Course.findById(courseId);
+    if (!course) {
+        throw ApiError.notFound("코스를 찾을 수 없습니다");
+    }
 
-    return courses;
+    if (course.enrollmentCount > 0) {
+        throw ApiError.badRequest("수강생이 있는 코스는 삭제할 수 없습니다");
+    }
+
+    if (course.mainImage) {
+        deleteFileByUrl(course.mainImage);
+    }
+    if (course.hoverImage) {
+        deleteFileByUrl(course.hoverImage);
+    }
+
+    await Category.findByIdAndUpdate(course.category, { $inc: { courseCount: -1 } });
+    await Course.findByIdAndDelete(courseId);
+
+    return { message: "코스가 성공적으로 삭제되었습니다" };
 };
 
 module.exports = {
@@ -142,6 +184,5 @@ module.exports = {
     createCourse,
     updateCourse,
     deleteCourse,
-    togglePublishStatus,
-    getFeaturedCourses,
 };
+

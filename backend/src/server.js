@@ -3,6 +3,7 @@ const config = require("./config/env");
 const logger = require("./config/logger");
 const connectDB = require("./config/db");
 const seedAdmin = require("./seeds/seed-admin");
+const { initializeStorage } = require("./config/fileStorage");
 
 // Handle uncaught exceptions
 process.on("uncaughtException", (err) => {
@@ -11,7 +12,8 @@ process.on("uncaughtException", (err) => {
     process.exit(1);
 });
 
-// Connect to database and seed admin
+initializeStorage();
+
 connectDB().then(async () => {
     await seedAdmin();
 });

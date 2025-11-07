@@ -1,35 +1,71 @@
 const Enrollment = require("../models/enrollment.model");
 const Course = require("../models/course.model");
-const {
-    getPaginationParams,
-    createPaginationMeta,
-} = require("../utils/pagination.util");
-const { ENROLLMENT_STATUSES } = require("../constants/statuses");
+const TrainingSchedule = require("../models/trainingSchedule.model");
+const User = require("../models/user.model");
+const ApiError = require("../utils/apiError.util");
+const { getPaginationParams, createPaginationMeta } = require("../utils/pagination.util");
+const trainingScheduleService = require("./trainingSchedule.service");
 
-/**
- * Get all enrollments with filters
- */
-const getAllEnrollments = async (query) => {
+const enrollUserInSchedule = async (userId, courseId, scheduleId, enrollmentData) => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw ApiError.notFound("사용자를 찾을 수 없습니다");
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+        throw ApiError.notFound("코스를 찾을 수 없습니다");
+    }
+
+    const schedule = await TrainingSchedule.findById(scheduleId);
+    if (!schedule) {
+        throw ApiError.notFound("일정을 찾을 수 없습니다");
+    }
+
+    if (schedule.isFull) {
+        throw ApiError.badRequest("해당 일정의 좌석이 모두 찼습니다");
+    }
+
+    const existingEnrollment = await Enrollment.findOne({
+        user: userId,
+        course: courseId,
+        schedule: scheduleId,
+    });
+
+    if (existingEnrollment) {
+        throw ApiError.conflict("이미 해당 일정에 등록되어 있습니다");
+    }
+
+    const enrollment = await Enrollment.create({
+        user: userId,
+        course: courseId,
+        schedule: scheduleId,
+        ...enrollmentData,
+    });
+
+    await trainingScheduleService.incrementEnrolledCount(scheduleId);
+    await Course.findByIdAndUpdate(courseId, { $inc: { enrollmentCount: 1, enrolledCount: 1 } });
+
+    return enrollment.populate([
+        { path: "user", select: "fullName email phone" },
+        { path: "course", select: "title mainImage price" },
+        { path: "schedule", select: "scheduleName startDate endDate" },
+    ]);
+};
+
+const getUserEnrollments = async (userId, query) => {
     const { page, limit, skip } = getPaginationParams(query);
-
-    const filter = {};
-
-    if (query.userId) {
-        filter.user = query.userId;
-    }
-
-    if (query.courseId) {
-        filter.course = query.courseId;
-    }
+    
+    const filter = { user: userId };
 
     if (query.status) {
         filter.status = query.status;
     }
 
     const enrollments = await Enrollment.find(filter)
-        .populate("user", "firstName lastName email")
-        .populate("course", "title instructor startDate endDate")
-        .sort({ enrolledAt: -1 })
+        .populate("course", "title mainImage price")
+        .populate("schedule", "scheduleName startDate endDate")
+        .sort({ enrollmentDate: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -41,172 +77,126 @@ const getAllEnrollments = async (query) => {
     };
 };
 
-/**
- * Get enrollment by ID
- */
 const getEnrollmentById = async (enrollmentId) => {
     const enrollment = await Enrollment.findById(enrollmentId)
-        .populate("user", "firstName lastName email phone")
-        .populate("course");
+        .populate("user", "fullName email phone")
+        .populate("course", "title mainImage price")
+        .populate("schedule", "scheduleName startDate endDate");
 
     if (!enrollment) {
-        throw new Error("Enrollment not found");
+        throw ApiError.notFound("수강 정보를 찾을 수 없습니다");
     }
 
     return enrollment;
 };
 
-/**
- * Create enrollment
- */
-const createEnrollment = async (userId, courseId) => {
-    // Check if course exists
-    const course = await Course.findById(courseId);
-
-    if (!course) {
-        throw new Error("Course not found");
-    }
-
-    if (!course.isPublished) {
-        throw new Error("Course is not available for enrollment");
-    }
-
-    // Check if already enrolled
-    const existingEnrollment = await Enrollment.findOne({
-        user: userId,
-        course: courseId,
-    });
-
-    if (existingEnrollment) {
-        throw new Error("Already enrolled in this course");
-    }
-
-    // Create enrollment with attendance tracking for all sessions
-    const attendance = course.sessions.map((session) => ({
-        sessionId: session._id,
-        attended: false,
-    }));
-
-    const enrollment = await Enrollment.create({
-        user: userId,
-        course: courseId,
-        attendance,
-        status: ENROLLMENT_STATUSES.ACTIVE,
-    });
-
-    // Update course enrollment count
-    course.enrollmentCount += 1;
-    await course.save();
-
-    return enrollment;
-};
-
-/**
- * Update enrollment status
- */
 const updateEnrollmentStatus = async (enrollmentId, status) => {
     const enrollment = await Enrollment.findById(enrollmentId);
-
     if (!enrollment) {
-        throw new Error("Enrollment not found");
+        throw ApiError.notFound("수강 정보를 찾을 수 없습니다");
     }
 
     enrollment.status = status;
 
-    if (status === ENROLLMENT_STATUSES.COMPLETED) {
-        enrollment.completedAt = Date.now();
+    if (status === "수강중" && !enrollment.startedAt) {
+        enrollment.startedAt = new Date();
+    }
+
+    if (status === "수료") {
+        enrollment.completedAt = new Date();
+        enrollment.progress = 100;
+        enrollment.certificateEligible = true;
     }
 
     await enrollment.save();
-
     return enrollment;
 };
 
-/**
- * Mark attendance
- */
-const markAttendance = async (enrollmentId, sessionId, attended) => {
-    const enrollment = await Enrollment.findById(enrollmentId);
-
-    if (!enrollment) {
-        throw new Error("Enrollment not found");
-    }
-
-    const attendanceRecord = enrollment.attendance.find(
-        (a) => a.sessionId.toString() === sessionId
+const updateEnrollmentProgress = async (enrollmentId, progress) => {
+    const enrollment = await Enrollment.findByIdAndUpdate(
+        enrollmentId,
+        { progress, lastAccessedAt: new Date() },
+        { new: true, runValidators: true }
     );
 
-    if (!attendanceRecord) {
-        throw new Error("Session not found in enrollment");
+    if (!enrollment) {
+        throw ApiError.notFound("수강 정보를 찾을 수 없습니다");
     }
-
-    attendanceRecord.attended = attended;
-    attendanceRecord.attendedAt = attended ? Date.now() : null;
-
-    await enrollment.save();
 
     return enrollment;
 };
 
-/**
- * Add assessment score
- */
-const addAssessment = async (enrollmentId, assessmentData) => {
+const requestRefund = async (enrollmentId, refundData) => {
     const enrollment = await Enrollment.findById(enrollmentId);
-
     if (!enrollment) {
-        throw new Error("Enrollment not found");
+        throw ApiError.notFound("수강 정보를 찾을 수 없습니다");
     }
 
-    enrollment.assessments.push({
-        ...assessmentData,
-        submittedAt: Date.now(),
-        gradedAt: Date.now(),
+    if (enrollment.refundRequested) {
+        throw ApiError.badRequest("이미 환불 요청이 되어 있습니다");
+    }
+
+    enrollment.refundRequested = true;
+    enrollment.refundStatus = "pending";
+    enrollment.refundReason = refundData.refundReason;
+    enrollment.refundAmount = refundData.refundAmount;
+
+    await enrollment.save();
+    return enrollment;
+};
+
+const processRefund = async (enrollmentId, refundStatus) => {
+    const enrollment = await Enrollment.findById(enrollmentId);
+    if (!enrollment) {
+        throw ApiError.notFound("수강 정보를 찾을 수 없습니다");
+    }
+
+    if (!enrollment.refundRequested) {
+        throw ApiError.badRequest("환불 요청이 없습니다");
+    }
+
+    enrollment.refundStatus = refundStatus;
+
+    if (refundStatus === "completed") {
+        enrollment.refundDate = new Date();
+        enrollment.status = "취소";
+    }
+
+    await enrollment.save();
+    return enrollment;
+};
+
+const cancelEnrollment = async (enrollmentId) => {
+    const enrollment = await Enrollment.findById(enrollmentId);
+    if (!enrollment) {
+        throw ApiError.notFound("수강 정보를 찾을 수 없습니다");
+    }
+
+    if (enrollment.status === "취소") {
+        throw ApiError.badRequest("이미 취소된 수강입니다");
+    }
+
+    enrollment.status = "취소";
+    await enrollment.save();
+
+    await TrainingSchedule.findByIdAndUpdate(enrollment.schedule, {
+        $inc: { enrolledCount: -1 },
     });
 
-    await enrollment.save();
-
-    return enrollment;
-};
-
-/**
- * Get user's enrollments
- */
-const getUserEnrollments = async (userId) => {
-    const enrollments = await Enrollment.find({ user: userId })
-        .populate("course")
-        .sort({ enrolledAt: -1 });
-
-    return enrollments;
-};
-
-/**
- * Delete enrollment
- */
-const deleteEnrollment = async (enrollmentId) => {
-    const enrollment = await Enrollment.findById(enrollmentId);
-
-    if (!enrollment) {
-        throw new Error("Enrollment not found");
-    }
-
-    // Decrease course enrollment count
     await Course.findByIdAndUpdate(enrollment.course, {
-        $inc: { enrollmentCount: -1 },
+        $inc: { enrolledCount: -1 },
     });
 
-    await enrollment.deleteOne();
-
-    return { message: "Enrollment deleted successfully" };
+    return enrollment;
 };
 
 module.exports = {
-    getAllEnrollments,
-    getEnrollmentById,
-    createEnrollment,
-    updateEnrollmentStatus,
-    markAttendance,
-    addAssessment,
+    enrollUserInSchedule,
     getUserEnrollments,
-    deleteEnrollment,
+    getEnrollmentById,
+    updateEnrollmentStatus,
+    updateEnrollmentProgress,
+    requestRefund,
+    processRefund,
+    cancelEnrollment,
 };
