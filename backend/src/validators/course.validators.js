@@ -9,7 +9,7 @@ const createCourseSchema = Joi.object({
     shortDescription: Joi.string().trim().max(500).optional(),
     longDescription: Joi.string().trim().optional(),
     description: Joi.string().trim().optional(),
-    category: Joi.string().hex().length(24).required().messages({
+    category: Joi.string().trim().required().messages({
         "string.empty": "카테고리를 선택해주세요",
         "any.required": "카테고리는 필수입니다",
     }),
@@ -18,16 +18,33 @@ const createCourseSchema = Joi.object({
     tags: Joi.alternatives()
         .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
         .optional(),
-    price: Joi.number().min(0).required().messages({
-        "number.base": "가격은 숫자여야 합니다",
-        "number.min": "가격은 0 이상이어야 합니다",
-        "any.required": "가격은 필수입니다",
-    }),
+    price: Joi.alternatives()
+        .try(
+            Joi.number().min(0),
+            Joi.string()
+                .trim()
+                .pattern(/^\d+$/)
+                .custom((value) => parseInt(value, 10))
+        )
+        .required()
+        .messages({
+            "number.base": "가격은 숫자여야 합니다",
+            "number.min": "가격은 0 이상이어야 합니다",
+            "any.required": "가격은 필수입니다",
+        }),
     priceText: Joi.string().trim().optional(),
     date: Joi.string().trim().optional(),
     duration: Joi.string().trim().optional(),
     location: Joi.string().trim().optional(),
-    hours: Joi.number().min(0).optional(),
+    hours: Joi.alternatives()
+        .try(
+            Joi.number().min(0),
+            Joi.string()
+                .trim()
+                .pattern(/^\d+$/)
+                .custom((value) => parseInt(value, 10))
+        )
+        .optional(),
     target: Joi.string().trim().optional(),
     recommendedAudience: Joi.alternatives()
         .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
@@ -48,8 +65,22 @@ const createCourseSchema = Joi.object({
         .valid("beginner", "intermediate", "advanced", "all")
         .default("all"),
     language: Joi.string().trim().default("ko"),
-    isActive: Joi.boolean().default(true),
-    isFeatured: Joi.boolean().default(false),
+    isActive: Joi.alternatives()
+        .try(
+            Joi.boolean(),
+            Joi.string()
+                .valid("true", "false", "1", "0")
+                .custom((value) => value === "true" || value === "1")
+        )
+        .default(true),
+    isFeatured: Joi.alternatives()
+        .try(
+            Joi.boolean(),
+            Joi.string()
+                .valid("true", "false", "1", "0")
+                .custom((value) => value === "true" || value === "1")
+        )
+        .default(false),
 });
 
 const updateCourseSchema = Joi.object({
@@ -57,18 +88,34 @@ const updateCourseSchema = Joi.object({
     shortDescription: Joi.string().trim().max(500).optional(),
     longDescription: Joi.string().trim().optional(),
     description: Joi.string().trim().optional(),
-    category: Joi.string().hex().length(24).optional(),
+    category: Joi.string().trim().optional(),
     tagText: Joi.string().trim().max(50).optional(),
     tagColor: Joi.string().trim().optional(),
     tags: Joi.alternatives()
         .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
         .optional(),
-    price: Joi.number().min(0).optional(),
+    price: Joi.alternatives()
+        .try(
+            Joi.number().min(0),
+            Joi.string()
+                .trim()
+                .pattern(/^\d+$/)
+                .custom((value) => parseInt(value, 10))
+        )
+        .optional(),
     priceText: Joi.string().trim().optional(),
     date: Joi.string().trim().optional(),
     duration: Joi.string().trim().optional(),
     location: Joi.string().trim().optional(),
-    hours: Joi.number().min(0).optional(),
+    hours: Joi.alternatives()
+        .try(
+            Joi.number().min(0),
+            Joi.string()
+                .trim()
+                .pattern(/^\d+$/)
+                .custom((value) => parseInt(value, 10))
+        )
+        .optional(),
     target: Joi.string().trim().optional(),
     recommendedAudience: Joi.alternatives()
         .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
@@ -89,8 +136,22 @@ const updateCourseSchema = Joi.object({
         .valid("beginner", "intermediate", "advanced", "all")
         .optional(),
     language: Joi.string().trim().optional(),
-    isActive: Joi.boolean().optional(),
-    isFeatured: Joi.boolean().optional(),
+    isActive: Joi.alternatives()
+        .try(
+            Joi.boolean(),
+            Joi.string()
+                .valid("true", "false", "1", "0")
+                .custom((value) => value === "true" || value === "1")
+        )
+        .optional(),
+    isFeatured: Joi.alternatives()
+        .try(
+            Joi.boolean(),
+            Joi.string()
+                .valid("true", "false", "1", "0")
+                .custom((value) => value === "true" || value === "1")
+        )
+        .optional(),
 });
 
 module.exports = {
