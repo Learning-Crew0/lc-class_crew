@@ -1,5 +1,6 @@
 const faqService = require("../services/faq.service");
 const asyncHandler = require("../utils/asyncHandler.util");
+const ApiError = require("../utils/apiError.util");
 const { successResponse } = require("../utils/response.util");
 
 const createFAQCategory = asyncHandler(async (req, res) => {
@@ -31,7 +32,11 @@ const deleteFAQCategory = asyncHandler(async (req, res) => {
 });
 
 const createFAQ = asyncHandler(async (req, res) => {
-    const faq = await faqService.createFAQ(req.body, req.user._id);
+    if (!req.user || !req.user.id) {
+        throw ApiError.unauthorized("Authentication required");
+    }
+    
+    const faq = await faqService.createFAQ(req.body, req.user.id);
     return successResponse(res, faq, "FAQ created successfully", 201);
 });
 
@@ -55,10 +60,14 @@ const getFAQsByCategory = asyncHandler(async (req, res) => {
 });
 
 const updateFAQ = asyncHandler(async (req, res) => {
+    if (!req.user || !req.user.id) {
+        throw ApiError.unauthorized("Authentication required");
+    }
+    
     const faq = await faqService.updateFAQ(
         req.params.id,
         req.body,
-        req.user._id
+        req.user.id
     );
     return successResponse(res, faq, "FAQ updated successfully");
 });

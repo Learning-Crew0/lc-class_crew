@@ -1,9 +1,10 @@
 const classApplicationService = require("../services/classApplication.service");
 const asyncHandler = require("../utils/asyncHandler.util");
+const ApiError = require("../utils/apiError.util");
 const { successResponse } = require("../utils/response.util");
 
 const createClassApplication = asyncHandler(async (req, res) => {
-    const userId = req.user?._id || null;
+    const userId = req.user?.id || null;
     const application = await classApplicationService.createClassApplication(
         req.body,
         userId
@@ -37,10 +38,14 @@ const getApplicationById = asyncHandler(async (req, res) => {
 });
 
 const updateApplicationStatus = asyncHandler(async (req, res) => {
+    if (!req.user || !req.user.id) {
+        throw ApiError.unauthorized("Authentication required");
+    }
+    
     const application = await classApplicationService.updateApplicationStatus(
         req.params.id,
         req.body,
-        req.user._id
+        req.user.id
     );
     return successResponse(
         res,
@@ -50,9 +55,13 @@ const updateApplicationStatus = asyncHandler(async (req, res) => {
 });
 
 const cancelApplication = asyncHandler(async (req, res) => {
+    if (!req.user || !req.user.id) {
+        throw ApiError.unauthorized("Authentication required");
+    }
+    
     const application = await classApplicationService.cancelApplication(
         req.params.id,
-        req.user._id
+        req.user.id
     );
     return successResponse(
         res,
@@ -62,8 +71,12 @@ const cancelApplication = asyncHandler(async (req, res) => {
 });
 
 const getUserApplications = asyncHandler(async (req, res) => {
+    if (!req.user || !req.user.id) {
+        throw ApiError.unauthorized("Authentication required");
+    }
+    
     const result = await classApplicationService.getUserApplications(
-        req.user._id,
+        req.user.id,
         req.query
     );
     return successResponse(res, result, "User applications retrieved successfully");
