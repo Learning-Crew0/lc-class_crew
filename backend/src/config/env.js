@@ -40,7 +40,7 @@ const config = {
 
     // File upload
     upload: {
-        maxFileSize: parseInt(process.env.MAX_FILE_SIZE, 10) || 5 * 1024 * 1024, // 5MB
+        maxFileSize: parseInt(process.env.MAX_FILE_SIZE, 10) || 10 * 1024 * 1024, // 10MB
         uploadDir: process.env.UPLOAD_DIR || "uploads",
         allowedTypes: process.env.ALLOWED_FILE_TYPES
             ? process.env.ALLOWED_FILE_TYPES.split(",")
