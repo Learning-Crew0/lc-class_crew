@@ -119,7 +119,7 @@ const courseSchema = new mongoose.Schema(
         },
         language: {
             type: String,
-            default: "Korean",
+            default: "ko",
         },
         isActive: {
             type: Boolean,

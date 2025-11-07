@@ -47,7 +47,7 @@ const createCourseSchema = Joi.object({
     level: Joi.string()
         .valid("beginner", "intermediate", "advanced", "all")
         .default("all"),
-    language: Joi.string().trim().default("Korean"),
+    language: Joi.string().trim().default("ko"),
     isActive: Joi.boolean().default(true),
     isFeatured: Joi.boolean().default(false),
 });
