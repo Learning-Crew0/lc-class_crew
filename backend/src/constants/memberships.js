@@ -1,7 +1,7 @@
 const MEMBERSHIP_TYPES = {
-    EMPLOYED: "재직자",
-    CORPORATE_TRAINING_MANAGER: "기업교육담당자",
-    JOB_SEEKER: "취업준비생",
+    EMPLOYED: "employed",
+    CORPORATE_TRAINING_MANAGER: "corporate_training",
+    JOB_SEEKER: "job_seeker",
     ADMIN: "admin",
 };
 
@@ -11,8 +11,8 @@ const USER_ROLES = {
 };
 
 const GENDER_TYPES = {
-    MALE: "남성",
-    FEMALE: "여성",
+    MALE: "male",
+    FEMALE: "female",
 };
 
 module.exports = {
