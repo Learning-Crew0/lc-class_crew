@@ -4,6 +4,10 @@ const { generateToken, generateRefreshToken } = require("../utils/crypto.util");
 const ApiError = require("../utils/apiError.util");
 
 const register = async (userData) => {
+    if (userData.memberType === "admin" || userData.role === "admin") {
+        throw ApiError.forbidden("Users cannot register as admin");
+    }
+
     const existingEmail = await User.findOne({ email: userData.email });
     if (existingEmail) {
         throw ApiError.conflict("이미 등록된 이메일입니다");

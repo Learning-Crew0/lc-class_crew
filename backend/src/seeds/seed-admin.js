@@ -1,51 +1,34 @@
-const mongoose = require("mongoose");
 const Admin = require("../models/admin.model");
-const config = require("../config/env");
 const logger = require("../config/logger");
-
-const connectDB = async () => {
-    try {
-        await mongoose.connect(config.mongodb.uri);
-        logger.info("MongoDB connected");
-    } catch (error) {
-        logger.error("MongoDB connection failed:", error.message);
-        process.exit(1);
-    }
-};
 
 const seedAdmin = async () => {
     try {
-        await connectDB();
+        const adminEmail = "classcrew@admin.com";
+        const adminPassword = "admin123";
 
-        // Check if admin already exists
-        const existingAdmin = await Admin.findOne({
-            email: config.admin.email,
-        });
+        const existingAdmin = await Admin.findOne({ email: adminEmail });
 
         if (existingAdmin) {
-            logger.info("Admin user already exists");
-            process.exit(0);
+            logger.info("Admin already exists");
+            return;
         }
 
-        // Create admin user
         const admin = await Admin.create({
-            email: config.admin.email,
-            password: config.admin.password,
-            name: "System Administrator",
+            email: adminEmail,
+            username: "classcrew_admin",
+            password: adminPassword,
+            fullName: "ClassCrew Administrator",
             role: "admin",
             isActive: true,
         });
 
-        logger.info("Admin user created successfully:");
-        logger.info(`Email: ${admin.email}`);
-        logger.info(`Password: ${config.admin.password}`);
-        logger.info("⚠️  Please change the password after first login!");
-
-        process.exit(0);
+        logger.info("✅ Default admin created successfully");
+        logger.info(`📧 Email: ${admin.email}`);
+        logger.info(`🔑 Username: ${admin.username}`);
+        logger.info(`⚠️  Please change the password after first login!`);
     } catch (error) {
-        logger.error("Error seeding admin:", error.message);
-        process.exit(1);
+        logger.error("❌ Error seeding admin:", error.message);
     }
 };
 
-seedAdmin();
+module.exports = seedAdmin;
