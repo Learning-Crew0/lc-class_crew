@@ -14,6 +14,7 @@ const UPLOAD_FOLDERS = {
     REVIEWS: "reviews",
     CATEGORIES: "categories",
     CERTIFICATES: "certificates",
+    ANNOUNCEMENTS: "announcements",
     TEMP: "temp",
 };
 

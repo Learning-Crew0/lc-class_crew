@@ -1,0 +1,883 @@
+{
+  "info": {
+    "name": "ClassCrew - Customer Service & Management APIs",
+    "description": "Complete API collection for ClassCrew customer service features: Class Applications, Announcements, FAQs, and Course History Inquiry",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "classcrew_cs"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "applicationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "announcementId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "faqCategoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "faqId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "courseId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "scheduleId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "enrollmentId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Class Applications",
+      "item": [
+        {
+          "name": "Submit Class Application (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('applicationId', response.data._id);",
+                  "        console.log('Application ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicantName\": \"Hong Gildong\",\n  \"email\": \"hong@example.com\",\n  \"phone\": \"01012345678\",\n  \"organization\": \"Samsung Electronics\",\n  \"memberType\": \"employee\",\n  \"courseId\": \"{{courseId}}\",\n  \"scheduleId\": \"{{scheduleId}}\",\n  \"numberOfParticipants\": 1,\n  \"applicationPurpose\": \"Career development and skill enhancement\",\n  \"specialRequests\": \"Prefer morning sessions\",\n  \"expectedPaymentMethod\": \"card_payment\",\n  \"paymentType\": \"personal\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/class-applications",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications"]
+            },
+            "description": "Submit a new class application (no authentication required)"
+          }
+        },
+        {
+          "name": "Submit Corporate Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicantName\": \"Kim Training Manager\",\n  \"email\": \"training@company.com\",\n  \"phone\": \"01098765432\",\n  \"organization\": \"LG Corporation\",\n  \"memberType\": \"corporate_trainer\",\n  \"courseId\": \"{{courseId}}\",\n  \"scheduleId\": \"{{scheduleId}}\",\n  \"numberOfParticipants\": 5,\n  \"participants\": [\n    {\n      \"name\": \"Employee 1\",\n      \"email\": \"emp1@company.com\",\n      \"phone\": \"01011111111\",\n      \"department\": \"IT\",\n      \"position\": \"Developer\"\n    },\n    {\n      \"name\": \"Employee 2\",\n      \"email\": \"emp2@company.com\",\n      \"phone\": \"01022222222\",\n      \"department\": \"HR\",\n      \"position\": \"Manager\"\n    }\n  ],\n  \"applicationPurpose\": \"Team skill development\",\n  \"paymentType\": \"corporate\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/class-applications",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications"]
+            },
+            "description": "Submit corporate application with multiple participants"
+          }
+        },
+        {
+          "name": "Get All Applications (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/class-applications?page=1&limit=10&status=pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"},
+                {"key": "status", "value": "pending", "description": "pending | approved | rejected | completed | cancelled"},
+                {"key": "courseId", "value": "{{courseId}}", "disabled": true},
+                {"key": "search", "value": "hong", "disabled": true},
+                {"key": "startDate", "value": "2025-01-01", "disabled": true},
+                {"key": "endDate", "value": "2025-12-31", "disabled": true}
+              ]
+            },
+            "description": "Get all class applications with filters (Admin only)"
+          }
+        },
+        {
+          "name": "Get My Applications (User)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/class-applications/my-applications?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications", "my-applications"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"},
+                {"key": "status", "value": "pending", "disabled": true}
+              ]
+            },
+            "description": "Get current user's applications"
+          }
+        },
+        {
+          "name": "Get Application by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/class-applications/{{applicationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications", "{{applicationId}}"]
+            },
+            "description": "Get application details"
+          }
+        },
+        {
+          "name": "Update Application Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\",\n  \"reviewNotes\": \"Application looks good. Approved for enrollment.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/class-applications/{{applicationId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications", "{{applicationId}}", "status"]
+            },
+            "description": "Update application status: pending | approved | rejected | completed | cancelled"
+          }
+        },
+        {
+          "name": "Reject Application (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"rejected\",\n  \"rejectionReason\": \"Course is full. Please apply for next schedule.\",\n  \"reviewNotes\": \"Notified applicant of rejection\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/class-applications/{{applicationId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications", "{{applicationId}}", "status"]
+            },
+            "description": "Reject application with reason"
+          }
+        },
+        {
+          "name": "Cancel Application (User)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/class-applications/{{applicationId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications", "{{applicationId}}", "cancel"]
+            },
+            "description": "User cancels their own application"
+          }
+        },
+        {
+          "name": "Delete Application (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/class-applications/{{applicationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["class-applications", "{{applicationId}}"]
+            },
+            "description": "Admin deletes application (permanent)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Announcements",
+      "item": [
+        {
+          "name": "Get All Announcements (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/announcements?page=1&limit=10&status=published",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"},
+                {"key": "status", "value": "published", "description": "published | draft | archived"},
+                {"key": "category", "value": "notice", "disabled": true, "description": "notice | event | system | urgent"},
+                {"key": "search", "value": "training", "disabled": true},
+                {"key": "isActive", "value": "true", "disabled": true}
+              ]
+            },
+            "description": "Get all announcements (public access)"
+          }
+        },
+        {
+          "name": "Get Announcement by ID (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/announcements/{{announcementId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements", "{{announcementId}}"]
+            },
+            "description": "Get announcement details (increments view count)"
+          }
+        },
+        {
+          "name": "Create Announcement (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('announcementId', response.data._id);",
+                  "        console.log('Announcement ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "title", "value": "Important Course Update", "type": "text"},
+                {"key": "content", "value": "Please note that the upcoming training schedule has been updated. Check the new dates on our website.", "type": "text"},
+                {"key": "category", "value": "notice", "type": "text"},
+                {"key": "authorName", "value": "Admin Team", "type": "text"},
+                {"key": "tags", "value": "training,schedule,update", "type": "text"},
+                {"key": "isImportant", "value": "true", "type": "text"},
+                {"key": "isPinned", "value": "false", "type": "text"},
+                {"key": "status", "value": "published", "type": "text"},
+                {"key": "attachments", "type": "file", "src": [], "description": "Upload files (max 5)"},
+                {"key": "attachments", "type": "file", "src": [], "description": "Additional file", "disabled": true}
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/announcements",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements"]
+            },
+            "description": "Create announcement with attachments (max 5 files)"
+          }
+        },
+        {
+          "name": "Update Announcement (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "title", "value": "Updated: Course Schedule Change", "type": "text"},
+                {"key": "isImportant", "value": "true", "type": "text"},
+                {"key": "isPinned", "value": "true", "type": "text"}
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/announcements/{{announcementId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements", "{{announcementId}}"]
+            },
+            "description": "Update announcement"
+          }
+        },
+        {
+          "name": "Delete Announcement (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/announcements/{{announcementId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements", "{{announcementId}}"]
+            },
+            "description": "Permanently delete announcement"
+          }
+        },
+        {
+          "name": "Archive Announcement (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/announcements/{{announcementId}}/archive",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements", "{{announcementId}}", "archive"]
+            },
+            "description": "Soft delete (archive) announcement"
+          }
+        },
+        {
+          "name": "Delete Attachment (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/announcements/{{announcementId}}/attachments/:attachmentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements", "{{announcementId}}", "attachments", ":attachmentId"]
+            },
+            "description": "Delete specific attachment from announcement"
+          }
+        },
+        {
+          "name": "Bulk Delete Announcements (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"id1\", \"id2\", \"id3\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/announcements/bulk-delete",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements", "bulk-delete"]
+            },
+            "description": "Delete multiple announcements at once"
+          }
+        },
+        {
+          "name": "Get Announcement Stats (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/announcements/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements", "admin", "stats"]
+            },
+            "description": "Get announcement statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. FAQ Management",
+      "item": [
+        {
+          "name": "Get All FAQ Categories (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/faqs/categories?isActive=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "categories"],
+              "query": [
+                {"key": "isActive", "value": "true"}
+              ]
+            },
+            "description": "Get all FAQ categories"
+          }
+        },
+        {
+          "name": "Create FAQ Category (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('faqCategoryId', response.data._id);",
+                  "        console.log('FAQ Category ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"signup/login\",\n  \"label\": \"Signup/Login\",\n  \"description\": \"Questions about registration and login\",\n  \"order\": 1,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/faqs/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "categories"]
+            },
+            "description": "Create FAQ category"
+          }
+        },
+        {
+          "name": "Update FAQ Category (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Updated Category Name\",\n  \"order\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/faqs/categories/{{faqCategoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "categories", "{{faqCategoryId}}"]
+            },
+            "description": "Update FAQ category"
+          }
+        },
+        {
+          "name": "Delete FAQ Category (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/faqs/categories/{{faqCategoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "categories", "{{faqCategoryId}}"]
+            },
+            "description": "Delete FAQ category (only if no FAQs exist)"
+          }
+        },
+        {
+          "name": "Get All FAQs (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/faqs?page=1&limit=20&isActive=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "20"},
+                {"key": "category", "value": "signup/login", "disabled": true},
+                {"key": "search", "value": "password", "disabled": true},
+                {"key": "isActive", "value": "true"},
+                {"key": "isFeatured", "value": "true", "disabled": true}
+              ]
+            },
+            "description": "Get all FAQs with filters"
+          }
+        },
+        {
+          "name": "Get FAQs by Category (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/faqs/category/signup/login?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "category", "signup/login"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "20"}
+              ]
+            },
+            "description": "Get FAQs for specific category"
+          }
+        },
+        {
+          "name": "Get FAQ by ID (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/faqs/{{faqId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "{{faqId}}"]
+            },
+            "description": "Get FAQ details (increments view count)"
+          }
+        },
+        {
+          "name": "Create FAQ (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('faqId', response.data._id);",
+                  "        console.log('FAQ ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"How do I reset my password?\",\n  \"answer\": \"To reset your password, click on 'Forgot Password' on the login page. Enter your email address and follow the instructions sent to your email.\",\n  \"category\": \"signup/login\",\n  \"tags\": [\"password\", \"reset\", \"login\"],\n  \"order\": 1,\n  \"isActive\": true,\n  \"isFeatured\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/faqs",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs"]
+            },
+            "description": "Create new FAQ"
+          }
+        },
+        {
+          "name": "Update FAQ (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answer\": \"Updated answer with more details...\",\n  \"isFeatured\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/faqs/{{faqId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "{{faqId}}"]
+            },
+            "description": "Update FAQ"
+          }
+        },
+        {
+          "name": "Delete FAQ (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/faqs/{{faqId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "{{faqId}}"]
+            },
+            "description": "Delete FAQ"
+          }
+        },
+        {
+          "name": "Mark FAQ Helpful (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"helpful\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/faqs/{{faqId}}/helpful",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "{{faqId}}", "helpful"]
+            },
+            "description": "Mark FAQ as helpful or not helpful"
+          }
+        },
+        {
+          "name": "Bulk Delete FAQs (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\"id1\", \"id2\", \"id3\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/faqs/bulk-delete",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "bulk-delete"]
+            },
+            "description": "Delete multiple FAQs at once"
+          }
+        },
+        {
+          "name": "Get FAQ Stats (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/faqs/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["faqs", "admin", "stats"]
+            },
+            "description": "Get FAQ statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Course History Inquiry",
+      "item": [
+        {
+          "name": "Check Personal Course History",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"01012345678\",\n  \"email\": \"hong@example.com\",\n  \"name\": \"Hong Gildong\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/course-history/personal",
+              "host": ["{{baseUrl}}"],
+              "path": ["course-history", "personal"]
+            },
+            "description": "Check personal course history (no auth required)"
+          }
+        },
+        {
+          "name": "Check Corporate Course History",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"Samsung Electronics\",\n  \"companyRegistrationNumber\": \"1234567890\",\n  \"contactPerson\": \"Kim Training Manager\",\n  \"contactPhone\": \"01098765432\",\n  \"contactEmail\": \"training@samsung.com\",\n  \"department\": \"IT\",\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2025-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/course-history/corporate",
+              "host": ["{{baseUrl}}"],
+              "path": ["course-history", "corporate"]
+            },
+            "description": "Check corporate course history"
+          }
+        },
+        {
+          "name": "Request Corporate Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contactEmail\": \"training@company.com\",\n  \"companyName\": \"LG Corporation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/course-history/corporate/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["course-history", "corporate", "verify"]
+            },
+            "description": "Request verification code for corporate inquiry"
+          }
+        },
+        {
+          "name": "Get Certificate",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/course-history/certificate/{{enrollmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["course-history", "certificate", "{{enrollmentId}}"]
+            },
+            "description": "Download course completion certificate"
+          }
+        }
+      ]
+    }
+  ]
+}
+
