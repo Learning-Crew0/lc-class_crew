@@ -64,7 +64,7 @@ const createCourseSchema = Joi.object({
     level: Joi.string()
         .valid("beginner", "intermediate", "advanced", "all")
         .default("all"),
-    language: Joi.string().trim().default("ko"),
+    language: Joi.string().trim().default("none"),
     isActive: Joi.alternatives()
         .try(
             Joi.boolean(),

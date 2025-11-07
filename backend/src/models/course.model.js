@@ -119,7 +119,7 @@ const courseSchema = new mongoose.Schema(
         },
         language: {
             type: String,
-            default: "ko",
+            default: "none",
         },
         isActive: {
             type: Boolean,
