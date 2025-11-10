@@ -1,18 +1,50 @@
 const mongoose = require("mongoose");
 
 const cartItemSchema = new mongoose.Schema({
+    // Item type: course or product
+    itemType: {
+        type: String,
+        enum: ["course", "product"],
+        required: [true, "Item type is required"],
+    },
+    
+    // For COURSES
+    course: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+        required: function() {
+            return this.itemType === "course";
+        },
+    },
+    courseSchedule: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TrainingSchedule",
+        required: function() {
+            return this.itemType === "course";
+        },
+    },
+    
+    // For PRODUCTS
     product: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
-        required: true,
+        required: function() {
+            return this.itemType === "product";
+        },
     },
+    
+    // Common fields
     quantity: {
         type: Number,
         required: true,
         min: 1,
         default: 1,
     },
-    price: {
+    priceAtTime: {
+        type: Number,
+        required: true,
+    },
+    subtotal: {
         type: Number,
         required: true,
     },
@@ -49,15 +81,15 @@ cartSchema.pre("save", function (next) {
     next();
 });
 
-// Virtual for total items
-cartSchema.virtual("totalItems").get(function () {
-    return this.items.reduce((total, item) => total + item.quantity, 0);
+// Virtual for item count
+cartSchema.virtual("itemCount").get(function () {
+    return this.items.length;
 });
 
-// Virtual for subtotal
-cartSchema.virtual("subtotal").get(function () {
+// Virtual for total amount
+cartSchema.virtual("totalAmount").get(function () {
     return this.items.reduce(
-        (total, item) => total + item.price * item.quantity,
+        (total, item) => total + (item.subtotal || 0),
         0
     );
 });

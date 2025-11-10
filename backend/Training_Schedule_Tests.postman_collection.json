@@ -1,0 +1,386 @@
+{
+  "info": {
+    "name": "Training Schedule & Cart Flow",
+    "description": "Test flow: Create Course → Add Schedules → Add to Cart",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "courseId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "scheduleId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "📚 Training Schedules (Admin)",
+      "item": [
+        {
+          "name": "1. Get Course Schedules (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses", "{{courseId}}", "training-schedules"]
+            },
+            "description": "📖 Get all training schedules for a course (Public access)"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Create Training Schedule (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('scheduleId', response.data._id);",
+                  "        console.log('✅ Schedule ID saved:', response.data._id);",
+                  "        console.log('Schedule Name:', response.data.scheduleName);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduleName\": \"2025년 1월 3주차\",\n  \"startDate\": \"2025-01-15\",\n  \"endDate\": \"2025-01-16\",\n  \"availableSeats\": 30,\n  \"status\": \"upcoming\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses", "{{courseId}}", "training-schedules"]
+            },
+            "description": "🔒 ADMIN: Create training schedule for course"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Create Multiple Schedules (Jan)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduleName\": \"2025년 1월 4주차\",\n  \"startDate\": \"2025-01-22\",\n  \"endDate\": \"2025-01-23\",\n  \"availableSeats\": 25,\n  \"status\": \"upcoming\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses", "{{courseId}}", "training-schedules"]
+            },
+            "description": "Create second schedule"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Create Schedule (Feb)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduleName\": \"2025년 2월 1주차\",\n  \"startDate\": \"2025-02-05\",\n  \"endDate\": \"2025-02-06\",\n  \"availableSeats\": 30,\n  \"status\": \"upcoming\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses", "{{courseId}}", "training-schedules"]
+            },
+            "description": "Create third schedule"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Update Schedule (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availableSeats\": 35,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules/{{scheduleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses", "{{courseId}}", "training-schedules", "{{scheduleId}}"]
+            },
+            "description": "Update training schedule"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Delete Schedule (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules/{{scheduleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses", "{{courseId}}", "training-schedules", "{{scheduleId}}"]
+            },
+            "description": "Delete training schedule"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛒 Cart Flow (User)",
+      "item": [
+        {
+          "name": "1. Get Available Schedules",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/courses/{{courseId}}/training-schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses", "{{courseId}}", "training-schedules"]
+            },
+            "description": "User views available schedules in dropdown"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Add Course to Cart (with Schedule)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemType\": \"course\",\n  \"productId\": \"{{courseId}}\",\n  \"courseSchedule\": \"{{scheduleId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "add"]
+            },
+            "description": "⚠️ IMPORTANT: Must provide scheduleId from step 1"
+          },
+          "response": []
+        },
+        {
+          "name": "3. View Cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart"]
+            },
+            "description": "View cart with course and selected schedule"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get Courses from Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"selectedProductIds\": [\"{{courseId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/get-selected-courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "get-selected-courses"]
+            },
+            "description": "Get selected courses for class application"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧪 Complete Test Flow",
+      "item": [
+        {
+          "name": "Step 1: Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.collectionVariables.set('adminToken', response.data.token);",
+                  "        console.log('✅ Admin token saved');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"classcrew@admin.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "admin", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 2: User Login/Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.collectionVariables.set('userToken', response.data.token);",
+                  "        console.log('✅ User token saved');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 3: Get Courses (Copy courseId)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["courses"]
+            },
+            "description": "Copy a courseId from response"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
+

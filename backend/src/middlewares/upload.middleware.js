@@ -38,12 +38,41 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const createUpload = (folderType) => {
+const excelFileFilter = (req, file, cb) => {
+    const allowedExcelTypes = [
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "text/csv",
+    ];
+
+    if (allowedExcelTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(
+            new Error(
+                "Only Excel files (.xls, .xlsx) and CSV files are allowed"
+            ),
+            false
+        );
+    }
+};
+
+const createUpload = (folderType, customFilter = null) => {
     return multer({
         storage: createStorage(folderType),
-        fileFilter,
+        fileFilter: customFilter || fileFilter,
         limits: {
             fileSize: config.upload?.maxFileSize || 10 * 1024 * 1024,
+        },
+    });
+};
+
+const createExcelUpload = (folderType) => {
+    return multer({
+        storage: createStorage(folderType),
+        fileFilter: excelFileFilter,
+        limits: {
+            fileSize: 5 * 1024 * 1024, // 5MB limit for Excel files
         },
     });
 };
@@ -75,6 +104,9 @@ const reviewUploads = uploadSingle("REVIEWS", "avatar");
 
 const categoryUploads = uploadSingle("CATEGORIES", "icon");
 
+const classApplicationUploads =
+    createExcelUpload("APPLICATIONS").single("participantsFile");
+
 module.exports = {
     uploadSingle,
     uploadMultiple,
@@ -85,5 +117,6 @@ module.exports = {
     noticeUploads,
     reviewUploads,
     categoryUploads,
+    classApplicationUploads,
     UPLOAD_FOLDERS,
 };

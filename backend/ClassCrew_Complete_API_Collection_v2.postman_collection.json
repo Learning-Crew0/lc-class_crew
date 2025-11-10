@@ -1,9 +1,9 @@
 {
     "info": {
-        "name": "ClassCrew - Complete API Collection (Updated v2.0)",
-        "description": "Complete API collection for ClassCrew: Shopping Cart, Class Applications (NEW), Student Enrollments (NEW), Announcements, FAQs, and Course History",
+        "name": "ClassCrew - Complete API Collection v2.0",
+        "description": "Complete API collection for ClassCrew: Shopping Cart, Class Applications, Student Enrollments, Announcements, FAQs, and Course History",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-        "_exporter_id": "classcrew_v2_updated"
+        "_exporter_id": "classcrew_v2"
     },
     "variable": [
         {
@@ -50,21 +50,11 @@
             "key": "enrollmentId",
             "value": "",
             "type": "string"
-        },
-        {
-            "key": "announcementId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "faqId",
-            "value": "",
-            "type": "string"
         }
     ],
     "item": [
         {
-            "name": "🛒 0. Shopping Cart (NEW)",
+            "name": "🛒 1. Shopping Cart",
             "item": [
                 {
                     "name": "Get Cart (All Items)",
@@ -82,8 +72,7 @@
                             "path": ["cart"]
                         },
                         "description": "Get user's cart with all items (courses + products)"
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Get Cart (Courses Only)",
@@ -99,17 +88,29 @@
                             "raw": "{{baseUrl}}/cart?itemType=course",
                             "host": ["{{baseUrl}}"],
                             "path": ["cart"],
-                            "query": [
-                                {
-                                    "key": "itemType",
-                                    "value": "course",
-                                    "description": "Filter: course | product"
-                                }
-                            ]
+                            "query": [{ "key": "itemType", "value": "course" }]
                         },
-                        "description": "Get only courses from cart (for class application)"
-                    },
-                    "response": []
+                        "description": "Get only courses from cart"
+                    }
+                },
+                {
+                    "name": "Get Cart (Products Only)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{userToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/cart?itemType=product",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["cart"],
+                            "query": [{ "key": "itemType", "value": "product" }]
+                        },
+                        "description": "Get only products from cart"
+                    }
                 },
                 {
                     "name": "Add Course to Cart",
@@ -134,9 +135,8 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["cart", "add"]
                         },
-                        "description": "Add course with training schedule to cart"
-                    },
-                    "response": []
+                        "description": "Add course with schedule to cart"
+                    }
                 },
                 {
                     "name": "Add Product to Cart",
@@ -154,7 +154,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"itemType\": \"product\",\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 2\n}"
+                            "raw": "{\n  \"itemType\": \"product\",\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 1\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/cart/add",
@@ -162,8 +162,7 @@
                             "path": ["cart", "add"]
                         },
                         "description": "Add product to cart"
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Get Selected Courses for Application",
@@ -188,9 +187,8 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["cart", "get-selected-courses"]
                         },
-                        "description": "⚠️ VALIDATION: Only courses can be selected (not products)"
-                    },
-                    "response": []
+                        "description": "Validate and get selected courses (ONLY courses, not products)"
+                    }
                 },
                 {
                     "name": "Update Product Quantity",
@@ -208,7 +206,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"quantity\": 3\n}"
+                            "raw": "{\n  \"quantity\": 2\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/cart/update/{{productId}}",
@@ -216,8 +214,7 @@
                             "path": ["cart", "update", "{{productId}}"]
                         },
                         "description": "Update product quantity (courses always have quantity 1)"
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Remove Course from Cart",
@@ -241,9 +238,27 @@
                                 }
                             ]
                         },
-                        "description": "Remove course with specific schedule from cart"
-                    },
-                    "response": []
+                        "description": "Remove course from cart"
+                    }
+                },
+                {
+                    "name": "Remove Product from Cart",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{userToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/cart/remove/{{productId}}?itemType=product",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["cart", "remove", "{{productId}}"],
+                            "query": [{ "key": "itemType", "value": "product" }]
+                        },
+                        "description": "Remove product from cart"
+                    }
                 },
                 {
                     "name": "Clear Cart",
@@ -260,31 +275,223 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["cart", "clear"]
                         },
-                        "description": "Clear entire cart (all items)"
-                    },
-                    "response": []
+                        "description": "Clear entire cart"
+                    }
                 }
             ]
         },
         {
-            "name": "📝 1. Class Applications (UPDATED)",
+            "name": "🛍️ 2. Products (Learning Store)",
             "item": [
                 {
-                    "name": "Download Bulk Upload Template",
+                    "name": "Get All Products (Public)",
                     "request": {
                         "method": "GET",
-                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/products?page=1&limit=10",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products"],
+                            "query": [
+                                { "key": "page", "value": "1" },
+                                { "key": "limit", "value": "10" },
+                                {
+                                    "key": "category",
+                                    "value": "진단도구",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "inStock",
+                                    "value": "true",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "챌린지",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Get all active products with filters"
+                    }
+                },
+                {
+                    "name": "Get Featured Products (Public)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/products/featured?limit=6",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products", "featured"],
+                            "query": [{ "key": "limit", "value": "6" }]
+                        },
+                        "description": "Get featured products"
+                    }
+                },
+                {
+                    "name": "Get Product by ID (Public)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products", "{{productId}}"]
+                        },
+                        "description": "Get product details"
+                    }
+                },
+                {
+                    "name": "Create Product (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    if (response.data && response.data._id) {",
+                                    "        pm.collectionVariables.set('productId', response.data._id);",
+                                    "        console.log('Product ID saved:', response.data._id);",
+                                    "    }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"66일 챌린지\",\n  \"description\": \"66일 동안 꾸준한 실천을 돕는 굿즈\",\n  \"shortDescription\": \"습관 형성을 위한 66일 챌린지 키트\",\n  \"price\": 100000,\n  \"category\": \"진단도구\",\n  \"stock\": {\n    \"quantity\": 50,\n    \"trackInventory\": true,\n    \"allowBackorder\": false\n  },\n  \"tags\": [\"챌린지\", \"습관\", \"굿즈\"],\n  \"isFeatured\": true,\n  \"isPublished\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/products",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products"]
+                        },
+                        "description": "Create new product (Admin only)"
+                    }
+                },
+                {
+                    "name": "Update Product (Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"price\": 95000,\n  \"stock\": {\n    \"quantity\": 45\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products", "{{productId}}"]
+                        },
+                        "description": "Update product (Admin only)"
+                    }
+                },
+                {
+                    "name": "Update Stock (Admin)",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"quantity\": 30\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}/stock",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products", "{{productId}}", "stock"]
+                        },
+                        "description": "Update product stock (Admin only)"
+                    }
+                },
+                {
+                    "name": "Toggle Publish Status (Admin)",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}/toggle-publish",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "products",
+                                "{{productId}}",
+                                "toggle-publish"
+                            ]
+                        },
+                        "description": "Toggle product publish status (Admin only)"
+                    }
+                },
+                {
+                    "name": "Delete Product (Admin)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products", "{{productId}}"]
+                        },
+                        "description": "Delete product (Admin only)"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📝 3. Class Applications",
+            "item": [
+                {
+                    "name": "Download Bulk Upload Template (Public)",
+                    "request": {
+                        "method": "GET",
                         "url": {
                             "raw": "{{baseUrl}}/class-applications/download-template",
                             "host": ["{{baseUrl}}"],
                             "path": ["class-applications", "download-template"]
                         },
-                        "description": "📥 PUBLIC: Get Excel template for bulk student upload (6+ students)"
-                    },
-                    "response": []
+                        "description": "Get Excel template structure for bulk student upload"
+                    }
                 },
                 {
-                    "name": "1. Create Draft Application",
+                    "name": "Create Draft Application",
                     "event": [
                         {
                             "listen": "test",
@@ -294,8 +501,7 @@
                                     "    const response = pm.response.json();",
                                     "    if (response.data && response.data._id) {",
                                     "        pm.collectionVariables.set('applicationId', response.data._id);",
-                                    "        console.log('✅ Application ID saved:', response.data._id);",
-                                    "        console.log('Application Number:', response.data.applicationNumber);",
+                                    "        console.log('Application ID saved:', response.data._id);",
                                     "    }",
                                     "}"
                                 ]
@@ -323,12 +529,11 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["class-applications", "draft"]
                         },
-                        "description": "Step 1: Create draft from selected courses in cart"
-                    },
-                    "response": []
+                        "description": "Create draft application from selected courses in cart"
+                    }
                 },
                 {
-                    "name": "2a. Validate Student (Required)",
+                    "name": "Validate Student (String Format)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -350,12 +555,11 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["class-applications", "validate-student"]
                         },
-                        "description": "⚠️ CRITICAL: Student MUST have existing account!\nCopy userId from response for next step."
-                    },
-                    "response": []
+                        "description": "CRITICAL: Validate student MUST have existing account"
+                    }
                 },
                 {
-                    "name": "2b. Validate Student (Object Format)",
+                    "name": "Validate Student (Object Format)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -377,12 +581,11 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["class-applications", "validate-student"]
                         },
-                        "description": "Alternative format with structured email/phone"
-                    },
-                    "response": []
+                        "description": "Validate student with structured format"
+                    }
                 },
                 {
-                    "name": "3a. Add Student to Course (1-5 students)",
+                    "name": "Add Student to Course",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -397,7 +600,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"courseId\": \"{{courseId}}\",\n  \"studentData\": {\n    \"userId\": \"USER_ID_FROM_VALIDATION_STEP\",\n    \"name\": \"홍길동\",\n    \"phone\": {\n      \"prefix\": \"010\",\n      \"middle\": \"1234\",\n      \"last\": \"5678\"\n    },\n    \"email\": {\n      \"username\": \"hong\",\n      \"domain\": \"example.com\"\n    },\n    \"company\": \"ABC Company\",\n    \"position\": \"Manager\"\n  }\n}"
+                            "raw": "{\n  \"courseId\": \"{{courseId}}\",\n  \"studentData\": {\n    \"userId\": \"user123_from_validation\",\n    \"name\": \"홍길동\",\n    \"phone\": {\n      \"prefix\": \"010\",\n      \"middle\": \"1234\",\n      \"last\": \"5678\"\n    },\n    \"email\": {\n      \"username\": \"hong\",\n      \"domain\": \"example.com\"\n    },\n    \"company\": \"ABC Company\",\n    \"position\": \"Manager\"\n  }\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/class-applications/{{applicationId}}/add-student",
@@ -408,12 +611,11 @@
                                 "add-student"
                             ]
                         },
-                        "description": "Step 3a: Add student (max 5 per course)\n⚠️ Replace USER_ID_FROM_VALIDATION_STEP with actual userId"
-                    },
-                    "response": []
+                        "description": "Add student to course (max 5 students)"
+                    }
                 },
                 {
-                    "name": "3b. Upload Bulk Students (6+ students)",
+                    "name": "Upload Bulk Students (6+)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -434,7 +636,7 @@
                                     "key": "file",
                                     "type": "file",
                                     "src": [],
-                                    "description": "Excel file (.xls, .xlsx, max 5MB) with 6+ students"
+                                    "description": "Upload Excel file (.xls, .xlsx, max 5MB)"
                                 }
                             ]
                         },
@@ -447,12 +649,11 @@
                                 "upload-bulk-students"
                             ]
                         },
-                        "description": "Step 3b (Alternative): Upload Excel for 6+ students\n⚠️ All students MUST have existing accounts"
-                    },
-                    "response": []
+                        "description": "Upload Excel file with 6+ students"
+                    }
                 },
                 {
-                    "name": "4. Update Payment Information",
+                    "name": "Update Payment Information",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -478,12 +679,11 @@
                                 "payment"
                             ]
                         },
-                        "description": "Step 4: Update payment method and invoice manager\n⚠️ No '카드결제' for 2+ students!"
-                    },
-                    "response": []
+                        "description": "Update payment method and invoice manager"
+                    }
                 },
                 {
-                    "name": "5. Submit Application (Final Step)",
+                    "name": "Submit Application",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -509,9 +709,8 @@
                                 "submit"
                             ]
                         },
-                        "description": "Step 5: Submit application\n✅ Creates student enrollments\n✅ Removes courses from cart\n✅ Status: draft → submitted"
-                    },
-                    "response": []
+                        "description": "Submit application (creates enrollments, clears cart)"
+                    }
                 },
                 {
                     "name": "Get Application by ID",
@@ -529,8 +728,7 @@
                             "path": ["class-applications", "{{applicationId}}"]
                         },
                         "description": "Get application details"
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Get User's Applications",
@@ -556,14 +754,12 @@
                                 {
                                     "key": "status",
                                     "value": "submitted",
-                                    "disabled": true,
-                                    "description": "draft | submitted | confirmed | cancelled | completed"
+                                    "disabled": true
                                 }
                             ]
                         },
-                        "description": "Get user's applications with pagination"
-                    },
-                    "response": []
+                        "description": "Get user's applications"
+                    }
                 },
                 {
                     "name": "Cancel Application",
@@ -592,14 +788,13 @@
                                 "cancel"
                             ]
                         },
-                        "description": "Cancel application with reason"
-                    },
-                    "response": []
+                        "description": "Cancel application"
+                    }
                 }
             ]
         },
         {
-            "name": "👨‍🎓 2. Student Enrollments (NEW)",
+            "name": "👨‍🎓 4. Student Enrollments",
             "item": [
                 {
                     "name": "Get Student's Enrollments",
@@ -626,9 +821,8 @@
                                 }
                             ]
                         },
-                        "description": "Get student's all enrollments"
-                    },
-                    "response": []
+                        "description": "Get student's enrollments"
+                    }
                 },
                 {
                     "name": "Get Enrollment by ID",
@@ -645,9 +839,8 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["enrollments", "{{enrollmentId}}"]
                         },
-                        "description": "Get enrollment details with course and schedule"
-                    },
-                    "response": []
+                        "description": "Get enrollment details"
+                    }
                 },
                 {
                     "name": "Cancel Enrollment",
@@ -676,9 +869,8 @@
                                 "cancel"
                             ]
                         },
-                        "description": "Student cancels enrollment"
-                    },
-                    "response": []
+                        "description": "Cancel enrollment"
+                    }
                 },
                 {
                     "name": "Add Attendance Record (Admin)",
@@ -707,9 +899,8 @@
                                 "attendance"
                             ]
                         },
-                        "description": "🔒 ADMIN ONLY: Add attendance record"
-                    },
-                    "response": []
+                        "description": "Add attendance record (Admin only)"
+                    }
                 },
                 {
                     "name": "Mark as Completed (Admin)",
@@ -730,9 +921,8 @@
                                 "complete"
                             ]
                         },
-                        "description": "🔒 ADMIN ONLY: Mark enrollment as completed"
-                    },
-                    "response": []
+                        "description": "Mark enrollment as completed (Admin only)"
+                    }
                 },
                 {
                     "name": "Issue Certificate (Admin)",
@@ -761,9 +951,8 @@
                                 "certificate"
                             ]
                         },
-                        "description": "🔒 ADMIN ONLY: Issue completion certificate"
-                    },
-                    "response": []
+                        "description": "Issue certificate (Admin only)"
+                    }
                 },
                 {
                     "name": "Get Course Enrollment Stats (Admin)",
@@ -776,7 +965,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/enrollments/stats/course/{{courseId}}?scheduleId={{scheduleId}}",
+                            "raw": "{{baseUrl}}/enrollments/stats/course/{{courseId}}",
                             "host": ["{{baseUrl}}"],
                             "path": [
                                 "enrollments",
@@ -792,14 +981,13 @@
                                 }
                             ]
                         },
-                        "description": "🔒 ADMIN ONLY: Get enrollment statistics"
-                    },
-                    "response": []
+                        "description": "Get enrollment statistics for a course (Admin only)"
+                    }
                 }
             ]
         },
         {
-            "name": "📢 3. Announcements",
+            "name": "📢 5. Announcements",
             "item": [
                 {
                     "name": "Get All Announcements (Public)",
@@ -815,20 +1003,18 @@
                                 { "key": "status", "value": "published" }
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
-                    "name": "Get Announcement by ID",
+                    "name": "Get Announcement by ID (Public)",
                     "request": {
                         "method": "GET",
                         "url": {
-                            "raw": "{{baseUrl}}/announcements/{{announcementId}}",
+                            "raw": "{{baseUrl}}/announcements/:id",
                             "host": ["{{baseUrl}}"],
-                            "path": ["announcements", "{{announcementId}}"]
+                            "path": ["announcements", ":id"]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Create Announcement (Admin)",
@@ -850,7 +1036,7 @@
                                 },
                                 {
                                     "key": "content",
-                                    "value": "Announcement content",
+                                    "value": "Announcement content here",
                                     "type": "text"
                                 },
                                 {
@@ -875,16 +1061,15 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["announcements"]
                         }
-                    },
-                    "response": []
+                    }
                 }
             ]
         },
         {
-            "name": "❓ 4. FAQs",
+            "name": "❓ 6. FAQs",
             "item": [
                 {
-                    "name": "Get All FAQs",
+                    "name": "Get All FAQs (Public)",
                     "request": {
                         "method": "GET",
                         "url": {
@@ -893,23 +1078,26 @@
                             "path": ["faqs"],
                             "query": [
                                 { "key": "page", "value": "1" },
-                                { "key": "limit", "value": "20" }
+                                { "key": "limit", "value": "20" },
+                                {
+                                    "key": "category",
+                                    "value": "signup-login",
+                                    "disabled": true
+                                }
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
-                    "name": "Get FAQ by ID",
+                    "name": "Get FAQ by ID (Public)",
                     "request": {
                         "method": "GET",
                         "url": {
-                            "raw": "{{baseUrl}}/faqs/{{faqId}}",
+                            "raw": "{{baseUrl}}/faqs/:id",
                             "host": ["{{baseUrl}}"],
-                            "path": ["faqs", "{{faqId}}"]
+                            "path": ["faqs", ":id"]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
                     "name": "Create FAQ (Admin)",
@@ -927,23 +1115,22 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"question\": \"How do I reset my password?\",\n  \"answer\": \"Click 'Forgot Password' on login page.\",\n  \"category\": \"signup-login\",\n  \"isActive\": true\n}"
+                            "raw": "{\n  \"question\": \"How do I reset my password?\",\n  \"answer\": \"Click on 'Forgot Password' on the login page.\",\n  \"category\": \"signup-login\",\n  \"tags\": [\"password\", \"reset\"],\n  \"isActive\": true\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/faqs",
                             "host": ["{{baseUrl}}"],
                             "path": ["faqs"]
                         }
-                    },
-                    "response": []
+                    }
                 }
             ]
         },
         {
-            "name": "📚 5. Course History",
+            "name": "📚 7. Course History",
             "item": [
                 {
-                    "name": "Check Personal History",
+                    "name": "Check Personal Course History (Public)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -961,11 +1148,10 @@
                             "host": ["{{baseUrl}}"],
                             "path": ["course-history", "personal"]
                         }
-                    },
-                    "response": []
+                    }
                 },
                 {
-                    "name": "Get Certificate",
+                    "name": "Get Certificate (Public)",
                     "request": {
                         "method": "GET",
                         "url": {
@@ -977,8 +1163,7 @@
                                 "{{enrollmentId}}"
                             ]
                         }
-                    },
-                    "response": []
+                    }
                 }
             ]
         }

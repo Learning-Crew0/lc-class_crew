@@ -5,7 +5,10 @@ const publicRoutes = require("./public.routes");
 const userRoutes = require("./user.routes");
 const adminRoutes = require("./admin.routes");
 const coursesRoutes = require("./courses.routes");
+const productRoutes = require("./product.routes");
+const cartRoutes = require("./cart.routes");
 const classApplicationRoutes = require("./classApplication.routes");
+const enrollmentRoutes = require("./enrollment.routes");
 const announcementRoutes = require("./announcement.routes");
 const faqRoutes = require("./faq.routes");
 const courseHistoryRoutes = require("./courseHistory.routes");
@@ -37,7 +40,13 @@ router.use("/admin", adminRoutes);
 
 router.use("/", coursesRoutes);
 
+router.use("/products", productRoutes);
+
+router.use("/cart", cartRoutes);
+
 router.use("/class-applications", classApplicationRoutes);
+
+router.use("/enrollments", enrollmentRoutes);
 
 router.use("/announcements", announcementRoutes);
 

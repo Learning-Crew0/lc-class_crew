@@ -1,56 +1,77 @@
 const express = require("express");
 const router = express.Router();
 const classApplicationController = require("../controllers/classApplication.controller");
-const { authenticate, optionalAuth } = require("../middlewares/auth.middleware");
-const requireAdmin = require("../middlewares/admin.middleware");
-const { validate } = require("../middlewares/validate.middleware");
-const {
-    createClassApplicationSchema,
-    updateApplicationStatusSchema,
-} = require("../validators/classApplication.validators");
+const { authenticate } = require("../middlewares/auth.middleware");
+const { classApplicationUploads } = require("../middlewares/upload.middleware");
 
+/**
+ * Public routes
+ */
+
+// Download bulk upload template
+router.get(
+    "/download-template",
+    classApplicationController.downloadTemplate
+);
+
+/**
+ * Private routes (require authentication)
+ */
+router.use(authenticate);
+
+// Create draft application
 router.post(
-    "/",
-    optionalAuth,
-    validate(createClassApplicationSchema),
-    classApplicationController.createClassApplication
+    "/draft",
+    classApplicationController.createDraftApplication
 );
 
-router.get(
-    "/",
-    authenticate,
-    requireAdmin,
-    classApplicationController.getAllApplications
+// Validate student credentials
+router.post(
+    "/validate-student",
+    classApplicationController.validateStudent
 );
 
+// Get application by ID
 router.get(
-    "/my-applications",
-    authenticate,
+    "/:applicationId",
+    classApplicationController.getApplicationById
+);
+
+// Add student to course
+router.post(
+    "/:applicationId/add-student",
+    classApplicationController.addStudentToCourse
+);
+
+// Upload bulk students file
+router.post(
+    "/:applicationId/upload-bulk-students",
+    classApplicationUploads,
+    classApplicationController.uploadBulkStudents
+);
+
+// Update payment information
+router.put(
+    "/:applicationId/payment",
+    classApplicationController.updatePaymentInfo
+);
+
+// Submit application
+router.post(
+    "/:applicationId/submit",
+    classApplicationController.submitApplication
+);
+
+// Get user's applications
+router.get(
+    "/user/:userId",
     classApplicationController.getUserApplications
 );
 
-router.get("/:id", authenticate, classApplicationController.getApplicationById);
-
-router.patch(
-    "/:id/status",
-    authenticate,
-    requireAdmin,
-    validate(updateApplicationStatusSchema),
-    classApplicationController.updateApplicationStatus
-);
-
-router.delete(
-    "/:id/cancel",
-    authenticate,
+// Cancel application
+router.post(
+    "/:applicationId/cancel",
     classApplicationController.cancelApplication
 );
 
-router.delete(
-    "/:id",
-    authenticate,
-    requireAdmin,
-    classApplicationController.deleteApplication
-);
-
 module.exports = router;
-
