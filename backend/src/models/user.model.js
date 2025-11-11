@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema(
             required: [true, "Phone number is required"],
             unique: true,
             trim: true,
-            match: [/^01[0-9]{9}$|^[6-9][0-9]{9}$|^\+?[0-9]{10,15}$/, "Phone must be valid Korean (01012345678) or Indian (9876543210) format"],
+            match: [/^01[0-9]{9,10}$|^[6-9][0-9]{9}$|^91[6-9][0-9]{9}$|^82[0-9]{9,10}$|^\+?[0-9]{10,15}$/, "Phone must be valid format (01012345678, 9876543210, or 917879973266)"],
         },
         dob: {
             type: Date,
