@@ -40,7 +40,8 @@ const config = {
 
     // File upload
     upload: {
-        maxFileSize: parseInt(process.env.MAX_FILE_SIZE, 10) || 10 * 1024 * 1024, // 10MB
+        maxFileSize:
+            parseInt(process.env.MAX_FILE_SIZE, 10) || 10 * 1024 * 1024, // 10MB
         uploadDir: process.env.UPLOAD_DIR || "uploads",
         allowedTypes: process.env.ALLOWED_FILE_TYPES
             ? process.env.ALLOWED_FILE_TYPES.split(",")
@@ -71,6 +72,13 @@ const config = {
         user: process.env.SMTP_USER,
         password: process.env.SMTP_PASSWORD,
         from: process.env.EMAIL_FROM || "noreply@lcclasscrew.com",
+    },
+
+    // SMS / Twilio
+    sms: {
+        twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
+        twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+        twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER,
     },
 
     // Logging

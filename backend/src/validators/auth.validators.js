@@ -28,11 +28,11 @@ const registerSchema = Joi.object({
         }),
     phone: Joi.string()
         .trim()
-        .pattern(/^01[0-9]{9}$/)
+        .pattern(/^01[0-9]{9}$|^[6-9][0-9]{9}$|^\+?[0-9]{10,15}$/)
         .required()
         .messages({
             "string.pattern.base":
-                "올바른 휴대전화 번호를 입력해주세요 (11자리 숫자)",
+                "올바른 휴대전화 번호를 입력해주세요 (예: 01012345678 또는 9876543210)",
             "any.required": "휴대전화 번호를 입력해주세요",
         }),
     dob: Joi.date().max("now").required().messages({
@@ -88,7 +88,7 @@ const updateProfileSchema = Joi.object({
     fullName: Joi.string().trim().min(2).max(100).optional(),
     phone: Joi.string()
         .trim()
-        .pattern(/^01[0-9]{9}$/)
+        .pattern(/^01[0-9]{9}$|^[6-9][0-9]{9}$|^\+?[0-9]{10,15}$/)
         .optional()
         .messages({
             "string.pattern.base": "올바른 휴대전화 번호를 입력해주세요",
