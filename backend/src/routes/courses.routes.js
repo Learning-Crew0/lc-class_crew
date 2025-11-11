@@ -52,7 +52,10 @@ const {
 
 router.get("/categories", categoryController.getAllCategories);
 router.get("/categories/:id", categoryController.getCategoryById);
-router.get("/categories/:id/courses", categoryController.getCategoryWithCourses);
+router.get(
+    "/categories/:id/courses",
+    categoryController.getCategoryWithCourses
+);
 
 router.post(
     "/categories",
@@ -236,11 +239,7 @@ router.post(
     coursesController.upsertNotice
 );
 
-router.get(
-    "/enrollments",
-    authenticate,
-    enrollmentController.getMyEnrollments
-);
+router.get("/enrollments", authenticate, enrollmentController.getMyEnrollments);
 
 router.get(
     "/enrollments/:id",
@@ -285,4 +284,3 @@ router.delete(
 );
 
 module.exports = router;
-

@@ -92,6 +92,8 @@ const uploadFields = (folderType, fields) => {
 const courseUploads = uploadFields("COURSES", [
     { name: "mainImage", maxCount: 1 },
     { name: "hoverImage", maxCount: 1 },
+    { name: "noticeImage", maxCount: 1 },
+    { name: "promotionImages", maxCount: 5 },
 ]);
 
 const promotionUploads = uploadMultiple("PROMOTIONS", "images", 10);

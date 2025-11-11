@@ -58,6 +58,7 @@ const requireAdmin = require("../middlewares/admin.middleware");
 const {
     uploadSingle,
     uploadMultiple,
+    courseUploads,
 } = require("../middlewares/upload.middleware");
 
 router.post("/login", validate(adminLoginSchema), adminController.login);
@@ -124,6 +125,7 @@ router.get("/courses/:id", coursesController.getCourseById);
 // POST /api/v1/admin/courses - Create course
 router.post(
     "/courses",
+    courseUploads, // Parse multipart FIRST (mainImage, hoverImage, noticeImage, promotionImages)
     validate(createCourseSchema),
     coursesController.createCourse
 );
@@ -131,6 +133,7 @@ router.post(
 // PUT /api/v1/admin/courses/:id - Update course
 router.put(
     "/courses/:id",
+    courseUploads, // Parse multipart for image updates
     validate(updateCourseSchema),
     coursesController.updateCourse
 );

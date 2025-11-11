@@ -20,10 +20,7 @@ router.get(
 );
 
 // Get enrollment by ID
-router.get(
-    "/:enrollmentId",
-    studentEnrollmentController.getEnrollmentById
-);
+router.get("/:enrollmentId", studentEnrollmentController.getEnrollmentById);
 
 // Cancel enrollment
 router.post(
@@ -64,4 +61,3 @@ router.get(
 );
 
 module.exports = router;
-
