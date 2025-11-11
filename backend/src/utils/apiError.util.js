@@ -17,8 +17,12 @@ class ApiError extends Error {
     }
 
     // Static factory methods for common errors
-    static badRequest(message = "Bad Request", errors = null) {
-        return new ApiError(400, message, errors);
+    static badRequest(message = "Bad Request", errors = null, extraData = null) {
+        const error = new ApiError(400, message, errors);
+        if (extraData) {
+            Object.assign(error, extraData);
+        }
+        return error;
     }
 
     static unauthorized(message = "Unauthorized") {
@@ -35,6 +39,10 @@ class ApiError extends Error {
 
     static conflict(message = "Conflict") {
         return new ApiError(409, message);
+    }
+
+    static tooManyRequests(message = "Too Many Requests") {
+        return new ApiError(429, message);
     }
 
     static internal(message = "Internal Server Error") {

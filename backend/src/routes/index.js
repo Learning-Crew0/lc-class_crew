@@ -14,6 +14,7 @@ const faqRoutes = require("./faq.routes");
 const courseHistoryRoutes = require("./courseHistory.routes");
 
 const authController = require("../controllers/auth.controller");
+const passwordResetController = require("../controllers/passwordReset.controller");
 const settingsController = require("../controllers/settings.controller");
 
 const { validate } = require("../middlewares/validate.middleware");
@@ -21,6 +22,12 @@ const {
     registerSchema,
     loginSchema,
 } = require("../validators/auth.validators");
+const {
+    initiatePasswordResetSchema,
+    verifyCodeSchema,
+    resetPasswordSchema,
+    findIdSchema,
+} = require("../validators/passwordReset.validators");
 
 router.post(
     "/auth/register",
@@ -29,6 +36,32 @@ router.post(
 );
 
 router.post("/auth/login", validate(loginSchema), authController.login);
+
+// Find ID
+router.post(
+    "/auth/find-id",
+    validate(findIdSchema),
+    passwordResetController.findUserId
+);
+
+// Password Reset Flow
+router.post(
+    "/auth/password-reset/initiate",
+    validate(initiatePasswordResetSchema),
+    passwordResetController.initiatePasswordReset
+);
+
+router.post(
+    "/auth/password-reset/verify-code",
+    validate(verifyCodeSchema),
+    passwordResetController.verifyCode
+);
+
+router.post(
+    "/auth/password-reset/reset",
+    validate(resetPasswordSchema),
+    passwordResetController.resetPassword
+);
 
 router.get("/settings", settingsController.getAllSettings);
 
