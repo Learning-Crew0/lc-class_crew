@@ -1,16 +1,27 @@
 const Course = require("../models/course.model");
 const Category = require("../models/category.model");
 const ApiError = require("../utils/apiError.util");
-const { getPaginationParams, createPaginationMeta } = require("../utils/pagination.util");
+const {
+    getPaginationParams,
+    createPaginationMeta,
+} = require("../utils/pagination.util");
 const { getFileUrl, deleteFileByUrl } = require("../config/fileStorage");
 
 const normalizeArrayFields = (data) => {
-    const arrayFields = ["tags", "recommendedAudience", "whatYouWillLearn", "requirements"];
-    
-    arrayFields.forEach(field => {
+    const arrayFields = [
+        "tags",
+        "recommendedAudience",
+        "whatYouWillLearn",
+        "requirements",
+    ];
+
+    arrayFields.forEach((field) => {
         if (data[field]) {
             if (typeof data[field] === "string") {
-                data[field] = data[field].split(",").map(item => item.trim()).filter(Boolean);
+                data[field] = data[field]
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean);
             }
         }
     });
@@ -20,7 +31,10 @@ const normalizeArrayFields = (data) => {
             try {
                 data.learningGoals = JSON.parse(data.learningGoals);
             } catch (e) {
-                data.learningGoals = data.learningGoals.split(",").map(item => item.trim()).filter(Boolean);
+                data.learningGoals = data.learningGoals
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean);
             }
         }
     }
@@ -67,7 +81,10 @@ const getAllCourses = async (query) => {
 };
 
 const getCourseById = async (courseId, includeRelated = false) => {
-    let query = Course.findById(courseId).populate("category", "title description");
+    let query = Course.findById(courseId).populate(
+        "category",
+        "title description"
+    );
 
     if (includeRelated) {
         query = query
@@ -97,12 +114,18 @@ const createCourse = async (courseData, files) => {
     }
 
     if (files?.mainImage) {
-        normalizedData.mainImage = getFileUrl("COURSES", files.mainImage[0].filename);
+        normalizedData.mainImage = getFileUrl(
+            "COURSES",
+            files.mainImage[0].filename
+        );
         normalizedData.image = normalizedData.mainImage;
     }
 
     if (files?.hoverImage) {
-        normalizedData.hoverImage = getFileUrl("COURSES", files.hoverImage[0].filename);
+        normalizedData.hoverImage = getFileUrl(
+            "COURSES",
+            files.hoverImage[0].filename
+        );
     }
 
     const course = await Course.create(normalizedData);
@@ -122,21 +145,31 @@ const updateCourse = async (courseId, updates, files) => {
 
     const normalizedUpdates = normalizeArrayFields(updates);
 
-    if (normalizedUpdates.category && normalizedUpdates.category !== course.category.toString()) {
+    if (
+        normalizedUpdates.category &&
+        normalizedUpdates.category !== course.category.toString()
+    ) {
         const category = await Category.findById(normalizedUpdates.category);
         if (!category) {
             throw ApiError.notFound("카테고리를 찾을 수 없습니다");
         }
 
-        await Category.findByIdAndUpdate(course.category, { $inc: { courseCount: -1 } });
-        await Category.findByIdAndUpdate(normalizedUpdates.category, { $inc: { courseCount: 1 } });
+        await Category.findByIdAndUpdate(course.category, {
+            $inc: { courseCount: -1 },
+        });
+        await Category.findByIdAndUpdate(normalizedUpdates.category, {
+            $inc: { courseCount: 1 },
+        });
     }
 
     if (files?.mainImage) {
         if (course.mainImage) {
             deleteFileByUrl(course.mainImage);
         }
-        normalizedUpdates.mainImage = getFileUrl("COURSES", files.mainImage[0].filename);
+        normalizedUpdates.mainImage = getFileUrl(
+            "COURSES",
+            files.mainImage[0].filename
+        );
         normalizedUpdates.image = normalizedUpdates.mainImage;
     }
 
@@ -144,13 +177,20 @@ const updateCourse = async (courseId, updates, files) => {
         if (course.hoverImage) {
             deleteFileByUrl(course.hoverImage);
         }
-        normalizedUpdates.hoverImage = getFileUrl("COURSES", files.hoverImage[0].filename);
+        normalizedUpdates.hoverImage = getFileUrl(
+            "COURSES",
+            files.hoverImage[0].filename
+        );
     }
 
-    const updatedCourse = await Course.findByIdAndUpdate(courseId, normalizedUpdates, {
-        new: true,
-        runValidators: true,
-    }).populate("category", "title");
+    const updatedCourse = await Course.findByIdAndUpdate(
+        courseId,
+        normalizedUpdates,
+        {
+            new: true,
+            runValidators: true,
+        }
+    ).populate("category", "title");
 
     return updatedCourse;
 };
@@ -172,7 +212,9 @@ const deleteCourse = async (courseId) => {
         deleteFileByUrl(course.hoverImage);
     }
 
-    await Category.findByIdAndUpdate(course.category, { $inc: { courseCount: -1 } });
+    await Category.findByIdAndUpdate(course.category, {
+        $inc: { courseCount: -1 },
+    });
     await Course.findByIdAndDelete(courseId);
 
     return { message: "코스가 성공적으로 삭제되었습니다" };
@@ -185,4 +227,3 @@ module.exports = {
     updateCourse,
     deleteCourse,
 };
-
