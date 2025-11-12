@@ -1,9 +1,10 @@
 const Inquiry = require("../models/inquiry.model");
+const Admin = require("../models/admin.model");
+const ApiError = require("../utils/apiError.util");
 const {
     getPaginationParams,
     createPaginationMeta,
 } = require("../utils/pagination.util");
-const { INQUIRY_STATUSES } = require("../constants/statuses");
 
 /**
  * Get all inquiries with filters
@@ -49,13 +50,13 @@ const getAllInquiries = async (query) => {
  */
 const getInquiryById = async (inquiryId) => {
     const inquiry = await Inquiry.findById(inquiryId)
-        .populate("user", "firstName lastName email phone")
-        .populate("assignedTo", "name email")
-        .populate("response.respondedBy", "name email")
-        .populate("notes.addedBy", "name email");
+        .populate("user", "name fullName email phone")
+        .populate("assignedTo", "username fullName email")
+        .populate("response.respondedBy", "username fullName email")
+        .populate("notes.addedBy", "username fullName email");
 
     if (!inquiry) {
-        throw new Error("Inquiry not found");
+        throw ApiError.notFound("Inquiry not found");
     }
 
     return inquiry;
@@ -94,13 +95,13 @@ const assignInquiry = async (inquiryId, adminId) => {
         inquiryId,
         {
             assignedTo: adminId,
-            status: INQUIRY_STATUSES.IN_PROGRESS,
+            status: "in_progress",
         },
         { new: true }
     );
 
     if (!inquiry) {
-        throw new Error("Inquiry not found");
+        throw ApiError.notFound("Inquiry not found");
     }
 
     return inquiry;
@@ -109,19 +110,30 @@ const assignInquiry = async (inquiryId, adminId) => {
 /**
  * Add response to inquiry
  */
-const respondToInquiry = async (inquiryId, adminId, message) => {
+const respondToInquiry = async (
+    inquiryId,
+    adminId,
+    message,
+    attachments = []
+) => {
     const inquiry = await Inquiry.findById(inquiryId);
 
     if (!inquiry) {
-        throw new Error("Inquiry not found");
+        throw ApiError.notFound("Inquiry not found");
     }
+
+    // Get admin name
+    const admin = await Admin.findById(adminId);
+    const respondedByName = admin ? admin.fullName || admin.username : "Admin";
 
     inquiry.response = {
         message,
         respondedBy: adminId,
+        respondedByName,
         respondedAt: Date.now(),
+        attachments: attachments || [],
     };
-    inquiry.status = INQUIRY_STATUSES.RESOLVED;
+    inquiry.status = "resolved";
 
     await inquiry.save();
 
@@ -150,13 +162,51 @@ const addNote = async (inquiryId, adminId, content) => {
 };
 
 /**
+ * Get user's enquiries
+ */
+const getMyEnquiries = async (userId, query) => {
+    const { page, limit, skip } = getPaginationParams(query);
+
+    const filter = { user: userId };
+
+    // Filter by status
+    if (query.status) {
+        filter.status = query.status;
+    }
+
+    const inquiries = await Inquiry.find(filter)
+        .select("ticketNumber subject category status createdAt response")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const total = await Inquiry.countDocuments(filter);
+
+    // Format response with hasResponse flag
+    const formattedInquiries = inquiries.map((inquiry) => ({
+        _id: inquiry._id,
+        ticketNumber: inquiry.ticketNumber,
+        subject: inquiry.subject,
+        category: inquiry.category,
+        status: inquiry.status,
+        createdAt: inquiry.createdAt,
+        hasResponse: !!(inquiry.response && inquiry.response.message),
+    }));
+
+    return {
+        inquiries: formattedInquiries,
+        pagination: createPaginationMeta(page, limit, total),
+    };
+};
+
+/**
  * Delete inquiry
  */
 const deleteInquiry = async (inquiryId) => {
     const inquiry = await Inquiry.findByIdAndDelete(inquiryId);
 
     if (!inquiry) {
-        throw new Error("Inquiry not found");
+        throw ApiError.notFound("Inquiry not found");
     }
 
     return { message: "Inquiry deleted successfully" };
@@ -171,4 +221,5 @@ module.exports = {
     respondToInquiry,
     addNote,
     deleteInquiry,
+    getMyEnquiries,
 };

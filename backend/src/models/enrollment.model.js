@@ -91,6 +91,11 @@ const enrollmentSchema = new mongoose.Schema(
         certificateIssuedAt: {
             type: Date,
         },
+        grade: {
+            type: String,
+            enum: ["A", "B", "C", "D", "F", null],
+            default: null,
+        },
         attendanceRecords: [attendanceRecordSchema],
         courseRating: {
             type: Number,
@@ -133,6 +138,25 @@ enrollmentSchema.virtual("attendancePercentage").get(function () {
         return 0;
     const attended = this.attendanceRecords.filter((a) => a.attended).length;
     return Math.round((attended / this.attendanceRecords.length) * 100);
+});
+
+// Virtual for completionStatus (English mapping)
+enrollmentSchema.virtual("completionStatus").get(function () {
+    const statusMap = {
+        수료: "completed",
+        미수료: "not_completed",
+        수강중: "in_progress",
+        수강예정: "in_progress",
+        취소: "cancelled",
+    };
+    return statusMap[this.status] || "in_progress";
+});
+
+// Virtual for certificateAvailable
+enrollmentSchema.virtual("certificateAvailable").get(function () {
+    return (
+        this.certificateIssued && this.certificateUrl && this.status === "수료"
+    );
 });
 
 enrollmentSchema.pre("save", async function (next) {

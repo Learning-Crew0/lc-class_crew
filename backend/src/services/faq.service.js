@@ -353,7 +353,7 @@ const getFAQStats = async () => {
         {
             $group: {
                 _id: null,
-                totalViews: { $sum: "$views" },
+                totalViews: { $sum: "$viewCount" },
             },
         },
     ]);
@@ -362,7 +362,7 @@ const getFAQStats = async () => {
         {
             $group: {
                 _id: null,
-                helpful: { $sum: "$helpful" },
+                helpful: { $sum: "$helpfulCount" },
                 notHelpful: { $sum: "$notHelpful" },
             },
         },
@@ -381,6 +381,48 @@ const getFAQStats = async () => {
     };
 };
 
+/**
+ * Search FAQs
+ * @param {Object} query - { q, category, limit }
+ * @returns {Object} Search results
+ */
+const searchFAQs = async (query) => {
+    const { q, category, limit = 10 } = query;
+
+    if (!q || q.trim().length === 0) {
+        throw ApiError.badRequest("Search query is required");
+    }
+
+    const searchQuery = {
+        $text: { $search: q },
+        isActive: true,
+    };
+
+    if (category && category !== "all") {
+        searchQuery.category = category;
+    }
+
+    const faqs = await FAQ.find(searchQuery, {
+        score: { $meta: "textScore" },
+    })
+        .sort({ score: { $meta: "textScore" } })
+        .limit(parseInt(limit, 10))
+        .select("question answer category categoryLabel");
+
+    return {
+        results: faqs.map((faq) => ({
+            _id: faq._id,
+            question: faq.question,
+            answer: faq.answer,
+            category: faq.category,
+            categoryLabel: faq.categoryLabel,
+            relevanceScore: faq._doc.score ? Math.min(faq._doc.score / 10, 1) : 0,
+        })),
+        total: faqs.length,
+        query: q,
+    };
+};
+
 module.exports = {
     createFAQCategory,
     getAllFAQCategories,
@@ -396,4 +438,5 @@ module.exports = {
     markHelpful,
     bulkDeleteFAQs,
     getFAQStats,
+    searchFAQs,
 };

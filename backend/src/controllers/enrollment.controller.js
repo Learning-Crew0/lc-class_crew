@@ -53,6 +53,44 @@ const cancelEnrollment = asyncHandler(async (req, res) => {
     return successResponse(res, enrollment, "수강 취소가 성공적으로 완료되었습니다");
 });
 
+/**
+ * Get authenticated user's enrollment history
+ * GET /api/v1/enrollments/my-history
+ */
+const getMyEnrollmentHistory = asyncHandler(async (req, res) => {
+    const result = await enrollmentService.getMyEnrollmentHistory(
+        req.user.id,
+        req.query
+    );
+    return successResponse(res, result.enrollments, "Course history retrieved successfully");
+});
+
+/**
+ * Download certificate
+ * GET /api/v1/enrollments/:enrollmentId/certificate
+ */
+const downloadCertificate = asyncHandler(async (req, res) => {
+    const certificateInfo = await enrollmentService.getCertificateInfo(
+        req.params.enrollmentId,
+        req.user.id
+    );
+
+    // For now, redirect to certificate URL
+    // In production, you might want to stream the PDF file
+    if (certificateInfo.certificateUrl.startsWith("http")) {
+        return res.redirect(certificateInfo.certificateUrl);
+    } else {
+        // Assume it's a local file path
+        const path = require("path");
+        const { BASE_UPLOAD_PATH } = require("../config/fileStorage");
+        const filePath = path.join(
+            BASE_UPLOAD_PATH,
+            certificateInfo.certificateUrl.replace("/uploads/", "")
+        );
+        return res.download(filePath, `certificate-${req.params.enrollmentId}.pdf`);
+    }
+});
+
 module.exports = {
     enrollInSchedule,
     getMyEnrollments,
@@ -62,5 +100,7 @@ module.exports = {
     requestRefund,
     processRefund,
     cancelEnrollment,
+    getMyEnrollmentHistory,
+    downloadCertificate,
 };
 

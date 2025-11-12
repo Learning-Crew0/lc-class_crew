@@ -95,6 +95,11 @@ const getFAQStats = asyncHandler(async (req, res) => {
     return successResponse(res, stats, "Statistics retrieved successfully");
 });
 
+const searchFAQs = asyncHandler(async (req, res) => {
+    const result = await faqService.searchFAQs(req.query);
+    return successResponse(res, result, "Search results");
+});
+
 module.exports = {
     createFAQCategory,
     getAllFAQCategories,
@@ -110,5 +115,6 @@ module.exports = {
     markHelpful,
     bulkDeleteFAQs,
     getFAQStats,
+    searchFAQs,
 };
 

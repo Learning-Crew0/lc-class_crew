@@ -44,11 +44,16 @@ const createInquiry = async (req, res, next) => {
         if (req.user) {
             req.body.user = req.user.id;
         }
+
+        // Track IP and User Agent
+        req.body.ipAddress = req.ip || req.connection.remoteAddress;
+        req.body.userAgent = req.get("user-agent");
+
         const inquiry = await inquiryService.createInquiry(req.body);
         return successResponse(
             res,
             inquiry,
-            "Inquiry submitted successfully",
+            "Enquiry submitted successfully",
             201
         );
     } catch (error) {
@@ -97,11 +102,12 @@ const assignInquiry = async (req, res, next) => {
  */
 const respondToInquiry = async (req, res, next) => {
     try {
-        const { message } = req.body;
+        const { message, attachments } = req.body;
         const inquiry = await inquiryService.respondToInquiry(
             req.params.id,
             req.user.id,
-            message
+            message,
+            attachments
         );
         return successResponse(res, inquiry, "Response added successfully");
     } catch (error) {
@@ -121,6 +127,26 @@ const addNote = async (req, res, next) => {
             content
         );
         return successResponse(res, inquiry, "Note added successfully");
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Get my enquiries (authenticated user)
+ */
+const getMyEnquiries = async (req, res, next) => {
+    try {
+        const { inquiries, pagination } = await inquiryService.getMyEnquiries(
+            req.user.id,
+            req.query
+        );
+        return paginatedResponse(
+            res,
+            inquiries,
+            pagination,
+            "Enquiries retrieved successfully"
+        );
     } catch (error) {
         next(error);
     }
@@ -147,4 +173,5 @@ module.exports = {
     respondToInquiry,
     addNote,
     deleteInquiry,
+    getMyEnquiries,
 };

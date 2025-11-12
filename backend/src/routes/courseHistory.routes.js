@@ -3,33 +3,14 @@ const router = express.Router();
 const courseHistoryController = require("../controllers/courseHistory.controller");
 const { validate } = require("../middlewares/validate.middleware");
 const {
-    personalHistoryInquirySchema,
-    corporateHistoryInquirySchema,
-    requestVerificationSchema,
+    verifyCourseHistorySchema,
 } = require("../validators/courseHistory.validators");
 
+// POST /api/v1/course-history/verify - Verify user and get enrollment history
 router.post(
-    "/personal",
-    validate(personalHistoryInquirySchema),
-    courseHistoryController.getPersonalCourseHistory
-);
-
-router.post(
-    "/corporate",
-    validate(corporateHistoryInquirySchema),
-    courseHistoryController.getCorporateCourseHistory
-);
-
-router.post(
-    "/corporate/verify",
-    validate(requestVerificationSchema),
-    courseHistoryController.requestCorporateVerification
-);
-
-router.get(
-    "/certificate/:enrollmentId",
-    courseHistoryController.getCertificate
+    "/verify",
+    validate(verifyCourseHistorySchema),
+    courseHistoryController.verifyCourseHistory
 );
 
 module.exports = router;
-

@@ -89,11 +89,9 @@ router.delete("/cart/:productId", cartController.removeFromCart);
 router.delete("/cart", cartController.clearCart);
 
 // === INQUIRIES ===
-// GET /api/v1/user/inquiries - Get user's inquiries
-router.get("/inquiries", (req, res, next) => {
-    req.query.userId = req.user.id;
-    inquiriesController.getAllInquiries(req, res, next);
-});
+// GET /api/v1/user/inquiries - Get user's inquiries (also as my-enquiries)
+router.get("/inquiries", inquiriesController.getMyEnquiries);
+router.get("/my-enquiries", inquiriesController.getMyEnquiries);
 
 // GET /api/v1/user/inquiries/:id - Get inquiry by ID
 router.get("/inquiries/:id", inquiriesController.getInquiryById);

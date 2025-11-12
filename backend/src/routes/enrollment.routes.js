@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const studentEnrollmentController = require("../controllers/studentEnrollment.controller");
+const enrollmentController = require("../controllers/enrollment.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
 const requireAdmin = require("../middlewares/admin.middleware");
 
@@ -12,6 +13,12 @@ router.use(authenticate);
 /**
  * Student routes
  */
+
+// Get authenticated user's enrollment history
+router.get("/my-history", enrollmentController.getMyEnrollmentHistory);
+
+// Download certificate
+router.get("/:enrollmentId/certificate", enrollmentController.downloadCertificate);
 
 // Get student's enrollments
 router.get(

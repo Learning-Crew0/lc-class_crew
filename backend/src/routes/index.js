@@ -17,6 +17,9 @@ const courseHistoryRoutes = require("./courseHistory.routes");
 const authController = require("../controllers/auth.controller");
 const passwordResetController = require("../controllers/passwordReset.controller");
 const settingsController = require("../controllers/settings.controller");
+const inquiriesController = require("../controllers/inquiries.controller");
+
+const { authenticate } = require("../middlewares/auth.middleware");
 
 const { validate } = require("../middlewares/validate.middleware");
 const {
@@ -29,6 +32,7 @@ const {
     resetPasswordSchema,
     findIdSchema,
 } = require("../validators/passwordReset.validators");
+const { createInquirySchema } = require("../validators/inquiry.validators");
 
 router.post(
     "/auth/register",
@@ -65,6 +69,36 @@ router.post(
 );
 
 router.get("/settings", settingsController.getAllSettings);
+
+// === ENQUIRIES ===
+// Optional auth middleware - doesn't fail if no token
+const optionalAuth = (req, res, next) => {
+    if (req.headers.authorization) {
+        return authenticate(req, res, (err) => {
+            // Continue regardless of auth result
+            next();
+        });
+    }
+    next();
+};
+
+// POST /api/v1/enquiries - Submit enquiry (public, optional auth)
+router.post(
+    "/enquiries",
+    optionalAuth,
+    validate(createInquirySchema),
+    inquiriesController.createInquiry
+);
+
+// GET /api/v1/enquiries/my-enquiries - Get user's enquiries (auth required)
+router.get(
+    "/enquiries/my-enquiries",
+    authenticate,
+    inquiriesController.getMyEnquiries
+);
+
+// GET /api/v1/enquiries/:id - Get enquiry by ID (auth required)
+router.get("/enquiries/:id", authenticate, inquiriesController.getInquiryById);
 
 router.use("/public", publicRoutes);
 

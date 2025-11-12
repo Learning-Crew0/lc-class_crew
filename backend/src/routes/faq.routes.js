@@ -57,6 +57,8 @@ router.post(
 
 router.get("/", faqController.getAllFAQs);
 
+router.get("/search", faqController.searchFAQs);
+
 router.get("/category/:categoryKey", faqController.getFAQsByCategory);
 
 router.get("/:id", faqController.getFAQById);

@@ -33,17 +33,27 @@ const faqSchema = new mongoose.Schema(
                 trim: true,
             },
         ],
-        views: {
+        viewCount: {
             type: Number,
             default: 0,
         },
-        helpful: {
+        helpfulCount: {
             type: Number,
             default: 0,
         },
         notHelpful: {
             type: Number,
             default: 0,
+        },
+        slug: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
+        metaDescription: {
+            type: String,
+            trim: true,
+            maxlength: 200,
         },
         relatedFAQs: [
             {
@@ -82,6 +92,20 @@ const faqSchema = new mongoose.Schema(
     }
 );
 
+// Generate slug from question before saving
+faqSchema.pre("save", function (next) {
+    if (this.isModified("question") || !this.slug) {
+        const slugify = require("slugify");
+        const baseSlug = slugify(this.question.substring(0, 100), { 
+            lower: true, 
+            strict: true,
+            locale: 'ko'
+        });
+        this.slug = `${baseSlug}-${Date.now()}`;
+    }
+    next();
+});
+
 faqSchema.virtual("id").get(function () {
     return this._id.toHexString();
 });
@@ -90,6 +114,7 @@ faqSchema.index({ category: 1, order: 1 });
 faqSchema.index({ isActive: 1 });
 faqSchema.index({ isFeatured: -1 });
 faqSchema.index({ question: "text", answer: "text" });
+faqSchema.index({ slug: 1 });
 faqSchema.index({ createdAt: -1 });
 
 const FAQ = mongoose.model("FAQ", faqSchema);
