@@ -5,8 +5,8 @@ const ApiError = require("../utils/apiError.util");
 
 /**
  * Format date range for display
- * @param {Date} startDate 
- * @param {Date} endDate 
+ * @param {Date} startDate
+ * @param {Date} endDate
  * @returns {string} Formatted date string "2025.07.10~2025.07.13"
  */
 const formatTrainingDate = (startDate, endDate) => {
@@ -68,17 +68,21 @@ const verifyCourseHistory = async ({ phone, email, name, type }) => {
     const formattedEnrollments = enrollments.map((enrollment, index) => {
         const schedule = enrollment.schedule;
         const course = enrollment.course;
-        
+
         const attendanceData = {
             totalSessions: enrollment.attendanceRecords?.length || 0,
-            attendedSessions: enrollment.attendanceRecords?.filter(r => r.attended).length || 0,
+            attendedSessions:
+                enrollment.attendanceRecords?.filter((r) => r.attended)
+                    .length || 0,
             attendanceRate: enrollment.attendancePercentage || 0,
         };
 
         return {
             _id: enrollment._id,
             no: enrollments.length - index, // Reverse numbering
-            courseTitle: course ? `[${course.category}] ${course.title}` : "N/A",
+            courseTitle: course
+                ? `[${course.category}] ${course.title}`
+                : "N/A",
             courseId: course?._id,
             trainingDate: schedule
                 ? formatTrainingDate(schedule.startDate, schedule.endDate)
@@ -103,7 +107,8 @@ const verifyCourseHistory = async ({ phone, email, name, type }) => {
         inProgressCourses: enrollments.filter(
             (e) => e.status === "수강중" || e.status === "수강예정"
         ).length,
-        notCompletedCourses: enrollments.filter((e) => e.status === "미수료").length,
+        notCompletedCourses: enrollments.filter((e) => e.status === "미수료")
+            .length,
     };
 
     return {
