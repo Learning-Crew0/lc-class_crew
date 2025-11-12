@@ -1,0 +1,1012 @@
+{
+    "info": {
+        "_postman_id": "csc-api-2025-11-12",
+        "name": "Customer Service Center API",
+        "description": "Complete API collection for Customer Service Center module including Course History, Enrollment History, FAQ Management, and Enquiry Management",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{authToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "https://class-crew.onrender.com/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "localUrl",
+            "value": "http://localhost:5000/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "authToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "adminToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "enquiryId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "enrollmentId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "faqId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "0. Authentication",
+            "item": [
+                {
+                    "name": "User Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('authToken', jsonData.data.token);",
+                                    "    console.log('User token saved:', jsonData.data.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"Test123!@#\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["auth", "login"]
+                        },
+                        "description": "Login as a regular user to get authentication token"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Admin Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('adminToken', jsonData.data.token);",
+                                    "    console.log('Admin token saved:', jsonData.data.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin123!@#\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "login"]
+                        },
+                        "description": "Login as admin to get admin token"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "1. Course History Lookup",
+            "item": [
+                {
+                    "name": "Verify & Get Course History",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phone\": \"01012345678\",\n  \"email\": \"user@example.com\",\n  \"name\": \"홍길동\",\n  \"type\": \"personal\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-history/verify",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["course-history", "verify"]
+                        },
+                        "description": "Verify user identity and retrieve their course enrollment history (PUBLIC endpoint)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify - Company Type (Error)",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phone\": \"01012345678\",\n  \"email\": \"company@example.com\",\n  \"name\": \"기업회원\",\n  \"type\": \"company\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-history/verify",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["course-history", "verify"]
+                        },
+                        "description": "Test company type - should return error message to call support"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "2. Enrollment History",
+            "item": [
+                {
+                    "name": "Get My Enrollment History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollments/my-history?page=1&limit=10&sortBy=startDate&sortOrder=desc",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enrollments", "my-history"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "sortBy",
+                                    "value": "startDate",
+                                    "description": "Options: startDate, courseTitle, status, enrolledAt"
+                                },
+                                {
+                                    "key": "sortOrder",
+                                    "value": "desc",
+                                    "description": "Options: asc, desc"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "completed",
+                                    "disabled": true,
+                                    "description": "Filter: completed, not_completed, in_progress, cancelled"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "교육과정",
+                                    "disabled": true,
+                                    "description": "Search in course title"
+                                }
+                            ]
+                        },
+                        "description": "Get authenticated user's enrollment history with filters (REQUIRES AUTH)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Download Certificate",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/enrollments/{{enrollmentId}}/certificate",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "enrollments",
+                                "{{enrollmentId}}",
+                                "certificate"
+                            ]
+                        },
+                        "description": "Download completion certificate for an enrollment (REQUIRES AUTH)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "3. FAQ Management",
+            "item": [
+                {
+                    "name": "Get All FAQs",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/faqs?category=all&page=1&limit=20&isActive=true",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["faqs"],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "all",
+                                    "description": "Options: all, signup/login, program, payment, coalition, other"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                },
+                                {
+                                    "key": "isActive",
+                                    "value": "true"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "회원가입",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Get all active FAQs with optional filters (PUBLIC)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get FAQs - Signup/Login Category",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/faqs?category=signup/login&page=1&limit=20",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["faqs"],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "signup/login"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        },
+                        "description": "Get FAQs filtered by signup/login category"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Single FAQ",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('faqId', jsonData.data._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/faqs/{{faqId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["faqs", "{{faqId}}"]
+                        },
+                        "description": "Get single FAQ by ID with related FAQs (PUBLIC)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Search FAQs",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/faqs/search?q=회원가입&limit=10",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["faqs", "search"],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "회원가입",
+                                    "description": "Required search query"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "signup/login",
+                                    "disabled": true,
+                                    "description": "Optional category filter"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        },
+                        "description": "Search FAQs using text search (PUBLIC)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mark FAQ as Helpful",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"helpful\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/faqs/{{faqId}}/helpful",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["faqs", "{{faqId}}", "helpful"]
+                        },
+                        "description": "Increment helpful count for FAQ (PUBLIC)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get FAQs by Category",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/faqs/category/signup/login?page=1&limit=20",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["faqs", "category", "signup", "login"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        },
+                        "description": "Get FAQs filtered by category with category info (PUBLIC)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "4. Enquiry Management",
+            "item": [
+                {
+                    "name": "Create Enquiry (Public)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('enquiryId', jsonData.data._id);",
+                                    "    console.log('Enquiry ID saved:', jsonData.data._id);",
+                                    "    console.log('Ticket Number:', jsonData.data.ticketNumber);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"홍길동\",\n  \"email\": \"test@example.com\",\n  \"phone\": \"01012345678\",\n  \"company\": \"테스트 회사\",\n  \"countryCode\": \"82\",\n  \"category\": \"General Question\",\n  \"subject\": \"공개교육 신청 문의\",\n  \"message\": \"공개교육 신청 방법에 대해 문의드립니다. 자세한 안내 부탁드립니다.\",\n  \"agreeToTerms\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enquiries",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enquiries"]
+                        },
+                        "description": "Submit enquiry as public user (PUBLIC, optional auth)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Enquiry (Authenticated)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('enquiryId', jsonData.data._id);",
+                                    "    console.log('Enquiry ID saved:', jsonData.data._id);",
+                                    "    console.log('Ticket Number:', jsonData.data.ticketNumber);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"인증된 사용자\",\n  \"email\": \"authenticated@example.com\",\n  \"phone\": \"01087654321\",\n  \"company\": \"인증 회사\",\n  \"category\": \"Technical Support\",\n  \"subject\": \"로그인 오류 문의\",\n  \"message\": \"로그인 시 오류가 발생합니다. 확인 부탁드립니다.\",\n  \"agreeToTerms\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enquiries",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enquiries"]
+                        },
+                        "description": "Submit enquiry as authenticated user (user will be linked)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Enquiry - All Categories",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"테스트 사용자\",\n  \"email\": \"test@example.com\",\n  \"phone\": \"01012345678\",\n  \"category\": \"Program Inquiry\",\n  \"subject\": \"프로그램 문의\",\n  \"message\": \"프로그램 상세 일정을 알고 싶습니다.\",\n  \"agreeToTerms\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enquiries",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enquiries"]
+                        },
+                        "description": "Category Options:\n- General Question\n- Technical Support\n- Program Inquiry\n- Payment Issue\n- Partnership\n- Other"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Enquiry - With Attachment",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"파일첨부 사용자\",\n  \"email\": \"attach@example.com\",\n  \"phone\": \"01098765432\",\n  \"category\": \"Payment Issue\",\n  \"subject\": \"결제 영수증 문의\",\n  \"message\": \"결제 영수증 관련 문의드립니다. 첨부 파일 참고 부탁드립니다.\",\n  \"attachmentUrl\": \"/uploads/enquiries/receipt-123.pdf\",\n  \"attachmentOriginalName\": \"receipt-123.pdf\",\n  \"agreeToTerms\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enquiries",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enquiries"]
+                        },
+                        "description": "Submit enquiry with file attachment (upload file first using admin/uploads/single)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Enquiry - Indian Phone",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Karan Sen\",\n  \"email\": \"karan@example.com\",\n  \"phone\": \"917879973266\",\n  \"countryCode\": \"91\",\n  \"category\": \"Partnership\",\n  \"subject\": \"Partnership Inquiry\",\n  \"message\": \"I am interested in partnering with your organization. Please provide more details.\",\n  \"agreeToTerms\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/enquiries",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enquiries"]
+                        },
+                        "description": "Submit enquiry with Indian phone number format"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get My Enquiries",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/enquiries/my-enquiries?page=1&limit=10",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enquiries", "my-enquiries"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "pending",
+                                    "disabled": true,
+                                    "description": "Filter: pending, in_progress, resolved, closed"
+                                }
+                            ]
+                        },
+                        "description": "Get authenticated user's enquiries (REQUIRES AUTH)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Enquiry by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/enquiries/{{enquiryId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["enquiries", "{{enquiryId}}"]
+                        },
+                        "description": "Get single enquiry details (REQUIRES AUTH)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "5. Admin - FAQ Management",
+            "item": [
+                {
+                    "name": "Get All FAQs (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/faqs?page=1&limit=20",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "faqs"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        },
+                        "description": "Get all FAQs (admin view, includes inactive) (ADMIN)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create FAQ",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"question\": \"새로운 FAQ 질문입니다\",\n  \"answer\": \"새로운 FAQ 답변입니다. 자세한 내용은 여기에 작성합니다.\",\n  \"category\": \"signup/login\",\n  \"order\": 10,\n  \"isActive\": true,\n  \"isFeatured\": false,\n  \"tags\": [\"테스트\", \"FAQ\"]\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/faqs",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "faqs"]
+                        },
+                        "description": "Create new FAQ (ADMIN)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update FAQ",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"question\": \"수정된 FAQ 질문\",\n  \"answer\": \"수정된 FAQ 답변\",\n  \"isActive\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/faqs/{{faqId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "faqs", "{{faqId}}"]
+                        },
+                        "description": "Update existing FAQ (ADMIN)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete FAQ",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/faqs/{{faqId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "faqs", "{{faqId}}"]
+                        },
+                        "description": "Delete FAQ (ADMIN)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "6. Admin - Enquiry Management",
+            "item": [
+                {
+                    "name": "Get All Enquiries",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/inquiries?page=1&limit=20&status=pending",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "inquiries"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "pending",
+                                    "description": "Filter: pending, in_progress, resolved, closed"
+                                }
+                            ]
+                        },
+                        "description": "Get all enquiries with filters (ADMIN)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Enquiry by ID (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/inquiries/{{enquiryId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "inquiries", "{{enquiryId}}"]
+                        },
+                        "description": "Get single enquiry (admin view) (ADMIN)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Enquiry Status",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"status\": \"in_progress\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/inquiries/{{enquiryId}}/status",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "admin",
+                                "inquiries",
+                                "{{enquiryId}}",
+                                "status"
+                            ]
+                        },
+                        "description": "Update enquiry status (ADMIN)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Respond to Enquiry",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"message\": \"안녕하세요. 문의 주셔서 감사합니다. 확인 결과 다음과 같이 답변드립니다...\",\n  \"attachments\": [\n    \"/uploads/responses/response-doc-1.pdf\"\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/inquiries/{{enquiryId}}/respond",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "admin",
+                                "inquiries",
+                                "{{enquiryId}}",
+                                "respond"
+                            ]
+                        },
+                        "description": "Respond to enquiry (ADMIN)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Assign Enquiry",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"assignedTo\": \"admin_user_id_here\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/inquiries/{{enquiryId}}/assign",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "admin",
+                                "inquiries",
+                                "{{enquiryId}}",
+                                "assign"
+                            ]
+                        },
+                        "description": "Assign enquiry to admin (ADMIN)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "7. File Upload",
+            "item": [
+                {
+                    "name": "Upload Single File",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "folder",
+                                    "value": "enquiries",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/uploads/single",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "uploads", "single"]
+                        },
+                        "description": "Upload single file for enquiry attachment (ADMIN)"
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

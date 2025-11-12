@@ -4,6 +4,7 @@ const router = express.Router();
 // Controllers
 const coursesController = require("../controllers/courses.controller");
 const productsController = require("../controllers/products.controller");
+const faqController = require("../controllers/faq.controller");
 const faqsController = require("../controllers/faqs.controller");
 const noticesController = require("../controllers/notices.controller");
 const bannersController = require("../controllers/banners.controller");
@@ -43,6 +44,16 @@ router.get("/products", (req, res, next) => {
 
 // GET /api/v1/public/products/:id - Get product by ID or slug
 router.get("/products/:id", productsController.getProductById);
+
+// === FAQ CATEGORIES ===
+// GET /api/v1/public/faq-categories - Get all active FAQ categories
+router.get("/faq-categories", (req, res, next) => {
+    req.query.isActive = true;
+    faqController.getAllFAQCategories(req, res, next);
+});
+
+// GET /api/v1/public/faq-categories/:id - Get FAQ category by ID
+router.get("/faq-categories/:id", faqController.getFAQCategoryById);
 
 // === FAQs ===
 // GET /api/v1/public/faqs - Get all published FAQs

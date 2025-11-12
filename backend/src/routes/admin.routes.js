@@ -10,6 +10,7 @@ const productsController = require("../controllers/products.controller");
 const productCategoriesController = require("../controllers/productCategories.controller");
 const inquiriesController = require("../controllers/inquiries.controller");
 const noticesController = require("../controllers/notices.controller");
+const faqController = require("../controllers/faq.controller");
 const faqsController = require("../controllers/faqs.controller");
 const bannersController = require("../controllers/banners.controller");
 const uploadsController = require("../controllers/uploads.controller");
@@ -46,6 +47,8 @@ const {
     updateNoticeSchema,
 } = require("../validators/notice.validators");
 const {
+    createFAQCategorySchema,
+    updateFAQCategorySchema,
     createFAQSchema,
     updateFAQSchema,
 } = require("../validators/faq.validators");
@@ -259,6 +262,30 @@ router.put(
 
 // DELETE /api/v1/admin/notices/:id - Delete notice
 router.delete("/notices/:id", noticesController.deleteNotice);
+
+// === FAQ CATEGORIES MANAGEMENT ===
+// GET /api/v1/admin/faq-categories - Get all FAQ categories
+router.get("/faq-categories", faqController.getAllFAQCategories);
+
+// GET /api/v1/admin/faq-categories/:id - Get FAQ category by ID
+router.get("/faq-categories/:id", faqController.getFAQCategoryById);
+
+// POST /api/v1/admin/faq-categories - Create FAQ category
+router.post(
+    "/faq-categories",
+    validate(createFAQCategorySchema),
+    faqController.createFAQCategory
+);
+
+// PUT /api/v1/admin/faq-categories/:id - Update FAQ category
+router.put(
+    "/faq-categories/:id",
+    validate(updateFAQCategorySchema),
+    faqController.updateFAQCategory
+);
+
+// DELETE /api/v1/admin/faq-categories/:id - Delete FAQ category
+router.delete("/faq-categories/:id", faqController.deleteFAQCategory);
 
 // === FAQS MANAGEMENT ===
 // GET /api/v1/admin/faqs - Get all FAQs
