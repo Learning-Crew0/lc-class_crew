@@ -85,6 +85,7 @@ productSchema.pre("save", function (next) {
 
 // Virtual field for isNew (products created within last 7 days)
 productSchema.virtual("isNew").get(function () {
+    if (!this.createdAt) return true; // New products without createdAt yet
     const daysSinceCreation =
         (Date.now() - this.createdAt.getTime()) / (1000 * 60 * 60 * 24);
     return daysSinceCreation <= 7;
