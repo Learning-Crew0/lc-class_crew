@@ -96,10 +96,10 @@ const faqSchema = new mongoose.Schema(
 faqSchema.pre("save", function (next) {
     if (this.isModified("question") || !this.slug) {
         const slugify = require("slugify");
-        const baseSlug = slugify(this.question.substring(0, 100), { 
-            lower: true, 
+        const baseSlug = slugify(this.question.substring(0, 100), {
+            lower: true,
             strict: true,
-            locale: 'ko'
+            locale: "ko",
         });
         this.slug = `${baseSlug}-${Date.now()}`;
     }

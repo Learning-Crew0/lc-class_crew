@@ -38,7 +38,7 @@ const getFAQById = async (req, res, next) => {
  */
 const createFAQ = async (req, res, next) => {
     try {
-        const faq = await faqService.createFAQ(req.body);
+        const faq = await faqService.createFAQ(req.body, req.user.id);
         return successResponse(res, faq, "FAQ created successfully", 201);
     } catch (error) {
         next(error);
@@ -50,7 +50,11 @@ const createFAQ = async (req, res, next) => {
  */
 const updateFAQ = async (req, res, next) => {
     try {
-        const faq = await faqService.updateFAQ(req.params.id, req.body);
+        const faq = await faqService.updateFAQ(
+            req.params.id,
+            req.body,
+            req.user.id
+        );
         return successResponse(res, faq, "FAQ updated successfully");
     } catch (error) {
         next(error);
