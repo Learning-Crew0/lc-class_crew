@@ -1,11 +1,29 @@
 const Joi = require("joi");
 
+// Custom validator for image URLs - accepts both full URLs and relative paths
+const imageUrlValidator = Joi.string().custom((value, helpers) => {
+    // Allow full URLs (http:// or https://)
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+        return value;
+    }
+    // Allow relative paths starting with /
+    if (value.startsWith('/')) {
+        return value;
+    }
+    return helpers.error('any.invalid');
+}, 'Image URL or path validator');
+
 const createBannerSchema = Joi.object({
     title: Joi.string().trim().required(),
     subtitle: Joi.string().trim().optional(),
     description: Joi.string().optional(),
-    image: Joi.string().uri().required(),
-    mobileImage: Joi.string().uri().optional(),
+    image: imageUrlValidator.required().messages({
+        'any.invalid': 'Image must be a valid URL or path starting with /',
+        'any.required': 'Image is required'
+    }),
+    mobileImage: imageUrlValidator.optional().messages({
+        'any.invalid': 'Mobile image must be a valid URL or path starting with /'
+    }),
     link: Joi.object({
         url: Joi.string().uri().optional(),
         text: Joi.string().optional(),
@@ -26,8 +44,12 @@ const updateBannerSchema = Joi.object({
     title: Joi.string().trim().optional(),
     subtitle: Joi.string().trim().optional(),
     description: Joi.string().optional(),
-    image: Joi.string().uri().optional(),
-    mobileImage: Joi.string().uri().optional(),
+    image: imageUrlValidator.optional().messages({
+        'any.invalid': 'Image must be a valid URL or path starting with /'
+    }),
+    mobileImage: imageUrlValidator.optional().messages({
+        'any.invalid': 'Mobile image must be a valid URL or path starting with /'
+    }),
     link: Joi.object({
         url: Joi.string().uri(),
         text: Joi.string(),
