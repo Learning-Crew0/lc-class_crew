@@ -1,12 +1,17 @@
 const express = require("express");
+const path = require("path");
 const config = require("./config/env");
 const logger = require("./config/logger");
 const pinoHttp = require("pino-http");
 const { helmet, cors, rateLimiter } = require("./config/security");
 const errorMiddleware = require("./middlewares/error.middleware");
 const routes = require("./routes");
+const { BASE_UPLOAD_PATH, initializeStorage } = require("./config/fileStorage");
 
 const app = express();
+
+// Initialize file storage directories
+initializeStorage();
 
 // Security middleware
 app.use(helmet);
@@ -18,6 +23,9 @@ app.use(pinoHttp({ logger }));
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ✅ Serve static files from uploads directory
+app.use("/uploads", express.static(BASE_UPLOAD_PATH));
 
 // Rate limiting
 app.use(rateLimiter);

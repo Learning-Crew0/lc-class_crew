@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs").promises;
 const config = require("../config/env");
+const { BASE_UPLOAD_PATH } = require("../config/fileStorage");
 
 /**
  * Process uploaded file
@@ -12,12 +13,18 @@ const processUpload = async (file) => {
 
     // For local storage, return the file path
     if (config.storage.type === "local") {
+        // Extract the relative path from uploads folder
+        // file.path is like: S:\...\backend\uploads\temp\file-123.png
+        // We need: /uploads/temp/file-123.png
+        const relativePath = file.path.replace(BASE_UPLOAD_PATH, "").replace(/\\/g, "/");
+        const url = `/uploads${relativePath}`;
+
         return {
             filename: file.filename,
             originalName: file.originalname,
             mimetype: file.mimetype,
             size: file.size,
-            url: `/uploads/${file.filename}`,
+            url: url,
             path: file.path,
         };
     }
