@@ -37,8 +37,8 @@ const productSchema = new mongoose.Schema(
         },
         finalPrice: {
             type: Number,
-            required: [true, "Final price is required"],
             min: [0, "Final price cannot be negative"],
+            default: 0,
         },
         availableQuantity: {
             type: Number,
@@ -70,7 +70,8 @@ const productSchema = new mongoose.Schema(
 
 // Auto-calculate finalPrice based on baseCost and discountRate
 productSchema.pre("save", function (next) {
-    if (this.isModified("baseCost") || this.isModified("discountRate")) {
+    // Always calculate finalPrice if baseCost exists
+    if (this.baseCost !== undefined) {
         if (this.discountRate > 0) {
             this.finalPrice = Math.round(
                 this.baseCost * (1 - this.discountRate / 100)
