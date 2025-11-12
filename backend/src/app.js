@@ -24,8 +24,18 @@ app.use(pinoHttp({ logger }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// ✅ Serve static files from uploads directory
-app.use("/uploads", express.static(BASE_UPLOAD_PATH));
+app.use(
+    "/uploads",
+    (req, res, next) => {
+        // Add CORS headers for static files
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+        next();
+    },
+    express.static(BASE_UPLOAD_PATH)
+);
 
 // Rate limiting
 app.use(rateLimiter);
