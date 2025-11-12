@@ -5,7 +5,6 @@ const inquirySchema = new mongoose.Schema(
         ticketNumber: {
             type: String,
             unique: true,
-            required: true,
         },
         // User Info
         user: {
