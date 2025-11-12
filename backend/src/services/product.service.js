@@ -1,4 +1,5 @@
 const Product = require("../models/product.model");
+const ApiError = require("../utils/apiError.util");
 const {
     getPaginationParams,
     createPaginationMeta,
@@ -12,34 +13,35 @@ const getAllProducts = async (query) => {
 
     const filter = {};
 
-    // Public routes should only see published products
-    if (query.publicOnly) {
-        filter.isPublished = true;
+    // Public routes should only see active products
+    if (query.publicOnly || query.isActive === "true") {
+        filter.isActive = true;
+    } else if (query.isActive === "false") {
+        filter.isActive = false;
     }
 
+    // Filter by category ID
     if (query.category) {
-        filter.category = query.category;
+        filter["category._id"] = query.category;
     }
 
-    if (query.isFeatured !== undefined) {
-        filter.isFeatured = query.isFeatured === "true";
-    }
-
+    // Filter by in stock
     if (query.inStock !== undefined) {
         if (query.inStock === "true") {
-            filter["stock.quantity"] = { $gt: 0 };
+            filter.availableQuantity = { $gt: 0 };
         }
     }
 
+    // Text search
     if (query.search) {
         filter.$text = { $search: query.search };
     }
 
-    // Price range filter
+    // Price range filter (using finalPrice)
     if (query.minPrice || query.maxPrice) {
-        filter.price = {};
-        if (query.minPrice) filter.price.$gte = parseFloat(query.minPrice);
-        if (query.maxPrice) filter.price.$lte = parseFloat(query.maxPrice);
+        filter.finalPrice = {};
+        if (query.minPrice) filter.finalPrice.$gte = parseFloat(query.minPrice);
+        if (query.maxPrice) filter.finalPrice.$lte = parseFloat(query.maxPrice);
     }
 
     const sortBy = query.sortBy || "createdAt";
@@ -59,25 +61,19 @@ const getAllProducts = async (query) => {
 };
 
 /**
- * Get product by ID or slug
+ * Get product by ID
  */
-const getProductById = async (identifier) => {
-    let product;
-
-    // Check if identifier is a valid ObjectId
-    if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
-        product = await Product.findById(identifier);
-    } else {
-        product = await Product.findOne({ slug: identifier });
-    }
+const getProductById = async (productId, options = {}) => {
+    const product = await Product.findById(productId);
 
     if (!product) {
-        throw new Error("Product not found");
+        throw ApiError.notFound("Product not found");
     }
 
-    // Increment view count
-    product.viewCount += 1;
-    await product.save();
+    // For public routes, check if product is active
+    if (options.publicOnly && !product.isActive) {
+        throw ApiError.notFound("Product not found");
+    }
 
     return product;
 };
@@ -120,16 +116,16 @@ const deleteProduct = async (productId) => {
 };
 
 /**
- * Toggle product published status
+ * Toggle product active status
  */
-const togglePublishStatus = async (productId) => {
+const toggleActiveStatus = async (productId) => {
     const product = await Product.findById(productId);
 
     if (!product) {
-        throw new Error("Product not found");
+        throw ApiError.notFound("Product not found");
     }
 
-    product.isPublished = !product.isPublished;
+    product.isActive = !product.isActive;
     await product.save();
 
     return product;
@@ -138,31 +134,17 @@ const togglePublishStatus = async (productId) => {
 /**
  * Update product stock
  */
-const updateStock = async (productId, quantity) => {
+const updateStock = async (productId, availableQuantity) => {
     const product = await Product.findById(productId);
 
     if (!product) {
-        throw new Error("Product not found");
+        throw ApiError.notFound("Product not found");
     }
 
-    product.stock.quantity = quantity;
+    product.availableQuantity = availableQuantity;
     await product.save();
 
     return product;
-};
-
-/**
- * Get featured products
- */
-const getFeaturedProducts = async (limit = 6) => {
-    const products = await Product.find({
-        isPublished: true,
-        isFeatured: true,
-    })
-        .sort({ salesCount: -1 })
-        .limit(limit);
-
-    return products;
 };
 
 module.exports = {
@@ -171,7 +153,6 @@ module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
-    togglePublishStatus,
+    toggleActiveStatus,
     updateStock,
-    getFeaturedProducts,
 };

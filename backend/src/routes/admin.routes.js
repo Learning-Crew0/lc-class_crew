@@ -7,6 +7,7 @@ const usersController = require("../controllers/users.controller");
 const coursesController = require("../controllers/courses.controller");
 const enrollmentsController = require("../controllers/enrollments.controller");
 const productsController = require("../controllers/products.controller");
+const productCategoriesController = require("../controllers/productCategories.controller");
 const inquiriesController = require("../controllers/inquiries.controller");
 const noticesController = require("../controllers/notices.controller");
 const faqsController = require("../controllers/faqs.controller");
@@ -34,7 +35,12 @@ const {
 const {
     createProductSchema,
     updateProductSchema,
+    updateStockSchema,
 } = require("../validators/product.validators");
+const {
+    createProductCategorySchema,
+    updateProductCategorySchema,
+} = require("../validators/productCategory.validators");
 const {
     createNoticeSchema,
     updateNoticeSchema,
@@ -165,8 +171,60 @@ router.put(
     productsController.updateProduct
 );
 
+// PATCH /api/v1/admin/products/:id/stock - Update stock
+router.patch(
+    "/products/:id/stock",
+    validate(updateStockSchema),
+    productsController.updateStock
+);
+
+// PATCH /api/v1/admin/products/:id/toggle-active - Toggle active status
+router.patch("/products/:id/toggle-active", productsController.toggleActive);
+
 // DELETE /api/v1/admin/products/:id - Delete product
 router.delete("/products/:id", productsController.deleteProduct);
+
+// === PRODUCT CATEGORIES MANAGEMENT ===
+// GET /api/v1/admin/product-categories - Get all product categories
+router.get("/product-categories", productCategoriesController.getAllCategories);
+
+// GET /api/v1/admin/product-categories/:id - Get category by ID
+router.get(
+    "/product-categories/:id",
+    productCategoriesController.getCategoryById
+);
+
+// POST /api/v1/admin/product-categories - Create category
+router.post(
+    "/product-categories",
+    validate(createProductCategorySchema),
+    productCategoriesController.createCategory
+);
+
+// PUT /api/v1/admin/product-categories/:id - Update category
+router.put(
+    "/product-categories/:id",
+    validate(updateProductCategorySchema),
+    productCategoriesController.updateCategory
+);
+
+// PATCH /api/v1/admin/product-categories/:id/toggle-active - Toggle active status
+router.patch(
+    "/product-categories/:id/toggle-active",
+    productCategoriesController.toggleActive
+);
+
+// PATCH /api/v1/admin/product-categories/update-counts - Update product counts
+router.patch(
+    "/product-categories/update-counts",
+    productCategoriesController.updateProductCounts
+);
+
+// DELETE /api/v1/admin/product-categories/:id - Delete category
+router.delete(
+    "/product-categories/:id",
+    productCategoriesController.deleteCategory
+);
 
 // === INQUIRIES MANAGEMENT ===
 // GET /api/v1/admin/inquiries - Get all inquiries

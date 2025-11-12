@@ -1,0 +1,569 @@
+{
+	"info": {
+		"_postman_id": "product-complete-api",
+		"name": "Learning Store - Products & Categories Complete API",
+		"description": "Complete API collection for Product & Category Management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{adminToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "prodUrl",
+			"value": "https://class-crew.onrender.com/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "productId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "categoryId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('adminToken', response.data.token);",
+									"    console.log('✅ Admin token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@lcclasscrew.com\",\n  \"password\": \"changeme123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "login"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin - Product Categories",
+			"item": [
+				{
+					"name": "1. Get All Categories (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories"],
+							"query": [
+								{
+									"key": "isActive",
+									"value": "true",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Get Single Category (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories/{{categoryId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories", "{{categoryId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Create Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('categoryId', response.data._id);",
+									"    console.log('✅ Category ID saved:', response.data._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Stationery\",\n  \"description\": \"Office and school supplies\",\n  \"icon\": \"/uploads/icons/stationery.png\",\n  \"order\": 1,\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories"]
+						},
+						"description": "Create a product category. Only title is required."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Update Category",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Stationery & Office Supplies\",\n  \"description\": \"Complete office and school supplies collection\",\n  \"order\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories/{{categoryId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories", "{{categoryId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Toggle Active Status",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories/{{categoryId}}/toggle-active",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories", "{{categoryId}}", "toggle-active"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Update Product Counts",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories/update-counts",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories", "update-counts"]
+						},
+						"description": "Recalculate product counts for all categories"
+					},
+					"response": []
+				},
+				{
+					"name": "7. Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories/{{categoryId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories", "{{categoryId}}"]
+						},
+						"description": "Will fail if category has products"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Public - Product Categories",
+			"item": [
+				{
+					"name": "Get All Categories (Public)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/product-categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["product-categories"]
+						},
+						"description": "Get all active categories. No auth required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Category (Public)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/product-categories/{{categoryId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["product-categories", "{{categoryId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin - Products",
+			"item": [
+				{
+					"name": "1. Get All Products (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/products?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "products"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Get Single Product (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "products", "{{productId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('productId', response.data._id);",
+									"    console.log('✅ Product ID saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Premium Notebook\",\n  \"description\": \"High-quality notebook for students\",\n  \"category\": {\n    \"_id\": \"{{categoryId}}\",\n    \"title\": \"Stationery\"\n  },\n  \"baseCost\": 20000,\n  \"discountRate\": 25,\n  \"availableQuantity\": 500,\n  \"images\": [\n    \"/uploads/temp/notebook-1.png\"\n  ],\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "products"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"baseCost\": 18000,\n  \"discountRate\": 30\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "products", "{{productId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Update Stock",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"availableQuantity\": 350\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{productId}}/stock",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "products", "{{productId}}", "stock"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Toggle Active",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{productId}}/toggle-active",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "products", "{{productId}}", "toggle-active"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "products", "{{productId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Public - Products",
+			"item": [
+				{
+					"name": "Get All Products (Public)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products?page=1&limit=12",
+							"host": ["{{baseUrl}}"],
+							"path": ["products"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "12"
+								},
+								{
+									"key": "category",
+									"value": "{{categoryId}}",
+									"description": "Filter by category",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "notebook",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Product (Public)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/products/{{productId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["products", "{{productId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test Categories Data",
+			"item": [
+				{
+					"name": "Create - Textbooks Category",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Textbooks\",\n  \"description\": \"Academic textbooks for all subjects\",\n  \"order\": 1,\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create - Electronics Category",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Electronics\",\n  \"description\": \"Calculators, tablets, and electronic devices\",\n  \"order\": 2,\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create - Bags Category",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Bags & Accessories\",\n  \"description\": \"Backpacks, pencil cases, and accessories\",\n  \"order\": 3,\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create - Art Supplies Category",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Art Supplies\",\n  \"description\": \"Drawing, painting, and craft supplies\",\n  \"order\": 4,\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/product-categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "product-categories"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
+

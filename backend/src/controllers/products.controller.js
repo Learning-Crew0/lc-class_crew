@@ -80,11 +80,11 @@ const deleteProduct = async (req, res, next) => {
 };
 
 /**
- * Toggle publish status
+ * Toggle active status
  */
-const togglePublish = async (req, res, next) => {
+const toggleActive = async (req, res, next) => {
     try {
-        const product = await productService.togglePublishStatus(req.params.id);
+        const product = await productService.toggleActiveStatus(req.params.id);
         return successResponse(
             res,
             product,
@@ -100,30 +100,12 @@ const togglePublish = async (req, res, next) => {
  */
 const updateStock = async (req, res, next) => {
     try {
-        const { quantity } = req.body;
+        const { availableQuantity } = req.body;
         const product = await productService.updateStock(
             req.params.id,
-            quantity
+            availableQuantity
         );
         return successResponse(res, product, "Stock updated successfully");
-    } catch (error) {
-        next(error);
-    }
-};
-
-/**
- * Get featured products
- */
-const getFeatured = async (req, res, next) => {
-    try {
-        const products = await productService.getFeaturedProducts(
-            req.query.limit
-        );
-        return successResponse(
-            res,
-            products,
-            "Featured products retrieved successfully"
-        );
     } catch (error) {
         next(error);
     }
@@ -135,7 +117,6 @@ module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
-    togglePublish,
+    toggleActive,
     updateStock,
-    getFeatured,
 };

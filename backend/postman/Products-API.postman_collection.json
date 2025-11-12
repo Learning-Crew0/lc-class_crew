@@ -1,0 +1,459 @@
+{
+    "info": {
+        "_postman_id": "product-api-collection",
+        "name": "Learning Store - Products API",
+        "description": "Complete API collection for Product Management (Admin & Public endpoints)",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{adminToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5000/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "prodUrl",
+            "value": "https://class-crew.onrender.com/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "adminToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "productId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "categoryId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Admin Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('adminToken', response.data.token);",
+                                    "    console.log('Admin token saved:', response.data.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@lcclasscrew.com\",\n  \"password\": \"changeme123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "login"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin - Products",
+            "item": [
+                {
+                    "name": "1. Get All Products (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products?page=1&limit=10",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "notebook",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "{{categoryId}}",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "isActive",
+                                    "value": "true",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Get all products (including inactive). Admin only."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2. Get Single Product (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products/{{productId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products", "{{productId}}"]
+                        },
+                        "description": "Get single product by ID. Admin only."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "3. Create Product",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('productId', response.data._id);",
+                                    "    console.log('Product ID saved:', response.data._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Premium Notebook\",\n  \"description\": \"High-quality notebook perfect for students and professionals. Features durable cover, smooth paper, and spiral binding.\",\n  \"category\": {\n    \"_id\": \"507f1f77bcf86cd799439011\",\n    \"title\": \"Stationery\"\n  },\n  \"baseCost\": 20000,\n  \"discountRate\": 25,\n  \"availableQuantity\": 500,\n  \"images\": [\n    \"/uploads/temp/file-1234567890-notebook-1.png\",\n    \"/uploads/temp/file-1234567891-notebook-2.png\",\n    \"/uploads/temp/file-1234567892-notebook-3.png\"\n  ],\n  \"isActive\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products"]
+                        },
+                        "description": "Create a new product.\n\n**Required Fields:**\n- name\n- description\n- category (object with _id and title)\n- baseCost\n- images (array, min 1)\n\n**Auto-calculated:**\n- finalPrice (based on baseCost and discountRate)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "4. Update Product",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Premium Notebook - Updated\",\n  \"baseCost\": 18000,\n  \"discountRate\": 30,\n  \"availableQuantity\": 450\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products/{{productId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products", "{{productId}}"]
+                        },
+                        "description": "Update product. All fields optional.\n\nfinalPrice will be auto-recalculated if baseCost or discountRate changes."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "5. Update Stock",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"availableQuantity\": 350\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products/{{productId}}/stock",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "admin",
+                                "products",
+                                "{{productId}}",
+                                "stock"
+                            ]
+                        },
+                        "description": "Update product stock quantity only."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "6. Toggle Active Status",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products/{{productId}}/toggle-active",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "admin",
+                                "products",
+                                "{{productId}}",
+                                "toggle-active"
+                            ]
+                        },
+                        "description": "Toggle product active/inactive status."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "7. Delete Product",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products/{{productId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products", "{{productId}}"]
+                        },
+                        "description": "Permanently delete a product."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Admin endpoints for managing products. Requires admin authentication."
+        },
+        {
+            "name": "Public - Products",
+            "item": [
+                {
+                    "name": "1. Get All Products (Public)",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/products?page=1&limit=12",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "12"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "notebook",
+                                    "description": "Search by name/description",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "{{categoryId}}",
+                                    "description": "Filter by category ID",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "minPrice",
+                                    "value": "10000",
+                                    "description": "Minimum price filter",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "maxPrice",
+                                    "value": "50000",
+                                    "description": "Maximum price filter",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "inStock",
+                                    "value": "true",
+                                    "description": "Only in-stock products",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "sortBy",
+                                    "value": "createdAt",
+                                    "description": "Sort field",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "sortOrder",
+                                    "value": "desc",
+                                    "description": "asc or desc",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Get all **active** products. No auth required.\n\nAutomatically filters `isActive: true`."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "2. Get Single Product (Public)",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/products/{{productId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["products", "{{productId}}"]
+                        },
+                        "description": "Get single active product by ID. No auth required.\n\nReturns 404 if product is inactive."
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Public endpoints for browsing products. No authentication required. Only shows active products."
+        },
+        {
+            "name": "Test Data Examples",
+            "item": [
+                {
+                    "name": "Example 1 - Textbook",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Advanced Mathematics Textbook\",\n  \"description\": \"Comprehensive mathematics textbook covering algebra, calculus, and statistics. Perfect for high school and college students. Includes practice problems and answer key.\",\n  \"category\": {\n    \"_id\": \"507f1f77bcf86cd799439011\",\n    \"title\": \"Textbooks\"\n  },\n  \"baseCost\": 45000,\n  \"discountRate\": 15,\n  \"availableQuantity\": 200,\n  \"images\": [\n    \"/uploads/temp/math-book-cover.png\",\n    \"/uploads/temp/math-book-inside.png\"\n  ],\n  \"isActive\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Example 2 - Calculator",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Scientific Calculator FX-991\",\n  \"description\": \"Professional scientific calculator with 417 functions. Solar powered with backup battery. Perfect for engineering and science students.\",\n  \"category\": {\n    \"_id\": \"507f1f77bcf86cd799439012\",\n    \"title\": \"Electronics\"\n  },\n  \"baseCost\": 35000,\n  \"discountRate\": 0,\n  \"availableQuantity\": 150,\n  \"images\": [\n    \"/uploads/temp/calculator-front.png\",\n    \"/uploads/temp/calculator-box.png\",\n    \"/uploads/temp/calculator-manual.png\"\n  ],\n  \"isActive\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Example 3 - Backpack",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Student Backpack - 30L\",\n  \"description\": \"Durable and spacious backpack designed for students. Features laptop compartment, water-resistant material, padded shoulder straps, and multiple pockets. 30 liter capacity.\",\n  \"category\": {\n    \"_id\": \"507f1f77bcf86cd799439013\",\n    \"title\": \"Bags & Accessories\"\n  },\n  \"baseCost\": 60000,\n  \"discountRate\": 35,\n  \"availableQuantity\": 75,\n  \"images\": [\n    \"/uploads/temp/backpack-front.png\",\n    \"/uploads/temp/backpack-side.png\",\n    \"/uploads/temp/backpack-open.png\",\n    \"/uploads/temp/backpack-details.png\"\n  ],\n  \"isActive\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Example 4 - Art Set",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Professional Art Supply Set - 72 Pieces\",\n  \"description\": \"Complete art set including colored pencils, watercolors, brushes, and sketchpad. Ideal for art students and hobbyists. Comes in a portable wooden case.\",\n  \"category\": {\n    \"_id\": \"507f1f77bcf86cd799439014\",\n    \"title\": \"Art Supplies\"\n  },\n  \"baseCost\": 120000,\n  \"discountRate\": 20,\n  \"availableQuantity\": 50,\n  \"images\": [\n    \"/uploads/temp/art-set-closed.png\",\n    \"/uploads/temp/art-set-open.png\",\n    \"/uploads/temp/art-set-contents.png\"\n  ],\n  \"isActive\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["admin", "products"]
+                        }
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Example product data for testing"
+        }
+    ]
+}

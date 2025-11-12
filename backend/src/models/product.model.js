@@ -6,97 +6,59 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: [true, "Product name is required"],
             trim: true,
-        },
-        slug: {
-            type: String,
-            unique: true,
-            lowercase: true,
+            maxlength: [200, "Product name cannot exceed 200 characters"],
         },
         description: {
             type: String,
             required: [true, "Product description is required"],
-        },
-        shortDescription: {
-            type: String,
-            maxlength: 200,
-        },
-        price: {
-            type: Number,
-            required: [true, "Price is required"],
-            min: 0,
-        },
-        compareAtPrice: {
-            type: Number,
-            min: 0,
+            maxlength: [2000, "Description cannot exceed 2000 characters"],
         },
         category: {
-            type: String,
-            trim: true,
-        },
-        tags: [
-            {
+            _id: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Category",
+                required: [true, "Category is required"],
+            },
+            title: {
                 type: String,
-                trim: true,
-            },
-        ],
-        images: [
-            {
-                type: String,
-            },
-        ],
-        thumbnail: {
-            type: String,
-        },
-        stock: {
-            quantity: {
-                type: Number,
-                default: 0,
-                min: 0,
-            },
-            trackInventory: {
-                type: Boolean,
-                default: true,
+                required: [true, "Category title is required"],
             },
         },
-        sku: {
-            type: String,
-            unique: true,
-            sparse: true,
-            trim: true,
+        baseCost: {
+            type: Number,
+            required: [true, "Base cost is required"],
+            min: [0, "Base cost cannot be negative"],
         },
-        weight: {
-            value: Number,
-            unit: {
-                type: String,
-                enum: ["g", "kg", "lb", "oz"],
-                default: "kg",
-            },
-        },
-        dimensions: {
-            length: Number,
-            width: Number,
-            height: Number,
-            unit: {
-                type: String,
-                enum: ["cm", "in"],
-                default: "cm",
-            },
-        },
-        isPublished: {
-            type: Boolean,
-            default: false,
-        },
-        isFeatured: {
-            type: Boolean,
-            default: false,
-        },
-        salesCount: {
+        discountRate: {
             type: Number,
             default: 0,
+            min: [0, "Discount rate cannot be negative"],
+            max: [100, "Discount rate cannot exceed 100%"],
         },
-        viewCount: {
+        finalPrice: {
             type: Number,
+            required: [true, "Final price is required"],
+            min: [0, "Final price cannot be negative"],
+        },
+        availableQuantity: {
+            type: Number,
+            required: [true, "Available quantity is required"],
             default: 0,
+            min: [0, "Available quantity cannot be negative"],
+        },
+        images: {
+            type: [String],
+            required: [true, "At least one image is required"],
+            validate: {
+                validator: function (arr) {
+                    return arr && arr.length > 0;
+                },
+                message: "At least one image is required",
+            },
+        },
+        isActive: {
+            type: Boolean,
+            default: true,
         },
     },
     {
@@ -106,38 +68,37 @@ const productSchema = new mongoose.Schema(
     }
 );
 
-// Generate slug from name
+// Auto-calculate finalPrice based on baseCost and discountRate
 productSchema.pre("save", function (next) {
-    if (this.isModified("name")) {
-        this.slug = this.name
-            .toLowerCase()
-            .replace(/[^\w\s-]/g, "")
-            .replace(/\s+/g, "-")
-            .replace(/-+/g, "-")
-            .trim();
+    if (this.isModified("baseCost") || this.isModified("discountRate")) {
+        if (this.discountRate > 0) {
+            this.finalPrice = Math.round(
+                this.baseCost * (1 - this.discountRate / 100)
+            );
+        } else {
+            this.finalPrice = this.baseCost;
+        }
     }
     next();
 });
 
-// Virtual for discount percentage
-productSchema.virtual("discountPercentage").get(function () {
-    if (!this.compareAtPrice || this.compareAtPrice <= this.price) return 0;
-    return Math.round(
-        ((this.compareAtPrice - this.price) / this.compareAtPrice) * 100
-    );
+// Virtual field for isNew (products created within last 7 days)
+productSchema.virtual("isNew").get(function () {
+    const daysSinceCreation =
+        (Date.now() - this.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    return daysSinceCreation <= 7;
 });
 
-// Virtual for in stock status
+// Virtual field for inStock
 productSchema.virtual("inStock").get(function () {
-    if (!this.stock.trackInventory) return true;
-    return this.stock.quantity > 0;
+    return this.availableQuantity > 0;
 });
 
-// Indexes
+// Text search indexes
 productSchema.index({ name: "text", description: "text" });
-// Note: slug already has unique index from schema definition
-productSchema.index({ category: 1 });
-productSchema.index({ isPublished: 1 });
+productSchema.index({ "category._id": 1 });
+productSchema.index({ isActive: 1 });
+productSchema.index({ createdAt: -1 });
 
 const Product = mongoose.model("Product", productSchema);
 
