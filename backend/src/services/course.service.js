@@ -18,10 +18,17 @@ const normalizeArrayFields = (data) => {
     arrayFields.forEach((field) => {
         if (data[field]) {
             if (typeof data[field] === "string") {
-                data[field] = data[field]
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean);
+                // Try JSON.parse first (handles stringified arrays like "[\"NEWEST\", \"ALL\"]")
+                try {
+                    const parsed = JSON.parse(data[field]);
+                    data[field] = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) {
+                    // Fall back to comma-split for simple strings like "tag1, tag2, tag3"
+                    data[field] = data[field]
+                        .split(",")
+                        .map((item) => item.trim())
+                        .filter(Boolean);
+                }
             }
         }
     });
