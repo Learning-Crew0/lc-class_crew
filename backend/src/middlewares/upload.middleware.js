@@ -109,6 +109,47 @@ const categoryUploads = uploadSingle("CATEGORIES", "icon");
 const classApplicationUploads =
     createExcelUpload("APPLICATIONS").single("participantsFile");
 
+// Coalition file filter - allow documents, images, and archives
+const coalitionFileFilter = (req, file, cb) => {
+    const allowedTypes = [
+        // Documents
+        "application/pdf",
+        "application/x-hwp",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        // Images
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        // Archives
+        "application/zip",
+        "application/x-zip-compressed",
+    ];
+
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(
+            new Error(
+                "Invalid file type. Allowed: pdf, hwp, doc, docx, ppt, pptx, xls, xlsx, jpg, jpeg, png, zip"
+            ),
+            false
+        );
+    }
+};
+
+const coalitionUploads = multer({
+    storage: createStorage("COALITIONS"),
+    fileFilter: coalitionFileFilter,
+    limits: {
+        fileSize: 15 * 1024 * 1024, // 15MB limit for coalition files
+    },
+}).single("file");
+
 module.exports = {
     uploadSingle,
     uploadMultiple,
@@ -120,5 +161,6 @@ module.exports = {
     reviewUploads,
     categoryUploads,
     classApplicationUploads,
+    coalitionUploads,
     UPLOAD_FOLDERS,
 };

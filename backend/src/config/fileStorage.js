@@ -16,6 +16,7 @@ const UPLOAD_FOLDERS = {
     CERTIFICATES: "certificates",
     ANNOUNCEMENTS: "announcements",
     APPLICATIONS: "applications",
+    COALITIONS: "coalitions",
     TEMP: "temp",
 };
 
