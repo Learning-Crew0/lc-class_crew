@@ -33,7 +33,7 @@ const addToCart = asyncHandler(async (req, res) => {
         throw ApiError.unauthorized("Authentication required");
     }
 
-    const { itemType, productId, quantity, courseSchedule } = req.body;
+    const { itemType, productId, quantity, trainingSchedule, courseSchedule } = req.body;
 
     if (!itemType) {
         throw ApiError.badRequest("Item type is required (course or product)");
@@ -46,14 +46,17 @@ const addToCart = asyncHandler(async (req, res) => {
     let cart;
 
     if (itemType === "course") {
-        if (!courseSchedule) {
+        // Support both field names for backward compatibility
+        const scheduleId = trainingSchedule || courseSchedule;
+        
+        if (!scheduleId) {
             throw ApiError.badRequest("Training schedule is required for courses");
         }
 
         cart = await cartService.addCourseToCart(
             req.user.id,
             productId,
-            courseSchedule
+            scheduleId
         );
     } else if (itemType === "product") {
         cart = await cartService.addProductToCart(

@@ -14,7 +14,8 @@ router.get("/", cartController.getCart);
 
 /**
  * Add item to cart (course or product)
- * Body: { itemType, productId, quantity?, courseSchedule? }
+ * Body: { itemType, productId, quantity?, trainingSchedule? }
+ * Note: courseSchedule is also supported for backward compatibility
  */
 router.post("/add", cartController.addToCart);
 
