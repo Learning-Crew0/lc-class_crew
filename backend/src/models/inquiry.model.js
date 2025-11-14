@@ -197,8 +197,22 @@ inquirySchema.pre("save", async function (next) {
         const dateStr = `${year}${month}${day}`;
 
         // Count today's inquiries (all types combined for sequence)
-        const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
-        const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+        const startOfDay = new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            0,
+            0,
+            0
+        );
+        const endOfDay = new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            23,
+            59,
+            59
+        );
 
         const todayCount = await mongoose.model("Inquiry").countDocuments({
             type: { $in: ["personal", "corporate"] },

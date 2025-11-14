@@ -205,7 +205,7 @@ const getFAQsByCategory = async (categoryKey, filters = {}) => {
 
     const query = {
         category: categoryKey,
-        isActive: true,
+        // Removed isActive filter - show all FAQs
     };
 
     const total = await FAQ.countDocuments(query);
@@ -395,7 +395,7 @@ const searchFAQs = async (query) => {
 
     const searchQuery = {
         $text: { $search: q },
-        isActive: true,
+        // Removed isActive filter - search all FAQs
     };
 
     if (category && category !== "all") {

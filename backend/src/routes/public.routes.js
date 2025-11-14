@@ -51,21 +51,15 @@ router.get("/products", (req, res, next) => {
 router.get("/products/:id", productsController.getProductById);
 
 // === FAQ CATEGORIES ===
-// GET /api/v1/public/faq-categories - Get all active FAQ categories
-router.get("/faq-categories", (req, res, next) => {
-    req.query.isActive = true;
-    faqController.getAllFAQCategories(req, res, next);
-});
+// GET /api/v1/public/faq-categories - Get all FAQ categories (no filtering)
+router.get("/faq-categories", faqController.getAllFAQCategories);
 
 // GET /api/v1/public/faq-categories/:id - Get FAQ category by ID
 router.get("/faq-categories/:id", faqController.getFAQCategoryById);
 
 // === FAQs ===
-// GET /api/v1/public/faqs - Get all published FAQs
-router.get("/faqs", (req, res, next) => {
-    req.query.publicOnly = true;
-    faqsController.getAllFAQs(req, res, next);
-});
+// GET /api/v1/public/faqs - Get all FAQs (no approval filtering)
+router.get("/faqs", faqsController.getAllFAQs);
 
 // GET /api/v1/public/faqs/:id - Get FAQ by ID
 router.get("/faqs/:id", faqsController.getFAQById);
