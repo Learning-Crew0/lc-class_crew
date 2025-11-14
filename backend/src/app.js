@@ -1,9 +1,10 @@
 const express = require("express");
 const path = require("path");
+const helmet = require("helmet");
 const config = require("./config/env");
 const logger = require("./config/logger");
 const pinoHttp = require("pino-http");
-const { helmet, cors, rateLimiter } = require("./config/security");
+const { cors, rateLimiter } = require("./config/security");
 const errorMiddleware = require("./middlewares/error.middleware");
 const routes = require("./routes");
 const { BASE_UPLOAD_PATH, initializeStorage } = require("./config/fileStorage");
