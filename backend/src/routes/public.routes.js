@@ -9,6 +9,7 @@ const faqsController = require("../controllers/faqs.controller");
 const noticesController = require("../controllers/notices.controller");
 const bannersController = require("../controllers/banners.controller");
 const inquiriesController = require("../controllers/inquiries.controller");
+const usersController = require("../controllers/users.controller");
 
 // Validators
 const { validate } = require("../middlewares/validate.middleware");
@@ -97,5 +98,9 @@ router.post(
     validate(createInquirySchema),
     inquiriesController.createInquiry
 );
+
+// === USERS ===
+// GET /api/v1/public/users/verify-by-email - Verify user exists by email
+router.get("/users/verify-by-email", usersController.verifyByEmail);
 
 module.exports = router;

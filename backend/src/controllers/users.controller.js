@@ -52,6 +52,44 @@ const toggleStatus = asyncHandler(async (req, res) => {
     );
 });
 
+const verifyByEmail = asyncHandler(async (req, res) => {
+    const { email } = req.query;
+    
+    if (!email) {
+        return successResponse(
+            res,
+            { success: false, message: "이메일을 입력해주세요" },
+            "이메일을 입력해주세요",
+            400
+        );
+    }
+
+    const user = await userService.getUserByEmail(email);
+    
+    if (!user) {
+        return successResponse(
+            res,
+            { success: false, message: "사용자를 찾을 수 없습니다. Class Crew 계정이 필요합니다." },
+            "사용자를 찾을 수 없습니다",
+            404
+        );
+    }
+
+    return successResponse(
+        res,
+        {
+            success: true,
+            user: {
+                _id: user._id,
+                name: user.fullName || user.username,
+                email: user.email,
+                phone: user.phone || user.phoneNumber
+            }
+        },
+        "사용자 확인 성공"
+    );
+});
+
 module.exports = {
     getAllUsers,
     getUserById,
@@ -59,4 +97,5 @@ module.exports = {
     updateUser,
     deleteUser,
     toggleStatus,
+    verifyByEmail,
 };
