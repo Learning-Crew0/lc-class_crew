@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require("fs");
+const config = require("./env");
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const BASE_UPLOAD_PATH = IS_PRODUCTION
@@ -44,7 +45,9 @@ const getUploadPath = (folderType) => {
 
 const getFileUrl = (folderType, filename) => {
     if (!filename) return null;
-    return `/uploads/${UPLOAD_FOLDERS[folderType]}/${filename}`;
+    const relativeUrl = `/uploads/${UPLOAD_FOLDERS[folderType]}/${filename}`;
+    // Generate full URL for cross-origin access
+    return `${config.serverUrl}${relativeUrl}`;
 };
 
 const deleteFile = (filePath) => {
@@ -62,7 +65,15 @@ const deleteFile = (filePath) => {
 const deleteFileByUrl = (fileUrl) => {
     if (!fileUrl) return false;
 
-    const relativePath = fileUrl.replace("/uploads/", "");
+    // Handle both full URLs and relative URLs
+    let relativePath = fileUrl;
+    if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
+        // Extract relative path from full URL
+        const url = new URL(fileUrl);
+        relativePath = url.pathname;
+    }
+
+    relativePath = relativePath.replace("/uploads/", "");
     const filePath = path.join(BASE_UPLOAD_PATH, relativePath);
     return deleteFile(filePath);
 };

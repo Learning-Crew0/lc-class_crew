@@ -17,14 +17,16 @@ const processUpload = async (file) => {
         // file.path is like: S:\...\backend\uploads\temp\file-123.png
         // We need: /uploads/temp/file-123.png
         const relativePath = file.path.replace(BASE_UPLOAD_PATH, "").replace(/\\/g, "/");
-        const url = `/uploads${relativePath}`;
+        const relativeUrl = `/uploads${relativePath}`;
+        // Generate full URL for cross-origin access
+        const fullUrl = `${config.serverUrl}${relativeUrl}`;
 
         return {
             filename: file.filename,
             originalName: file.originalname,
             mimetype: file.mimetype,
             size: file.size,
-            url: url,
+            url: fullUrl,
             path: file.path,
         };
     }

@@ -1,0 +1,491 @@
+{
+  "info": {
+    "name": "Coalition API",
+    "description": "Coalition (제휴) Application System API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "coalition-api-2025",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{adminToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "coalitionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.collectionVariables.set('adminToken', response.data.token);",
+                  "        console.log('Admin token saved:', response.data.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@lcclasscrew.com\",\n  \"password\": \"changeme123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login as admin to get authentication token"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Create Coalition Application",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('coalitionId', response.data._id);",
+                  "        console.log('Coalition ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "홍길동",
+                  "type": "text"
+                },
+                {
+                  "key": "affiliation",
+                  "value": "ABC Corporation",
+                  "type": "text",
+                  "description": "Organization/Company name"
+                },
+                {
+                  "key": "field",
+                  "value": "Education Technology",
+                  "type": "text"
+                },
+                {
+                  "key": "contact",
+                  "value": "01012345678",
+                  "type": "text",
+                  "description": "11 digits, no dashes"
+                },
+                {
+                  "key": "email",
+                  "value": "hong@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select a file (PDF, DOC, IMG, etc.)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/coalitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions"]
+            },
+            "description": "Submit a coalition application (public endpoint)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get All Applications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/coalitions?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status (pending/approved/rejected)",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search in name, email, affiliation, field",
+                  "disabled": true
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt",
+                  "description": "Sort field",
+                  "disabled": true
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc",
+                  "description": "Sort order (asc/desc)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all coalition applications with pagination and filtering (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Application by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/coalitions/{{coalitionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions", "{{coalitionId}}"]
+            },
+            "description": "Get a single coalition application by ID (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/coalitions/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions", "stats"]
+            },
+            "description": "Get coalition application statistics (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\",\n  \"adminNotes\": \"Great profile. Approved for partnership.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/coalitions/{{coalitionId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions", "{{coalitionId}}", "status"]
+            },
+            "description": "Update coalition application status (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Application",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/coalitions/{{coalitionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions", "{{coalitionId}}"]
+            },
+            "description": "Delete a coalition application (admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test Scenarios",
+      "item": [
+        {
+          "name": "Test - Missing Fields",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Test User",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/coalitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions"]
+            },
+            "description": "Test validation: should return 400 error for missing fields"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Invalid Phone",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Test User",
+                  "type": "text"
+                },
+                {
+                  "key": "affiliation",
+                  "value": "Test Company",
+                  "type": "text"
+                },
+                {
+                  "key": "field",
+                  "value": "Testing",
+                  "type": "text"
+                },
+                {
+                  "key": "contact",
+                  "value": "123456",
+                  "type": "text",
+                  "description": "Invalid phone format"
+                },
+                {
+                  "key": "email",
+                  "value": "test@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/coalitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions"]
+            },
+            "description": "Test validation: should return 400 error for invalid phone format"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Invalid Email",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Test User",
+                  "type": "text"
+                },
+                {
+                  "key": "affiliation",
+                  "value": "Test Company",
+                  "type": "text"
+                },
+                {
+                  "key": "field",
+                  "value": "Testing",
+                  "type": "text"
+                },
+                {
+                  "key": "contact",
+                  "value": "01012345678",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "invalid-email",
+                  "type": "text",
+                  "description": "Invalid email format"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/coalitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions"]
+            },
+            "description": "Test validation: should return 400 error for invalid email format"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Duplicate Email",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Another User",
+                  "type": "text"
+                },
+                {
+                  "key": "affiliation",
+                  "value": "Another Company",
+                  "type": "text"
+                },
+                {
+                  "key": "field",
+                  "value": "Testing",
+                  "type": "text"
+                },
+                {
+                  "key": "contact",
+                  "value": "01098765432",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "hong@example.com",
+                  "type": "text",
+                  "description": "Same email as previous submission"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/coalitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions"]
+            },
+            "description": "Test validation: should return 409 error for duplicate email (run after creating first application)"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Unauthorized Access",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/coalitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["coalitions"]
+            },
+            "description": "Test authorization: should return 401 error when accessing admin endpoint without token"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
+
+
+

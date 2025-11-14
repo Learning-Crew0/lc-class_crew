@@ -1,0 +1,32 @@
+[
+    {
+        "scheduleName": "2024년 3월 정기과정",
+        "startDate": "2024-03-15T00:00:00.000Z",
+        "endDate": "2024-03-16T23:59:59.000Z",
+        "availableSeats": 30,
+        "location": "러닝크루 성수 CLASS",
+        "instructorName": "정상범",
+        "status": "upcoming",
+        "isActive": true
+    },
+    {
+        "scheduleName": "2024년 4월 정기과정",
+        "startDate": "2024-04-20T00:00:00.000Z",
+        "endDate": "2024-04-21T23:59:59.000Z",
+        "availableSeats": 30,
+        "location": "러닝크루 성수 CLASS",
+        "instructorName": "정상범",
+        "status": "upcoming",
+        "isActive": true
+    },
+    {
+        "scheduleName": "2024년 5월 정기과정",
+        "startDate": "2024-05-18T00:00:00.000Z",
+        "endDate": "2024-05-19T23:59:59.000Z",
+        "availableSeats": 30,
+        "location": "러닝크루 성수 CLASS",
+        "instructorName": "정상범",
+        "status": "upcoming",
+        "isActive": true
+    }
+]

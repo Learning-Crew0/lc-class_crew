@@ -48,6 +48,11 @@ const config = {
             : ["image/jpeg", "image/png", "image/jpg", "application/pdf"],
     },
 
+    // Server URL (for generating full URLs for uploaded files)
+    serverUrl:
+        process.env.SERVER_URL ||
+        `http://localhost:${parseInt(process.env.PORT, 10) || 5000}`,
+
     // Storage
     storage: {
         type: process.env.STORAGE_TYPE || "local",
