@@ -13,7 +13,9 @@ async function approveAllReviews() {
         console.log("✅ Connected to MongoDB\n");
 
         // Get count of unapproved reviews
-        const unapprovedCount = await CourseReview.countDocuments({ isApproved: false });
+        const unapprovedCount = await CourseReview.countDocuments({
+            isApproved: false,
+        });
         const totalCount = await CourseReview.countDocuments();
 
         console.log(`📊 Total reviews: ${totalCount}`);
@@ -31,9 +33,10 @@ async function approveAllReviews() {
             { $set: { isApproved: true } }
         );
 
-        console.log(`\n✅ Successfully approved ${result.modifiedCount} reviews!`);
+        console.log(
+            `\n✅ Successfully approved ${result.modifiedCount} reviews!`
+        );
         console.log("\n💡 From now on, all new reviews will be auto-approved.");
-
     } catch (error) {
         console.error("❌ Error:", error.message);
         process.exit(1);
@@ -47,4 +50,3 @@ async function approveAllReviews() {
 console.log("🚀 Approve All Reviews\n");
 console.log("=".repeat(60));
 approveAllReviews();
-

@@ -29,7 +29,10 @@ async function fixProductionUrls() {
             if (banner.image) {
                 // If it has localhost, replace with production URL
                 if (banner.image.includes("localhost")) {
-                    updates.image = banner.image.replace(/http:\/\/localhost:\d+/, serverUrl);
+                    updates.image = banner.image.replace(
+                        /http:\/\/localhost:\d+/,
+                        serverUrl
+                    );
                     needsUpdate = true;
                     console.log(`📌 ${banner.title}`);
                     console.log(`   Old: ${banner.image}`);
@@ -49,7 +52,10 @@ async function fixProductionUrls() {
             if (banner.mobileImage) {
                 // If it has localhost, replace with production URL
                 if (banner.mobileImage.includes("localhost")) {
-                    updates.mobileImage = banner.mobileImage.replace(/http:\/\/localhost:\d+/, serverUrl);
+                    updates.mobileImage = banner.mobileImage.replace(
+                        /http:\/\/localhost:\d+/,
+                        serverUrl
+                    );
                     needsUpdate = true;
                     console.log(`   Mobile Old: ${banner.mobileImage}`);
                     console.log(`   Mobile New: ${updates.mobileImage}`);
@@ -89,4 +95,3 @@ async function fixProductionUrls() {
 console.log("🔧 Production URL Fix Script\n");
 console.log("=".repeat(60));
 fixProductionUrls();
-

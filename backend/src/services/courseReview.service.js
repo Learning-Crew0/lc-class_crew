@@ -39,10 +39,13 @@ const createReview = async (courseId, reviewData, userId, file) => {
     });
 
     if (reviewData.rating) {
-        const reviews = await CourseReview.find({ course: courseId, rating: { $exists: true } });
+        const reviews = await CourseReview.find({
+            course: courseId,
+            rating: { $exists: true },
+        });
         const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
         const averageRating = totalRating / reviews.length;
-        
+
         await Course.findByIdAndUpdate(courseId, { averageRating });
     }
 
@@ -60,10 +63,13 @@ const updateReview = async (reviewId, updates) => {
     }
 
     if (updates.rating) {
-        const reviews = await CourseReview.find({ course: review.course, rating: { $exists: true } });
+        const reviews = await CourseReview.find({
+            course: review.course,
+            rating: { $exists: true },
+        });
         const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
         const averageRating = totalRating / reviews.length;
-        
+
         await Course.findByIdAndUpdate(review.course, { averageRating });
     }
 
@@ -83,11 +89,15 @@ const deleteReview = async (reviewId) => {
     const courseId = review.course;
     await CourseReview.findByIdAndDelete(reviewId);
 
-    const reviews = await CourseReview.find({ course: courseId, rating: { $exists: true } });
-    const averageRating = reviews.length > 0
-        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-        : 0;
-    
+    const reviews = await CourseReview.find({
+        course: courseId,
+        rating: { $exists: true },
+    });
+    const averageRating =
+        reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            : 0;
+
     await Course.findByIdAndUpdate(courseId, { averageRating });
 
     return { message: "리뷰가 성공적으로 삭제되었습니다" };
@@ -99,4 +109,3 @@ module.exports = {
     updateReview,
     deleteReview,
 };
-

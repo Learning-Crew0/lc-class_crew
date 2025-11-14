@@ -54,7 +54,7 @@ const toggleStatus = asyncHandler(async (req, res) => {
 
 const verifyByEmail = asyncHandler(async (req, res) => {
     const { email } = req.query;
-    
+
     if (!email) {
         return successResponse(
             res,
@@ -65,11 +65,15 @@ const verifyByEmail = asyncHandler(async (req, res) => {
     }
 
     const user = await userService.getUserByEmail(email);
-    
+
     if (!user) {
         return successResponse(
             res,
-            { success: false, message: "사용자를 찾을 수 없습니다. Class Crew 계정이 필요합니다." },
+            {
+                success: false,
+                message:
+                    "사용자를 찾을 수 없습니다. Class Crew 계정이 필요합니다.",
+            },
             "사용자를 찾을 수 없습니다",
             404
         );
@@ -83,8 +87,8 @@ const verifyByEmail = asyncHandler(async (req, res) => {
                 _id: user._id,
                 name: user.fullName || user.username,
                 email: user.email,
-                phone: user.phone || user.phoneNumber
-            }
+                phone: user.phone || user.phoneNumber,
+            },
         },
         "사용자 확인 성공"
     );
