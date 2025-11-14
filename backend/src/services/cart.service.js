@@ -21,7 +21,7 @@ const getOrCreateCart = async (userId) => {
         })
         .populate({
             path: "items.product",
-            select: "title price images isPublished stock",
+            select: "name baseCost finalPrice discountRate images isActive availableQuantity category",
         });
 
     if (!cart) {
@@ -146,7 +146,7 @@ const addProductToCart = async (userId, productId, quantity = 1) => {
     if (!product) {
         throw ApiError.notFound("Product not found");
     }
-    if (!product.isPublished) {
+    if (!product.isActive) {
         throw ApiError.badRequest("Product is not available");
     }
 
