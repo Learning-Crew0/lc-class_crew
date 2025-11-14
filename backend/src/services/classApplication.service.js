@@ -25,6 +25,42 @@ const createDraftApplication = async (userId, courseIds) => {
         throw ApiError.badRequest("At least one course must be selected");
     }
 
+    // Check if there's already a draft for this user
+    const existingDraft = await ClassApplication.findOne({
+        user: userId,
+        status: "draft"
+    }).sort({ createdAt: -1 }); // Get most recent draft
+
+    if (existingDraft) {
+        // Update the existing draft with new courses
+        const selectedCourses = await cartService.getSelectedCoursesForApplication(
+            userId,
+            courseIds
+        );
+
+        existingDraft.courses = selectedCourses.map((item) => ({
+            course: item._id,
+            trainingSchedule: item.trainingSchedule._id,
+            courseName: item.name,
+            period: formatPeriod(
+                item.trainingSchedule.startDate,
+                item.trainingSchedule.endDate
+            ),
+            price: item.price,
+            discountedPrice: item.discountedPrice,
+            students: [],
+        }));
+
+        existingDraft.paymentInfo.totalAmount = existingDraft.courses.reduce(
+            (sum, c) => sum + c.discountedPrice,
+            0
+        );
+
+        await existingDraft.save();
+        await existingDraft.populate("courses.course courses.trainingSchedule");
+        return existingDraft;
+    }
+
     // Get selected courses from cart
     const selectedCourses = await cartService.getSelectedCoursesForApplication(
         userId,
