@@ -3,13 +3,14 @@ const Course = require("../models/course.model");
 const ApiError = require("../utils/apiError.util");
 const { getFileUrl, deleteFileByUrl } = require("../config/fileStorage");
 
-const getReviewsByCourse = async (courseId, includeUnapproved = false) => {
+const getReviewsByCourse = async (courseId, includeUnapproved = true) => {
     const course = await Course.findById(courseId);
     if (!course) {
         throw ApiError.notFound("코스를 찾을 수 없습니다");
     }
 
     const filter = { course: courseId };
+    // Show all reviews by default, no approval needed
     if (!includeUnapproved) {
         filter.isApproved = true;
     }

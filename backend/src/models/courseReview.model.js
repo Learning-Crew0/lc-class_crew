@@ -32,7 +32,7 @@ const courseReviewSchema = new mongoose.Schema(
         },
         isApproved: {
             type: Boolean,
-            default: false,
+            default: true, // Auto-approve all reviews
         },
         isVerifiedPurchase: {
             type: Boolean,
