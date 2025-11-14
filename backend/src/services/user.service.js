@@ -60,6 +60,11 @@ const getUserById = async (userId) => {
     return user;
 };
 
+const getUserByEmail = async (email) => {
+    const user = await User.findOne({ email });
+    return user; // Return null if not found (no error throw)
+};
+
 const createUser = async (userData) => {
     const existingEmail = await User.findOne({ email: userData.email });
     if (existingEmail) {
@@ -155,6 +160,7 @@ const toggleUserStatus = async (userId, isActive) => {
 module.exports = {
     getAllUsers,
     getUserById,
+    getUserByEmail,
     createUser,
     updateUser,
     deleteUser,
