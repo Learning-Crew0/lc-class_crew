@@ -13,6 +13,10 @@ const productSchema = new mongoose.Schema(
             required: [true, "Product description is required"],
             maxlength: [2000, "Description cannot exceed 2000 characters"],
         },
+        detailedDescription: {
+            type: String,
+            maxlength: [5000, "Detailed description cannot exceed 5000 characters"],
+        },
         category: {
             _id: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -54,6 +58,16 @@ const productSchema = new mongoose.Schema(
                     return arr && arr.length > 0;
                 },
                 message: "At least one image is required",
+            },
+        },
+        detailImages: {
+            type: [String],
+            default: [],
+            validate: {
+                validator: function (arr) {
+                    return !arr || arr.length <= 2;
+                },
+                message: "Cannot have more than 2 detail images",
             },
         },
         isActive: {

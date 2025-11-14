@@ -22,6 +22,9 @@ const createProductSchema = Joi.object({
         "string.max": "Description cannot exceed 2000 characters",
         "any.required": "Product description is required",
     }),
+    detailedDescription: Joi.string().max(5000).optional().messages({
+        "string.max": "Detailed description cannot exceed 5000 characters",
+    }),
     category: Joi.object({
         _id: Joi.string().required().messages({
             "any.required": "Category ID is required",
@@ -52,6 +55,9 @@ const createProductSchema = Joi.object({
         "array.min": "At least one image is required",
         "any.required": "Images are required",
     }),
+    detailImages: Joi.array().items(imageUrlValidator).max(2).optional().messages({
+        "array.max": "Cannot have more than 2 detail images",
+    }),
     isActive: Joi.boolean().default(true),
 });
 
@@ -61,6 +67,9 @@ const updateProductSchema = Joi.object({
     }),
     description: Joi.string().max(2000).optional().messages({
         "string.max": "Description cannot exceed 2000 characters",
+    }),
+    detailedDescription: Joi.string().max(5000).optional().messages({
+        "string.max": "Detailed description cannot exceed 5000 characters",
     }),
     category: Joi.object({
         _id: Joi.string().required(),
@@ -81,6 +90,9 @@ const updateProductSchema = Joi.object({
     }),
     images: Joi.array().items(imageUrlValidator).min(1).optional().messages({
         "array.min": "At least one image is required",
+    }),
+    detailImages: Joi.array().items(imageUrlValidator).max(2).optional().messages({
+        "array.max": "Cannot have more than 2 detail images",
     }),
     isActive: Joi.boolean().optional(),
 }).min(1);
