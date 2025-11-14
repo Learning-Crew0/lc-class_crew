@@ -49,6 +49,9 @@ const createCourseSchema = Joi.object({
     recommendedAudience: Joi.alternatives()
         .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
         .optional(),
+    targetAudience: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
     learningGoals: Joi.alternatives()
         .try(Joi.string().trim(), Joi.array().items(Joi.string().trim()))
         .optional(),
@@ -118,6 +121,9 @@ const updateCourseSchema = Joi.object({
         .optional(),
     target: Joi.string().trim().optional(),
     recommendedAudience: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
+        .optional(),
+    targetAudience: Joi.alternatives()
         .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
         .optional(),
     learningGoals: Joi.alternatives()

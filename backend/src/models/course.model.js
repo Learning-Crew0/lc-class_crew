@@ -73,6 +73,12 @@ const courseSchema = new mongoose.Schema(
                 trim: true,
             },
         ],
+        targetAudience: [
+            {
+                type: String,
+                trim: true,
+            },
+        ],
         learningGoals: {
             type: mongoose.Schema.Types.Mixed,
         },
