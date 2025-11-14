@@ -66,6 +66,5 @@ async function migrateImageUrls() {
 
 // Run the migration
 console.log("🔧 Image URL Migration Script\n");
-console.log("=" .repeat(60));
+console.log("=".repeat(60));
 migrateImageUrls();
-
