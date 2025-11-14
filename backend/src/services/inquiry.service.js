@@ -212,8 +212,163 @@ const deleteInquiry = async (inquiryId) => {
     return { message: "Inquiry deleted successfully" };
 };
 
+/**
+ * Helper: Transform phone object to string
+ * @param {Object} phoneObj - { prefix, middle, last }
+ * @returns {String} - "010-1234-5678"
+ */
+const transformPhoneToString = (phoneObj) => {
+    if (!phoneObj || !phoneObj.prefix || !phoneObj.middle || !phoneObj.last) {
+        throw ApiError.badRequest("Invalid phone format");
+    }
+    return `${phoneObj.prefix}${phoneObj.middle}${phoneObj.last}`;
+};
+
+/**
+ * Helper: Transform email object to string
+ * @param {Object} emailObj - { username, domain }
+ * @returns {String} - "user@example.com"
+ */
+const transformEmailToString = (emailObj) => {
+    if (!emailObj || !emailObj.username || !emailObj.domain) {
+        throw ApiError.badRequest("Invalid email format");
+    }
+    return `${emailObj.username}@${emailObj.domain}`;
+};
+
+/**
+ * Helper: Send admin notification (email/in-app)
+ * TODO: Implement actual email sending when email service is configured
+ */
+const sendAdminNotification = async (inquiry) => {
+    // For now, just log the notification
+    // In production, this should send email to admin@classcrew.com
+    console.log("📧 Admin Notification:", {
+        inquiryId: inquiry.inquiryId,
+        type: inquiry.type,
+        name: inquiry.name,
+        email: inquiry.email,
+        phone: inquiry.phone,
+        submittedAt: inquiry.createdAt,
+    });
+
+    // TODO: Implement email sending
+    // const emailService = require("./email.service");
+    // await emailService.sendEmail({
+    //     to: "admin@classcrew.com",
+    //     subject: `New ${inquiry.type} Inquiry - ${inquiry.inquiryId}`,
+    //     template: "admin-inquiry-notification",
+    //     data: inquiry
+    // });
+
+    return true;
+};
+
+/**
+ * Create personal inquiry
+ */
+const createPersonalInquiry = async (inquiryData) => {
+    // Transform phone and email objects to strings
+    const phone = transformPhoneToString(inquiryData.phone);
+    const email = transformEmailToString(inquiryData.email);
+
+    // Create inquiry
+    const inquiry = await Inquiry.create({
+        type: "personal",
+        name: inquiryData.name,
+        email,
+        phone,
+        status: "pending",
+        agreeToTerms: true, // Assuming frontend validates this
+    });
+
+    // Send admin notification
+    await sendAdminNotification(inquiry);
+
+    return {
+        inquiryId: inquiry.inquiryId,
+        type: inquiry.type,
+        status: inquiry.status,
+        submittedAt: inquiry.createdAt,
+    };
+};
+
+/**
+ * Create corporate inquiry
+ */
+const createCorporateInquiry = async (inquiryData) => {
+    // Transform phone and email objects to strings
+    const phone = transformPhoneToString(inquiryData.phone);
+    const email = transformEmailToString(inquiryData.email);
+
+    // Create inquiry - same fields as personal inquiry
+    const inquiry = await Inquiry.create({
+        type: "corporate",
+        name: inquiryData.name,
+        email,
+        phone,
+        status: "pending",
+        agreeToTerms: true, // Assuming frontend validates this
+    });
+
+    // Send admin notification
+    await sendAdminNotification(inquiry);
+
+    return {
+        inquiryId: inquiry.inquiryId,
+        type: inquiry.type,
+        status: inquiry.status,
+        submittedAt: inquiry.createdAt,
+    };
+};
+
+/**
+ * Update getAllInquiries to support type filtering
+ */
+const getAllInquiriesUpdated = async (query) => {
+    const { page, limit, skip } = getPaginationParams(query);
+
+    const filter = {};
+
+    if (query.status) {
+        filter.status = query.status;
+    }
+
+    if (query.category) {
+        filter.category = query.category;
+    }
+
+    if (query.priority) {
+        filter.priority = query.priority;
+    }
+
+    if (query.userId) {
+        filter.user = query.userId;
+    }
+
+    // Add type filter
+    if (query.type) {
+        filter.type = query.type;
+    }
+
+    const inquiries = await Inquiry.find(filter)
+        .populate("user", "firstName lastName email")
+        .populate("assignedTo", "name email")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const total = await Inquiry.countDocuments(filter);
+
+    return {
+        inquiries,
+        pagination: createPaginationMeta(page, limit, total),
+    };
+};
+
 module.exports = {
     getAllInquiries,
+    getAllInquiriesUpdated,
     getInquiryById,
     createInquiry,
     updateInquiryStatus,
@@ -222,4 +377,6 @@ module.exports = {
     addNote,
     deleteInquiry,
     getMyEnquiries,
+    createPersonalInquiry,
+    createCorporateInquiry,
 };

@@ -81,6 +81,112 @@ const updateInquirySchema = Joi.object({
         .optional(),
 });
 
+// Personal Inquiry Schema
+const personalInquirySchema = Joi.object({
+    phone: Joi.object({
+        prefix: Joi.string()
+            .valid("010", "011", "016", "017", "018", "019")
+            .required()
+            .messages({
+                "any.required": "전화번호 앞자리를 선택해주세요",
+                "any.only": "올바른 전화번호 앞자리를 선택해주세요",
+            }),
+        middle: Joi.string()
+            .pattern(/^[0-9]{3,4}$/)
+            .required()
+            .messages({
+                "string.pattern.base":
+                    "전화번호 중간자리는 3-4자리 숫자여야 합니다",
+                "any.required": "전화번호 중간자리를 입력해주세요",
+            }),
+        last: Joi.string()
+            .pattern(/^[0-9]{4}$/)
+            .required()
+            .messages({
+                "string.pattern.base":
+                    "전화번호 뒷자리는 4자리 숫자여야 합니다",
+                "any.required": "전화번호 뒷자리를 입력해주세요",
+            }),
+    })
+        .required()
+        .messages({
+            "any.required": "휴대전화번호를 입력해주세요",
+        }),
+    email: Joi.object({
+        username: Joi.string().trim().required().messages({
+            "string.empty": "이메일 아이디를 입력해주세요",
+            "any.required": "이메일 아이디를 입력해주세요",
+        }),
+        domain: Joi.string().trim().required().messages({
+            "string.empty": "이메일 도메인을 선택해주세요",
+            "any.required": "이메일 도메인을 선택해주세요",
+        }),
+    })
+        .required()
+        .messages({
+            "any.required": "이메일을 입력해주세요",
+        }),
+    name: Joi.string().trim().min(2).max(100).required().messages({
+        "string.empty": "이름을 입력해주세요",
+        "string.min": "이름은 최소 2자 이상이어야 합니다",
+        "string.max": "이름은 최대 100자까지 입력 가능합니다",
+        "any.required": "이름을 입력해주세요",
+    }),
+});
+
+// Corporate Inquiry Schema - Same fields as personal (phone, email, name only)
+const corporateInquirySchema = Joi.object({
+    phone: Joi.object({
+        prefix: Joi.string()
+            .valid("010", "011", "016", "017", "018", "019")
+            .required()
+            .messages({
+                "any.required": "전화번호 앞자리를 선택해주세요",
+                "any.only": "올바른 전화번호 앞자리를 선택해주세요",
+            }),
+        middle: Joi.string()
+            .pattern(/^[0-9]{3,4}$/)
+            .required()
+            .messages({
+                "string.pattern.base":
+                    "전화번호 중간자리는 3-4자리 숫자여야 합니다",
+                "any.required": "전화번호 중간자리를 입력해주세요",
+            }),
+        last: Joi.string()
+            .pattern(/^[0-9]{4}$/)
+            .required()
+            .messages({
+                "string.pattern.base":
+                    "전화번호 뒷자리는 4자리 숫자여야 합니다",
+                "any.required": "전화번호 뒷자리를 입력해주세요",
+            }),
+    })
+        .required()
+        .messages({
+            "any.required": "휴대전화번호를 입력해주세요",
+        }),
+    email: Joi.object({
+        username: Joi.string().trim().required().messages({
+            "string.empty": "이메일 아이디를 입력해주세요",
+            "any.required": "이메일 아이디를 입력해주세요",
+        }),
+        domain: Joi.string().trim().required().messages({
+            "string.empty": "이메일 도메인을 선택해주세요",
+            "any.required": "이메일 도메인을 선택해주세요",
+        }),
+    })
+        .required()
+        .messages({
+            "any.required": "이메일을 입력해주세요",
+        }),
+    name: Joi.string().trim().min(2).max(100).required().messages({
+        "string.empty": "이름을 입력해주세요",
+        "string.min": "이름은 최소 2자 이상이어야 합니다",
+        "string.max": "이름은 최대 100자까지 입력 가능합니다",
+        "any.required": "이름을 입력해주세요",
+    }),
+});
+
 module.exports = {
     createInquirySchema,
     updateStatusSchema,
@@ -88,4 +194,6 @@ module.exports = {
     respondSchema,
     addNoteSchema,
     updateInquirySchema,
+    personalInquirySchema,
+    corporateInquirySchema,
 };

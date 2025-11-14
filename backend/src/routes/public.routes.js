@@ -13,7 +13,11 @@ const usersController = require("../controllers/users.controller");
 
 // Validators
 const { validate } = require("../middlewares/validate.middleware");
-const { createInquirySchema } = require("../validators/inquiry.validators");
+const { 
+    createInquirySchema,
+    personalInquirySchema,
+    corporateInquirySchema,
+} = require("../validators/inquiry.validators");
 const { markHelpfulSchema } = require("../validators/faq.validators");
 
 // Middleware
@@ -97,6 +101,20 @@ router.post(
     optionalAuth,
     validate(createInquirySchema),
     inquiriesController.createInquiry
+);
+
+// POST /api/v1/public/inquiries/personal - Submit personal inquiry
+router.post(
+    "/inquiries/personal",
+    validate(personalInquirySchema),
+    inquiriesController.createPersonalInquiry
+);
+
+// POST /api/v1/public/inquiries/corporate - Submit corporate inquiry
+router.post(
+    "/inquiries/corporate",
+    validate(corporateInquirySchema),
+    inquiriesController.createCorporateInquiry
 );
 
 // === USERS ===

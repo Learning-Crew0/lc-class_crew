@@ -164,6 +164,40 @@ const deleteInquiry = async (req, res, next) => {
     }
 };
 
+/**
+ * Create personal inquiry
+ */
+const createPersonalInquiry = async (req, res, next) => {
+    try {
+        const result = await inquiryService.createPersonalInquiry(req.body);
+        return successResponse(
+            res,
+            result,
+            "조회 요청이 접수되었습니다.",
+            200
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Create corporate inquiry
+ */
+const createCorporateInquiry = async (req, res, next) => {
+    try {
+        const result = await inquiryService.createCorporateInquiry(req.body);
+        return successResponse(
+            res,
+            result,
+            "조회 요청이 접수되었습니다.",
+            200
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getAllInquiries,
     getInquiryById,
@@ -174,4 +208,6 @@ module.exports = {
     addNote,
     deleteInquiry,
     getMyEnquiries,
+    createPersonalInquiry,
+    createCorporateInquiry,
 };
