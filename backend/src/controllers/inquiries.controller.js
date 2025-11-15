@@ -134,6 +134,7 @@ const addNote = async (req, res, next) => {
 
 /**
  * Get my enquiries (authenticated user)
+ * GET /api/v1/user/inquiries
  */
 const getMyEnquiries = async (req, res, next) => {
     try {
@@ -141,11 +142,12 @@ const getMyEnquiries = async (req, res, next) => {
             req.user.id,
             req.query
         );
-        return paginatedResponse(
+        
+        // Return in format expected by frontend
+        return successResponse(
             res,
-            inquiries,
-            pagination,
-            "Enquiries retrieved successfully"
+            { inquiries, pagination },
+            "문의 내역을 성공적으로 조회했습니다"
         );
     } catch (error) {
         next(error);

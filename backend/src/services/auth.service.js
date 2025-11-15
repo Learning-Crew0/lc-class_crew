@@ -153,16 +153,16 @@ const getProfile = async (userId, role) => {
 };
 
 const updateProfile = async (userId, updates) => {
+    // Only restrict critical fields that should never be changed via profile update
     const restrictedFields = [
-        "password",
-        "email",
-        "username",
-        "role",
-        "memberType",
-        "agreements",
+        "password", // Changed via changePassword endpoint only
+        "email", // Cannot be changed (account identifier)
+        "username", // Cannot be changed (login ID)
+        "role", // Cannot be changed by user
     ];
     restrictedFields.forEach((field) => delete updates[field]);
 
+    // Allow updates to: gender, memberType, phone, dob, agreements, fullName (optional)
     const user = await User.findByIdAndUpdate(userId, updates, {
         new: true,
         runValidators: true,

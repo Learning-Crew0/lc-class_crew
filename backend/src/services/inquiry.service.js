@@ -175,23 +175,45 @@ const getMyEnquiries = async (userId, query) => {
     }
 
     const inquiries = await Inquiry.find(filter)
-        .select("ticketNumber subject category status createdAt response")
+        .select(
+            "ticketNumber subject message category status createdAt response type inquiryContent"
+        )
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
     const total = await Inquiry.countDocuments(filter);
 
-    // Format response with hasResponse flag
-    const formattedInquiries = inquiries.map((inquiry) => ({
-        _id: inquiry._id,
-        ticketNumber: inquiry.ticketNumber,
-        subject: inquiry.subject,
-        category: inquiry.category,
-        status: inquiry.status,
-        createdAt: inquiry.createdAt,
-        hasResponse: !!(inquiry.response && inquiry.response.message),
-    }));
+    // Map backend status to Korean status for frontend
+    const mapStatus = (backendStatus, hasResponse) => {
+        if (backendStatus === "resolved" || backendStatus === "closed" || hasResponse) {
+            return "답변완료";
+        }
+        return "미확인";
+    };
+
+    // Format response for frontend
+    const formattedInquiries = inquiries.map((inquiry) => {
+        const hasResponse = !!(inquiry.response && inquiry.response.message);
+        const koreanStatus = mapStatus(inquiry.status, hasResponse);
+
+        const formattedInquiry = {
+            _id: inquiry._id,
+            title: inquiry.subject || inquiry.ticketNumber || "문의",
+            content: inquiry.message || inquiry.inquiryContent || "",
+            category: inquiry.category || "기타",
+            status: koreanStatus,
+            createdAt: inquiry.createdAt,
+        };
+
+        // Add reply info if there's a response
+        if (hasResponse) {
+            formattedInquiry.reply = inquiry.response.message;
+            formattedInquiry.repliedAt = inquiry.response.respondedAt;
+        }
+
+        return formattedInquiry;
+    });
 
     return {
         inquiries: formattedInquiries,

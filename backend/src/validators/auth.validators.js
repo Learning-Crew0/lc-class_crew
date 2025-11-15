@@ -86,6 +86,12 @@ const adminLoginSchema = Joi.object({
 
 const updateProfileSchema = Joi.object({
     fullName: Joi.string().trim().min(2).max(100).optional(),
+    gender: Joi.string()
+        .valid(...Object.values(GENDER_TYPES))
+        .optional()
+        .messages({
+            "any.only": "성별을 선택해주세요",
+        }),
     phone: Joi.string()
         .trim()
         .pattern(/^01[0-9]{9,10}$|^[6-9][0-9]{9}$|^91[6-9][0-9]{9}$|^82[0-9]{9,10}$|^\+?[0-9]{10,15}$/)
@@ -93,6 +99,24 @@ const updateProfileSchema = Joi.object({
         .messages({
             "string.pattern.base": "올바른 휴대전화 번호를 입력해주세요",
         }),
+    dob: Joi.date().max("now").optional().messages({
+        "date.max": "생년월일은 오늘 이전이어야 합니다",
+    }),
+    memberType: Joi.string()
+        .valid(
+            MEMBERSHIP_TYPES.EMPLOYED,
+            MEMBERSHIP_TYPES.CORPORATE_TRAINING_MANAGER,
+            MEMBERSHIP_TYPES.JOB_SEEKER
+        )
+        .optional()
+        .messages({
+            "any.only": "회원구분을 선택해주세요",
+        }),
+    agreements: Joi.object({
+        termsOfService: Joi.boolean().optional(),
+        privacyPolicy: Joi.boolean().optional(),
+        marketingConsent: Joi.boolean().optional(),
+    }).optional(),
     profilePicture: Joi.string().uri().optional(),
 });
 
