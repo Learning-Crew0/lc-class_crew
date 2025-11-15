@@ -205,6 +205,56 @@ const changePassword = async (userId, currentPassword, newPassword, role) => {
     return { message: "비밀번호가 성공적으로 변경되었습니다" };
 };
 
+/**
+ * Verify member by phone, email, and name
+ * Used for personal/corporate inquiry verification
+ * @param {String} phone - User's phone number
+ * @param {String} email - User's email
+ * @param {String} name - User's full name
+ * @returns {Object} Verification result
+ */
+const verifyMember = async (phone, email, name) => {
+    // Normalize phone number (remove spaces, dashes, etc.)
+    const normalizedPhone = phone.replace(/[\s-]/g, "");
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedName = name.trim();
+
+    // Find user by phone and email
+    const user = await User.findOne({
+        $or: [
+            { phone: normalizedPhone },
+            { phoneNumber: normalizedPhone }, // Check both field names
+        ],
+    });
+
+    // User not found (not a member)
+    if (!user) {
+        return {
+            success: false,
+            notFound: true,
+        };
+    }
+
+    // Check if all information matches
+    const emailMatch =
+        user.email?.toLowerCase() === normalizedEmail;
+    const nameMatch =
+        user.fullName?.trim() === normalizedName || user.username?.trim() === normalizedName;
+
+    // If info doesn't match
+    if (!emailMatch || !nameMatch) {
+        return {
+            success: false,
+            notFound: false, // User exists, but info doesn't match
+        };
+    }
+
+    // All checks passed
+    return {
+        success: true,
+    };
+};
+
 module.exports = {
     register,
     login,
@@ -212,4 +262,5 @@ module.exports = {
     getProfile,
     updateProfile,
     changePassword,
+    verifyMember,
 };

@@ -40,6 +40,41 @@ const changePassword = asyncHandler(async (req, res) => {
     return successResponse(res, result, "비밀번호 변경 성공");
 });
 
+/**
+ * Verify member by phone, email, and name
+ * Used for personal/corporate inquiry verification
+ */
+const verifyMember = asyncHandler(async (req, res) => {
+    const { phone, email, name } = req.body;
+
+    if (!phone || !email || !name) {
+        return res.status(400).json({
+            status: "error",
+            message: "Phone, email, and name are required",
+        });
+    }
+
+    const result = await authService.verifyMember(phone, email, name);
+
+    if (result.success) {
+        return res.status(200).json({
+            status: "success",
+            success: true,
+            message: "Member verified",
+        });
+    } else if (result.notFound) {
+        return res.status(404).json({
+            status: "error",
+            message: "가입되어 있지 않습니다",
+        });
+    } else {
+        return res.status(400).json({
+            status: "error",
+            message: "일치하지 않습니다",
+        });
+    }
+});
+
 module.exports = {
     register,
     login,
@@ -47,4 +82,5 @@ module.exports = {
     getProfile,
     updateProfile,
     changePassword,
+    verifyMember,
 };

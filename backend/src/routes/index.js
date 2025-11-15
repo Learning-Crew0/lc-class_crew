@@ -43,6 +43,9 @@ router.post(
 
 router.post("/auth/login", validate(loginSchema), authController.login);
 
+// Verify Member (for personal/corporate inquiry)
+router.post("/auth/verify-member", authController.verifyMember);
+
 // Find ID
 router.post(
     "/auth/find-id",
