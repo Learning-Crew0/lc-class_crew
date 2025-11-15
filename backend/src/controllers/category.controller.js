@@ -1,43 +1,79 @@
+/**
+ * Category & Position Controller
+ * Handles HTTP requests for categories and positions
+ */
+
 const categoryService = require("../services/category.service");
 const asyncHandler = require("../utils/asyncHandler.util");
 const { successResponse } = require("../utils/response.util");
 
+/**
+ * Get all categories
+ * GET /api/v1/categories
+ */
 const getAllCategories = asyncHandler(async (req, res) => {
-    const result = await categoryService.getAllCategories(req.query);
-    return successResponse(res, result, "카테고리 목록을 성공적으로 조회했습니다");
+    const categories = await categoryService.getAllCategories();
+
+    return successResponse(
+        res,
+        { categories },
+        "Categories retrieved successfully"
+    );
 });
 
-const getCategoryById = asyncHandler(async (req, res) => {
-    const category = await categoryService.getCategoryById(req.params.id);
-    return successResponse(res, category, "카테고리 상세 정보를 성공적으로 조회했습니다");
+/**
+ * Get all positions
+ * GET /api/v1/positions
+ */
+const getAllPositions = asyncHandler(async (req, res) => {
+    const positions = await categoryService.getAllPositions();
+
+    return successResponse(
+        res,
+        { positions },
+        "Positions retrieved successfully"
+    );
 });
 
-const getCategoryWithCourses = asyncHandler(async (req, res) => {
-    const category = await categoryService.getCategoryWithCourses(req.params.id);
-    return successResponse(res, category, "카테고리와 코스 목록을 성공적으로 조회했습니다");
+/**
+ * Get category by slug
+ * GET /api/v1/categories/:slug
+ */
+const getCategoryBySlug = asyncHandler(async (req, res) => {
+    const category = await categoryService.getCategoryBySlug(req.params.slug);
+
+    if (!category) {
+        return successResponse(res, null, "Category not found", 404);
+    }
+
+    return successResponse(
+        res,
+        { category },
+        "Category retrieved successfully"
+    );
 });
 
-const createCategory = asyncHandler(async (req, res) => {
-    const category = await categoryService.createCategory(req.body);
-    return successResponse(res, category, "카테고리가 성공적으로 생성되었습니다", 201);
-});
+/**
+ * Get position by slug
+ * GET /api/v1/positions/:slug
+ */
+const getPositionBySlug = asyncHandler(async (req, res) => {
+    const position = await categoryService.getPositionBySlug(req.params.slug);
 
-const updateCategory = asyncHandler(async (req, res) => {
-    const category = await categoryService.updateCategory(req.params.id, req.body);
-    return successResponse(res, category, "카테고리가 성공적으로 업데이트되었습니다");
-});
+    if (!position) {
+        return successResponse(res, null, "Position not found", 404);
+    }
 
-const deleteCategory = asyncHandler(async (req, res) => {
-    const result = await categoryService.deleteCategory(req.params.id);
-    return successResponse(res, result, result.message);
+    return successResponse(
+        res,
+        { position },
+        "Position retrieved successfully"
+    );
 });
 
 module.exports = {
     getAllCategories,
-    getCategoryById,
-    getCategoryWithCourses,
-    createCategory,
-    updateCategory,
-    deleteCategory,
+    getAllPositions,
+    getCategoryBySlug,
+    getPositionBySlug,
 };
-

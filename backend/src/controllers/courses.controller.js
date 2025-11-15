@@ -253,6 +253,35 @@ const upsertNotice = asyncHandler(async (req, res) => {
     return successResponse(res, notice, "공지가 성공적으로 저장되었습니다");
 });
 
+/**
+ * Get courses by category (navbar filtering)
+ * GET /api/v1/courses/category/:slug
+ */
+const getCoursesByCategory = asyncHandler(async (req, res) => {
+    const result = await courseService.getCoursesByCategory(
+        req.params.slug,
+        req.query
+    );
+    return successResponse(
+        res,
+        result,
+        "카테고리별 코스를 성공적으로 조회했습니다"
+    );
+});
+
+/**
+ * Search/filter courses by category and/or position
+ * GET /api/v1/courses/search
+ */
+const searchCourses = asyncHandler(async (req, res) => {
+    const result = await courseService.searchCourses(req.query);
+    return successResponse(
+        res,
+        result,
+        "코스 검색을 성공적으로 완료했습니다"
+    );
+});
+
 module.exports = {
     getAllCourses,
     getCourseById,
@@ -279,4 +308,6 @@ module.exports = {
     deleteReview,
     getNotice,
     upsertNotice,
+    getCoursesByCategory,
+    searchCourses,
 };

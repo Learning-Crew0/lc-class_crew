@@ -10,6 +10,7 @@ const noticesController = require("../controllers/notices.controller");
 const bannersController = require("../controllers/banners.controller");
 const inquiriesController = require("../controllers/inquiries.controller");
 const usersController = require("../controllers/users.controller");
+const categoryController = require("../controllers/category.controller");
 
 // Validators
 const { validate } = require("../middlewares/validate.middleware");
@@ -23,7 +24,20 @@ const { markHelpfulSchema } = require("../validators/faq.validators");
 // Middleware
 const { optionalAuth } = require("../middlewares/auth.middleware");
 
+// === CATEGORIES & POSITIONS ===
+// GET /api/v1/public/categories - Get all categories
+router.get("/categories", categoryController.getAllCategories);
+
+// GET /api/v1/public/positions - Get all positions
+router.get("/positions", categoryController.getAllPositions);
+
 // === COURSES ===
+// GET /api/v1/public/courses/search - Search courses by category and/or position
+router.get("/courses/search", coursesController.searchCourses);
+
+// GET /api/v1/public/courses/category/:slug - Get courses by category (navbar filtering)
+router.get("/courses/category/:slug", coursesController.getCoursesByCategory);
+
 // GET /api/v1/public/courses - Get all published courses
 router.get("/courses", (req, res, next) => {
     req.query.isActive = true;

@@ -6,6 +6,12 @@ const {
     createPaginationMeta,
 } = require("../utils/pagination.util");
 const { getFileUrl, deleteFileByUrl } = require("../config/fileStorage");
+const {
+    getCategoryInfo,
+    getPositionInfo,
+    isValidCategory,
+    isValidPosition,
+} = require("../constants/categories");
 
 const normalizeArrayFields = (data) => {
     const arrayFields = [
@@ -115,9 +121,28 @@ const getCourseById = async (courseId, includeRelated = false) => {
 const createCourse = async (courseData, files) => {
     const normalizedData = normalizeArrayFields(courseData);
 
-    const category = await Category.findById(normalizedData.category);
-    if (!category) {
-        throw ApiError.notFound("카테고리를 찾을 수 없습니다");
+    // Validate category and position (done by Joi validator already)
+    // Auto-populate categoryInfo and positionInfo
+    if (normalizedData.category) {
+        const categoryInfo = getCategoryInfo(normalizedData.category);
+        if (categoryInfo) {
+            normalizedData.categoryInfo = {
+                slug: categoryInfo.slug,
+                koreanName: categoryInfo.koreanName,
+                englishName: categoryInfo.englishName,
+            };
+        }
+    }
+
+    if (normalizedData.position) {
+        const positionInfo = getPositionInfo(normalizedData.position);
+        if (positionInfo) {
+            normalizedData.positionInfo = {
+                slug: positionInfo.slug,
+                koreanName: positionInfo.koreanName,
+                englishName: positionInfo.englishName,
+            };
+        }
     }
 
     if (files?.mainImage) {
@@ -137,10 +162,6 @@ const createCourse = async (courseData, files) => {
 
     const course = await Course.create(normalizedData);
 
-    await Category.findByIdAndUpdate(normalizedData.category, {
-        $inc: { courseCount: 1 },
-    });
-
     return course;
 };
 
@@ -152,21 +173,28 @@ const updateCourse = async (courseId, updates, files) => {
 
     const normalizedUpdates = normalizeArrayFields(updates);
 
-    if (
-        normalizedUpdates.category &&
-        normalizedUpdates.category !== course.category.toString()
-    ) {
-        const category = await Category.findById(normalizedUpdates.category);
-        if (!category) {
-            throw ApiError.notFound("카테고리를 찾을 수 없습니다");
+    // Auto-populate categoryInfo if category is being updated
+    if (normalizedUpdates.category) {
+        const categoryInfo = getCategoryInfo(normalizedUpdates.category);
+        if (categoryInfo) {
+            normalizedUpdates.categoryInfo = {
+                slug: categoryInfo.slug,
+                koreanName: categoryInfo.koreanName,
+                englishName: categoryInfo.englishName,
+            };
         }
+    }
 
-        await Category.findByIdAndUpdate(course.category, {
-            $inc: { courseCount: -1 },
-        });
-        await Category.findByIdAndUpdate(normalizedUpdates.category, {
-            $inc: { courseCount: 1 },
-        });
+    // Auto-populate positionInfo if position is being updated
+    if (normalizedUpdates.position) {
+        const positionInfo = getPositionInfo(normalizedUpdates.position);
+        if (positionInfo) {
+            normalizedUpdates.positionInfo = {
+                slug: positionInfo.slug,
+                koreanName: positionInfo.koreanName,
+                englishName: positionInfo.englishName,
+            };
+        }
     }
 
     if (files?.mainImage) {
@@ -197,7 +225,7 @@ const updateCourse = async (courseId, updates, files) => {
             new: true,
             runValidators: true,
         }
-    ).populate("category", "title");
+    );
 
     return updatedCourse;
 };
@@ -219,12 +247,147 @@ const deleteCourse = async (courseId) => {
         deleteFileByUrl(course.hoverImage);
     }
 
-    await Category.findByIdAndUpdate(course.category, {
-        $inc: { courseCount: -1 },
-    });
     await Course.findByIdAndDelete(courseId);
 
     return { message: "코스가 성공적으로 삭제되었습니다" };
+};
+
+/**
+ * Get courses by category slug (for navbar filtering)
+ * @param {string} categorySlug - Category slug
+ * @param {Object} query - Query parameters (page, limit, sortBy, order)
+ * @returns {Object} Courses and pagination
+ */
+const getCoursesByCategory = async (categorySlug, query = {}) => {
+    // Validate category
+    if (!isValidCategory(categorySlug)) {
+        throw ApiError.badRequest(`Invalid category: ${categorySlug}`);
+    }
+
+    const { page, limit, skip } = getPaginationParams(query);
+    const { sortBy = "createdAt", order = "desc" } = query;
+
+    // Build filter
+    const filter = {
+        category: categorySlug,
+        isActive: true, // Only show active courses to public
+    };
+
+    // Build sort
+    const sortOrder = order === "asc" ? 1 : -1;
+    const sort = { [sortBy]: sortOrder };
+
+    // Query courses
+    const courses = await Course.find(filter)
+        .populate("trainingSchedules")
+        .sort(sort)
+        .skip(skip)
+        .limit(limit);
+
+    const total = await Course.countDocuments(filter);
+
+    // Get category info for response
+    const categoryInfo = getCategoryInfo(categorySlug);
+
+    return {
+        courses,
+        pagination: createPaginationMeta(page, limit, total),
+        categoryInfo,
+    };
+};
+
+/**
+ * Search/filter courses by category and/or position (advanced filtering)
+ * @param {Object} filters - { category, position, page, limit, sortBy, order }
+ * @returns {Object} Courses and pagination
+ */
+const searchCourses = async (filters = {}) => {
+    const { category, position, sortBy = "createdAt", order = "desc" } = filters;
+    const { page, limit, skip } = getPaginationParams(filters);
+
+    // Build filter
+    const filter = {
+        isActive: true, // Only show active courses
+    };
+
+    // Validate and add category filter
+    if (category) {
+        if (!isValidCategory(category)) {
+            throw ApiError.badRequest(`Invalid category: ${category}`);
+        }
+        filter.category = category;
+    }
+
+    // Validate and add position filter
+    if (position) {
+        if (!isValidPosition(position)) {
+            throw ApiError.badRequest(`Invalid position: ${position}`);
+        }
+        filter.position = position;
+    }
+
+    // Build sort
+    const sortOrder = order === "asc" ? 1 : -1;
+    const sort = { [sortBy]: sortOrder };
+
+    // Query courses
+    const courses = await Course.find(filter)
+        .populate("trainingSchedules")
+        .sort(sort)
+        .skip(skip)
+        .limit(limit);
+
+    const total = await Course.countDocuments(filter);
+
+    // Get applied filter info
+    const appliedFilters = {};
+    if (category) {
+        const categoryInfo = getCategoryInfo(category);
+        appliedFilters.category = category;
+        appliedFilters.categoryName = categoryInfo?.koreanName || category;
+    }
+    if (position) {
+        const positionInfo = getPositionInfo(position);
+        appliedFilters.position = position;
+        appliedFilters.positionName = positionInfo?.koreanName || position;
+    }
+
+    return {
+        courses,
+        pagination: createPaginationMeta(page, limit, total),
+        appliedFilters,
+    };
+};
+
+/**
+ * Helper function to populate category and position info
+ * @param {Object} data - Course data with category and position slugs
+ * @returns {Object} Data with populated categoryInfo and positionInfo
+ */
+const populateCategoryAndPositionInfo = (data) => {
+    if (data.category) {
+        const categoryInfo = getCategoryInfo(data.category);
+        if (categoryInfo) {
+            data.categoryInfo = {
+                slug: categoryInfo.slug,
+                koreanName: categoryInfo.koreanName,
+                englishName: categoryInfo.englishName,
+            };
+        }
+    }
+
+    if (data.position) {
+        const positionInfo = getPositionInfo(data.position);
+        if (positionInfo) {
+            data.positionInfo = {
+                slug: positionInfo.slug,
+                koreanName: positionInfo.koreanName,
+                englishName: positionInfo.englishName,
+            };
+        }
+    }
+
+    return data;
 };
 
 module.exports = {
@@ -233,4 +396,7 @@ module.exports = {
     createCourse,
     updateCourse,
     deleteCourse,
+    getCoursesByCategory,
+    searchCourses,
+    populateCategoryAndPositionInfo,
 };

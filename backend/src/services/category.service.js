@@ -1,111 +1,54 @@
-const Category = require("../models/category.model");
-const ApiError = require("../utils/apiError.util");
-const { getPaginationParams, createPaginationMeta } = require("../utils/pagination.util");
+/**
+ * Category & Position Service
+ * Handles category and position retrieval
+ */
 
-const getAllCategories = async (query) => {
-    const { page, limit, skip } = getPaginationParams(query);
-    const filter = {};
+const {
+    CATEGORIES,
+    POSITIONS,
+    getCategoryInfo,
+    getPositionInfo,
+} = require("../constants/categories");
 
-    if (query.isActive !== undefined) {
-        filter.isActive = query.isActive === "true";
-    }
-
-    if (query.level) {
-        filter.level = parseInt(query.level);
-    }
-
-    if (query.parentCategory) {
-        filter.parentCategory = query.parentCategory;
-    }
-
-    const categories = await Category.find(filter)
-        .sort({ order: 1, createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
-
-    const total = await Category.countDocuments(filter);
-
-    return {
-        categories,
-        pagination: createPaginationMeta(page, limit, total),
-    };
+/**
+ * Get all categories
+ * @returns {Array} Array of category objects
+ */
+const getAllCategories = async () => {
+    // Return all categories sorted by order
+    return CATEGORIES.sort((a, b) => a.order - b.order);
 };
 
-const getCategoryById = async (categoryId) => {
-    const category = await Category.findById(categoryId);
-    if (!category) {
-        throw ApiError.notFound("카테고리를 찾을 수 없습니다");
-    }
-    return category;
+/**
+ * Get all positions
+ * @returns {Array} Array of position objects
+ */
+const getAllPositions = async () => {
+    // Return all positions sorted by order
+    return POSITIONS.sort((a, b) => a.order - b.order);
 };
 
-const getCategoryWithCourses = async (categoryId) => {
-    const category = await Category.findById(categoryId).populate({
-        path: "courses",
-        match: { isActive: true },
-        select: "title mainImage price tagText tags",
-    });
-    
-    if (!category) {
-        throw ApiError.notFound("카테고리를 찾을 수 없습니다");
-    }
-    
-    return category;
+/**
+ * Get category by slug
+ * @param {string} slug - Category slug
+ * @returns {Object|null} Category object or null
+ */
+const getCategoryBySlug = async (slug) => {
+    return getCategoryInfo(slug);
 };
 
-const createCategory = async (categoryData) => {
-    const existingCategory = await Category.findOne({ title: categoryData.title });
-    if (existingCategory) {
-        throw ApiError.conflict("이미 존재하는 카테고리 제목입니다");
-    }
-
-    const category = await Category.create(categoryData);
-    return category;
-};
-
-const updateCategory = async (categoryId, updates) => {
-    if (updates.title) {
-        const existingCategory = await Category.findOne({
-            title: updates.title,
-            _id: { $ne: categoryId },
-        });
-        if (existingCategory) {
-            throw ApiError.conflict("이미 존재하는 카테고리 제목입니다");
-        }
-    }
-
-    const category = await Category.findByIdAndUpdate(categoryId, updates, {
-        new: true,
-        runValidators: true,
-    });
-
-    if (!category) {
-        throw ApiError.notFound("카테고리를 찾을 수 없습니다");
-    }
-
-    return category;
-};
-
-const deleteCategory = async (categoryId) => {
-    const category = await Category.findById(categoryId);
-    if (!category) {
-        throw ApiError.notFound("카테고리를 찾을 수 없습니다");
-    }
-
-    if (category.courseCount > 0) {
-        throw ApiError.badRequest("코스가 있는 카테고리는 삭제할 수 없습니다");
-    }
-
-    await Category.findByIdAndDelete(categoryId);
-    return { message: "카테고리가 성공적으로 삭제되었습니다" };
+/**
+ * Get position by slug
+ * @param {string} slug - Position slug
+ * @returns {Object|null} Position object or null
+ */
+const getPositionBySlug = async (slug) => {
+    return getPositionInfo(slug);
 };
 
 module.exports = {
     getAllCategories,
-    getCategoryById,
-    getCategoryWithCourses,
-    createCategory,
-    updateCategory,
-    deleteCategory,
+    getAllPositions,
+    getCategoryBySlug,
+    getPositionBySlug,
 };
-

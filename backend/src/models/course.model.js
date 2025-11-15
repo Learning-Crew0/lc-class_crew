@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { CATEGORY_SLUGS, POSITION_SLUGS } = require("../constants/categories");
 
 const courseSchema = new mongoose.Schema(
     {
@@ -19,10 +20,32 @@ const courseSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
-        category: {
+        // Legacy category field (ObjectId) - kept for backward compatibility
+        categoryLegacy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Category",
+        },
+        // New category field (slug-based for filtering)
+        category: {
+            type: String,
             required: [true, "Category is required"],
+            enum: CATEGORY_SLUGS,
+        },
+        categoryInfo: {
+            slug: String,
+            koreanName: String,
+            englishName: String,
+        },
+        // New position/level field
+        position: {
+            type: String,
+            required: [true, "Position/Level is required"],
+            enum: POSITION_SLUGS,
+        },
+        positionInfo: {
+            slug: String,
+            koreanName: String,
+            englishName: String,
         },
         tagText: {
             type: String,
@@ -201,6 +224,8 @@ courseSchema.virtual("notice", {
 
 courseSchema.index({ title: "text", description: "text" });
 courseSchema.index({ category: 1 });
+courseSchema.index({ position: 1 });
+courseSchema.index({ category: 1, position: 1 }); // Compound index for filtering
 courseSchema.index({ isActive: 1 });
 courseSchema.index({ isFeatured: 1 });
 courseSchema.index({ createdAt: -1 });

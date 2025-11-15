@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { CATEGORY_SLUGS, POSITION_SLUGS } = require("../constants/categories");
 
 const createCourseSchema = Joi.object({
     title: Joi.string().trim().min(3).max(200).required().messages({
@@ -9,10 +10,26 @@ const createCourseSchema = Joi.object({
     shortDescription: Joi.string().trim().max(500).optional(),
     longDescription: Joi.string().trim().optional(),
     description: Joi.string().trim().optional(),
-    category: Joi.string().trim().required().messages({
-        "string.empty": "카테고리를 선택해주세요",
-        "any.required": "카테고리는 필수입니다",
-    }),
+    // Category slug (required) - must be one of 5 categories
+    category: Joi.string()
+        .trim()
+        .valid(...CATEGORY_SLUGS)
+        .required()
+        .messages({
+            "string.empty": "카테고리를 선택해주세요",
+            "any.required": "카테고리는 필수입니다",
+            "any.only": "유효한 카테고리를 선택해주세요",
+        }),
+    // Position slug (required) - must be one of 9 positions
+    position: Joi.string()
+        .trim()
+        .valid(...POSITION_SLUGS)
+        .required()
+        .messages({
+            "string.empty": "직급/직책을 선택해주세요",
+            "any.required": "직급/직책은 필수입니다",
+            "any.only": "유효한 직급/직책을 선택해주세요",
+        }),
     tagText: Joi.string().trim().max(50).optional(),
     tagColor: Joi.string().trim().default("text-blue-500"),
     tags: Joi.alternatives()
@@ -91,7 +108,22 @@ const updateCourseSchema = Joi.object({
     shortDescription: Joi.string().trim().max(500).optional(),
     longDescription: Joi.string().trim().optional(),
     description: Joi.string().trim().optional(),
-    category: Joi.string().trim().optional(),
+    // Category slug (optional for updates)
+    category: Joi.string()
+        .trim()
+        .valid(...CATEGORY_SLUGS)
+        .optional()
+        .messages({
+            "any.only": "유효한 카테고리를 선택해주세요",
+        }),
+    // Position slug (optional for updates)
+    position: Joi.string()
+        .trim()
+        .valid(...POSITION_SLUGS)
+        .optional()
+        .messages({
+            "any.only": "유효한 직급/직책을 선택해주세요",
+        }),
     tagText: Joi.string().trim().max(50).optional(),
     tagColor: Joi.string().trim().optional(),
     tags: Joi.alternatives()

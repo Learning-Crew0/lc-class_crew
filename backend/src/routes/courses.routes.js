@@ -50,35 +50,16 @@ const {
     processRefundSchema,
 } = require("../validators/enrollment.validators");
 
-router.get("/categories", categoryController.getAllCategories);
-router.get("/categories/:id", categoryController.getCategoryById);
-router.get(
-    "/categories/:id/courses",
-    categoryController.getCategoryWithCourses
-);
+// Legacy category routes - DISABLED (now using slug-based system in public routes)
+// Categories are now managed via constants in src/constants/categories.js
+// Use the new endpoints: GET /api/v1/public/categories and GET /api/v1/public/positions
 
-router.post(
-    "/categories",
-    authenticate,
-    requireAdmin,
-    validate(createCategorySchema),
-    categoryController.createCategory
-);
-
-router.put(
-    "/categories/:id",
-    authenticate,
-    requireAdmin,
-    validate(updateCategorySchema),
-    categoryController.updateCategory
-);
-
-router.delete(
-    "/categories/:id",
-    authenticate,
-    requireAdmin,
-    categoryController.deleteCategory
-);
+// router.get("/categories", categoryController.getAllCategories);
+// router.get("/categories/:id", categoryController.getCategoryById);
+// router.get("/categories/:id/courses", categoryController.getCategoryWithCourses);
+// router.post("/categories", authenticate, requireAdmin, validate(createCategorySchema), categoryController.createCategory);
+// router.put("/categories/:id", authenticate, requireAdmin, validate(updateCategorySchema), categoryController.updateCategory);
+// router.delete("/categories/:id", authenticate, requireAdmin, categoryController.deleteCategory);
 
 router.get("/courses", coursesController.getAllCourses);
 router.get("/courses/:id", coursesController.getCourseById);
