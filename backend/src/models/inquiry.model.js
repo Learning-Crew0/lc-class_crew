@@ -82,11 +82,12 @@ const inquirySchema = new mongoose.Schema(
                 return this.type === "general";
             },
             enum: [
-                "General Question",
-                "Technical Support",
                 "Program Inquiry",
-                "Payment Issue",
-                "Partnership",
+                "Registration/Payment",
+                "Certificate",
+                "Group Registration",
+                "Partnership/Instructor",
+                "Venue Rental",
                 "Other",
             ],
         },

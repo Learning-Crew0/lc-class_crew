@@ -24,17 +24,18 @@ const createInquirySchema = Joi.object({
     countryCode: Joi.string().optional().default("82"),
     category: Joi.string()
         .valid(
-            "General Question",
-            "Technical Support",
             "Program Inquiry",
-            "Payment Issue",
-            "Partnership",
+            "Registration/Payment",
+            "Certificate",
+            "Group Registration",
+            "Partnership/Instructor",
+            "Venue Rental",
             "Other"
         )
         .required()
         .messages({
             "any.only":
-                "Category must be one of: General Question, Technical Support, Program Inquiry, Payment Issue, Partnership, Other",
+                "Category must be one of: Program Inquiry, Registration/Payment, Certificate, Group Registration, Partnership/Instructor, Venue Rental, Other",
             "any.required": "Category is required",
         }),
     subject: Joi.string().trim().max(200).required().messages({
