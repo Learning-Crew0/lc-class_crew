@@ -24,7 +24,7 @@ const CATEGORIES = [
     },
     {
         slug: "life-career",
-        koreanName: "라이프·커리어",
+        koreanName: "라이프/커리어",
         englishName: "Life & Career",
         order: 4,
     },

@@ -302,7 +302,12 @@ const getCoursesByCategory = async (categorySlug, query = {}) => {
  * @returns {Object} Courses and pagination
  */
 const searchCourses = async (filters = {}) => {
-    const { category, position, sortBy = "createdAt", order = "desc" } = filters;
+    const {
+        category,
+        position,
+        sortBy = "createdAt",
+        order = "desc",
+    } = filters;
     const { page, limit, skip } = getPaginationParams(filters);
 
     // Build filter
