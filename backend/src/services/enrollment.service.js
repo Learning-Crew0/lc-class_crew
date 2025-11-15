@@ -3,10 +3,18 @@ const Course = require("../models/course.model");
 const TrainingSchedule = require("../models/trainingSchedule.model");
 const User = require("../models/user.model");
 const ApiError = require("../utils/apiError.util");
-const { getPaginationParams, createPaginationMeta } = require("../utils/pagination.util");
+const {
+    getPaginationParams,
+    createPaginationMeta,
+} = require("../utils/pagination.util");
 const trainingScheduleService = require("./trainingSchedule.service");
 
-const enrollUserInSchedule = async (userId, courseId, scheduleId, enrollmentData) => {
+const enrollUserInSchedule = async (
+    userId,
+    courseId,
+    scheduleId,
+    enrollmentData
+) => {
     const user = await User.findById(userId);
     if (!user) {
         throw ApiError.notFound("사용자를 찾을 수 없습니다");
@@ -44,7 +52,9 @@ const enrollUserInSchedule = async (userId, courseId, scheduleId, enrollmentData
     });
 
     await trainingScheduleService.incrementEnrolledCount(scheduleId);
-    await Course.findByIdAndUpdate(courseId, { $inc: { enrollmentCount: 1, enrolledCount: 1 } });
+    await Course.findByIdAndUpdate(courseId, {
+        $inc: { enrollmentCount: 1, enrolledCount: 1 },
+    });
 
     return enrollment.populate([
         { path: "user", select: "fullName email phone" },
@@ -55,7 +65,7 @@ const enrollUserInSchedule = async (userId, courseId, scheduleId, enrollmentData
 
 const getUserEnrollments = async (userId, query) => {
     const { page, limit, skip } = getPaginationParams(query);
-    
+
     const filter = { user: userId };
 
     if (query.status) {
@@ -192,8 +202,8 @@ const cancelEnrollment = async (enrollmentId) => {
 
 /**
  * Format date range for display
- * @param {Date} startDate 
- * @param {Date} endDate 
+ * @param {Date} startDate
+ * @param {Date} endDate
  * @returns {string} Formatted date string "2025.07.10~2025.07.13"
  */
 const formatTrainingDate = (startDate, endDate) => {
@@ -226,11 +236,11 @@ const getMyEnrollmentHistory = async (userId, query) => {
             in_progress: ["수강중", "수강예정"],
             cancelled: "취소",
         };
-        
+
         const koreanStatus = statusMap[query.status];
         if (koreanStatus) {
-            filter.status = Array.isArray(koreanStatus) 
-                ? { $in: koreanStatus } 
+            filter.status = Array.isArray(koreanStatus)
+                ? { $in: koreanStatus }
                 : koreanStatus;
         }
     }
@@ -245,7 +255,9 @@ const getMyEnrollmentHistory = async (userId, query) => {
             path: "schedule",
             select: "startDate endDate location hours",
         })
-        .sort({ [query.sortBy || "startedAt"]: query.sortOrder === "asc" ? 1 : -1 })
+        .sort({
+            [query.sortBy || "startedAt"]: query.sortOrder === "asc" ? 1 : -1,
+        })
         .skip(skip)
         .limit(limit);
 
@@ -257,51 +269,55 @@ const getMyEnrollmentHistory = async (userId, query) => {
         const searchLower = query.search.toLowerCase();
         filteredEnrollments = enrollments.filter(
             (e) =>
-                e.course &&
-                e.course.title.toLowerCase().includes(searchLower)
+                e.course && e.course.title.toLowerCase().includes(searchLower)
         );
     }
 
     // Format enrollments for response
-    const formattedEnrollments = filteredEnrollments.map((enrollment, index) => {
-        const schedule = enrollment.schedule;
-        const course = enrollment.course;
-        
-        const attendanceData = {
-            totalSessions: enrollment.attendanceRecords?.length || 0,
-            attendedSessions:
-                enrollment.attendanceRecords?.filter((r) => r.attended).length || 0,
-            attendanceRate: enrollment.attendancePercentage || 0,
-        };
+    const formattedEnrollments = filteredEnrollments.map(
+        (enrollment, index) => {
+            const schedule = enrollment.schedule;
+            const course = enrollment.course;
 
-        return {
-            _id: enrollment._id,
-            no: total - (skip + index), // Reverse numbering based on total
-            courseTitle: course ? `[${course.category}] ${course.title}` : "N/A",
-            courseId: course?._id,
-            course: course
-                ? {
-                      _id: course._id,
-                      title: course.title,
-                      category: course.category,
-                      thumbnail: course.thumbnail || course.mainImage,
-                  }
-                : null,
-            trainingDate: schedule
-                ? formatTrainingDate(schedule.startDate, schedule.endDate)
-                : "N/A",
-            startDate: schedule?.startDate,
-            endDate: schedule?.endDate,
-            status: enrollment.status,
-            completionStatus: enrollment.completionStatus,
-            certificateUrl: enrollment.certificateUrl,
-            certificateAvailable: enrollment.certificateAvailable,
-            completionDate: enrollment.completedAt,
-            grade: enrollment.grade,
-            attendance: attendanceData,
-            enrolledAt: enrollment.enrollmentDate,
-        };
-    });
+            const attendanceData = {
+                totalSessions: enrollment.attendanceRecords?.length || 0,
+                attendedSessions:
+                    enrollment.attendanceRecords?.filter((r) => r.attended)
+                        .length || 0,
+                attendanceRate: enrollment.attendancePercentage || 0,
+            };
+
+            return {
+                _id: enrollment._id,
+                no: total - (skip + index), // Reverse numbering based on total
+                courseTitle: course
+                    ? `[${course.category}] ${course.title}`
+                    : "N/A",
+                courseId: course?._id,
+                course: course
+                    ? {
+                          _id: course._id,
+                          title: course.title,
+                          category: course.category,
+                          thumbnail: course.thumbnail || course.mainImage,
+                      }
+                    : null,
+                trainingDate: schedule
+                    ? formatTrainingDate(schedule.startDate, schedule.endDate)
+                    : "N/A",
+                startDate: schedule?.startDate,
+                endDate: schedule?.endDate,
+                status: enrollment.status,
+                completionStatus: enrollment.completionStatus,
+                certificateUrl: enrollment.certificateUrl,
+                certificateAvailable: enrollment.certificateAvailable,
+                completionDate: enrollment.completedAt,
+                grade: enrollment.grade,
+                attendance: attendanceData,
+                enrolledAt: enrollment.enrollmentDate,
+            };
+        }
+    );
 
     return {
         enrollments: formattedEnrollments,
@@ -338,6 +354,60 @@ const getCertificateInfo = async (enrollmentId, userId) => {
     };
 };
 
+/**
+ * Get user's enrolled courses for learning status page
+ * @param {String} userId - User ID
+ * @returns {Array} List of enrolled courses with status and dates
+ */
+const getEnrolledCoursesForLearningStatus = async (userId) => {
+    const enrollments = await Enrollment.find({
+        user: userId,
+        status: { $ne: "취소" }, // Exclude cancelled enrollments
+    })
+        .populate("course", "title mainImage isRefundable")
+        .populate("schedule", "startDate endDate")
+        .sort({ enrollmentDate: -1 });
+
+    // Status priority for sorting: 수강예정 > 수강중 > 미수료 > 수료
+    const statusPriority = {
+        수강예정: 1,
+        수강중: 2,
+        미수료: 3,
+        수료: 4,
+    };
+
+    const courses = enrollments.map((enrollment) => {
+        const course = {
+            _id: enrollment.course?._id || enrollment._id,
+            title: enrollment.course?.title || "제목 없음",
+            type: enrollment.course?.isRefundable ? "환급" : "비환급",
+            startDate:
+                enrollment.schedule?.startDate || enrollment.enrollmentDate,
+            endDate: enrollment.schedule?.endDate || null,
+            status: enrollment.status || "수강예정",
+            enrolledAt: enrollment.enrollmentDate,
+            progress: enrollment.progress || 0,
+        };
+
+        // Only include certificateUrl for completed courses
+        if (enrollment.status === "수료" && enrollment.certificateUrl) {
+            course.certificateUrl = enrollment.certificateUrl;
+        }
+
+        return course;
+    });
+
+    // Sort by status priority, then by enrollment date (recent first)
+    courses.sort((a, b) => {
+        const priorityDiff =
+            (statusPriority[a.status] || 5) - (statusPriority[b.status] || 5);
+        if (priorityDiff !== 0) return priorityDiff;
+        return new Date(b.enrolledAt) - new Date(a.enrolledAt);
+    });
+
+    return courses;
+};
+
 module.exports = {
     enrollUserInSchedule,
     getUserEnrollments,
@@ -349,4 +419,5 @@ module.exports = {
     cancelEnrollment,
     getMyEnrollmentHistory,
     getCertificateInfo,
+    getEnrolledCoursesForLearningStatus,
 };

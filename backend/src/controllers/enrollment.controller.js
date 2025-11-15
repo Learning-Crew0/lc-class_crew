@@ -166,6 +166,21 @@ const downloadCertificate = asyncHandler(async (req, res) => {
     }
 });
 
+/**
+ * Get enrolled courses for learning status page
+ * GET /api/v1/user/enrolled-courses
+ */
+const getEnrolledCourses = asyncHandler(async (req, res) => {
+    const courses = await enrollmentService.getEnrolledCoursesForLearningStatus(
+        req.user.id
+    );
+    return successResponse(
+        res,
+        { courses },
+        "수강 중인 강의 목록을 성공적으로 조회했습니다"
+    );
+});
+
 module.exports = {
     enrollInSchedule,
     getMyEnrollments,
@@ -177,4 +192,5 @@ module.exports = {
     cancelEnrollment,
     getMyEnrollmentHistory,
     downloadCertificate,
+    getEnrolledCourses,
 };

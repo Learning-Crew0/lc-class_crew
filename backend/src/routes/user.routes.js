@@ -46,6 +46,9 @@ router.post(
 );
 
 // === ENROLLMENTS ===
+// GET /api/v1/user/enrolled-courses - Get enrolled courses for learning status page
+router.get("/enrolled-courses", enrollmentsController.getEnrolledCourses);
+
 // GET /api/v1/user/enrollments - Get user's enrollments
 router.get("/enrollments", enrollmentsController.getUserEnrollments);
 

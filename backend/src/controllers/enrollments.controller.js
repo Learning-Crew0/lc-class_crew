@@ -204,6 +204,26 @@ const deleteEnrollment = async (req, res, next) => {
     }
 };
 
+/**
+ * Get enrolled courses for learning status page
+ * GET /api/v1/user/enrolled-courses
+ */
+const getEnrolledCourses = async (req, res, next) => {
+    try {
+        const courses =
+            await enrollmentService.getEnrolledCoursesForLearningStatus(
+                req.user.id
+            );
+        return successResponse(
+            res,
+            { courses },
+            "수강 중인 강의 목록을 성공적으로 조회했습니다"
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getAllEnrollments,
     getEnrollmentById,
@@ -216,4 +236,5 @@ module.exports = {
     issueCertificate,
     getProgress,
     deleteEnrollment,
+    getEnrolledCourses,
 };
