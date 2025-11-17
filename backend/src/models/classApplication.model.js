@@ -9,7 +9,7 @@ const phoneSchema = new mongoose.Schema(
         prefix: {
             type: String,
             required: true,
-            enum: ["010", "011", "016", "017", "018", "019"],
+            enum: ["010", "011", "012", "013", "014", "015", "016", "017", "018", "019"],
         },
         middle: {
             type: String,

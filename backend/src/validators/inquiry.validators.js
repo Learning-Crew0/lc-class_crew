@@ -86,7 +86,7 @@ const updateInquirySchema = Joi.object({
 const personalInquirySchema = Joi.object({
     phone: Joi.object({
         prefix: Joi.string()
-            .valid("010", "011", "016", "017", "018", "019")
+            .valid("010", "011", "012", "013", "014", "015", "016", "017", "018", "019")
             .required()
             .messages({
                 "any.required": "전화번호 앞자리를 선택해주세요",
@@ -139,7 +139,7 @@ const personalInquirySchema = Joi.object({
 const corporateInquirySchema = Joi.object({
     phone: Joi.object({
         prefix: Joi.string()
-            .valid("010", "011", "016", "017", "018", "019")
+            .valid("010", "011", "012", "013", "014", "015", "016", "017", "018", "019")
             .required()
             .messages({
                 "any.required": "전화번호 앞자리를 선택해주세요",
