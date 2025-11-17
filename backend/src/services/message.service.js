@@ -1,6 +1,6 @@
 const Message = require("../models/message.model");
 const User = require("../models/user.model");
-const ApiError = require("../utils/ApiError.util");
+const ApiError = require("../utils/apiError.util");
 
 /**
  * Get messages for a user with filters
