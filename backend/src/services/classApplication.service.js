@@ -56,6 +56,9 @@ const createDraftApplication = async (userId, courseIds) => {
             0
         );
 
+        // Ensure applicationNumber is undefined for drafts (fix for corrupted data)
+        existingDraft.applicationNumber = undefined;
+
         await existingDraft.save();
         await existingDraft.populate("courses.course courses.trainingSchedule");
         return existingDraft;
