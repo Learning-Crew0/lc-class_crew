@@ -309,7 +309,8 @@ classApplicationSchema.virtual("totalStudents").get(function () {
 
 // Indexes
 classApplicationSchema.index({ user: 1 });
-classApplicationSchema.index({ applicationNumber: 1 });
+// applicationNumber index is already defined in the schema with unique: true, sparse: true
+// Don't create a duplicate index here - it causes warnings
 classApplicationSchema.index({ status: 1 });
 classApplicationSchema.index({ createdAt: -1 });
 
