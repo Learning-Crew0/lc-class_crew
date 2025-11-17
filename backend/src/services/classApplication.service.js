@@ -378,13 +378,20 @@ const submitApplication = async (applicationId, agreements) => {
         }
     }
 
-    // Validate agreements
-    if (!agreements.paymentAndRefundPolicy || !agreements.refundPolicy) {
+    // Validate agreements (accept both frontend and backend field names)
+    const purchaseTerms = agreements.purchaseTerms || agreements.paymentAndRefundPolicy;
+    const refundPolicy = agreements.refundPolicy;
+    
+    if (!purchaseTerms || !refundPolicy) {
         throw ApiError.badRequest("All agreements must be accepted");
     }
 
-    // Update agreements
-    application.agreements = agreements;
+    // Update agreements with normalized field names
+    application.agreements = {
+        paymentAndRefundPolicy: purchaseTerms,
+        refundPolicy: refundPolicy,
+        agreedAt: new Date()
+    };
 
     // Update status
     application.status = "submitted";
