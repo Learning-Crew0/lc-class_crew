@@ -6,6 +6,7 @@ const authController = require("../controllers/auth.controller");
 const enrollmentsController = require("../controllers/enrollments.controller");
 const cartController = require("../controllers/cart.controller");
 const inquiriesController = require("../controllers/inquiries.controller");
+const messagesController = require("../controllers/messages.controller");
 
 // Validators
 const { validate } = require("../middlewares/validate.middleware");
@@ -20,6 +21,9 @@ const {
     addToCartSchema,
     updateCartItemSchema,
 } = require("../validators/cart.validators");
+const {
+    getMessagesQuerySchema,
+} = require("../validators/message.validators");
 
 // Middleware
 const { authenticate } = require("../middlewares/auth.middleware");
@@ -98,5 +102,22 @@ router.get("/my-enquiries", inquiriesController.getMyEnquiries);
 
 // GET /api/v1/user/inquiries/:id - Get inquiry by ID
 router.get("/inquiries/:id", inquiriesController.getInquiryById);
+
+// === MESSAGES ===
+// GET /api/v1/user/messages - Get user messages with filters
+router.get(
+    "/messages",
+    validate(getMessagesQuerySchema),
+    messagesController.getUserMessages
+);
+
+// GET /api/v1/user/messages/unread-count - Get unread message count
+router.get("/messages/unread-count", messagesController.getUnreadCount);
+
+// PUT /api/v1/user/messages/:id/read - Mark message as read
+router.put("/messages/:id/read", messagesController.markMessageAsRead);
+
+// PUT /api/v1/user/messages/read-all - Mark all messages as read
+router.put("/messages/read-all", messagesController.markAllMessagesAsRead);
 
 module.exports = router;

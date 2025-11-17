@@ -15,6 +15,7 @@ const faqsController = require("../controllers/faqs.controller");
 const bannersController = require("../controllers/banners.controller");
 const uploadsController = require("../controllers/uploads.controller");
 const settingsController = require("../controllers/settings.controller");
+const messagesController = require("../controllers/messages.controller");
 
 // Validators
 const { validate } = require("../middlewares/validate.middleware");
@@ -60,6 +61,11 @@ const {
     createSettingSchema,
     updateSettingSchema,
 } = require("../validators/settings.validators");
+const {
+    createMessageSchema,
+    updateMessageSchema,
+    getMessagesQuerySchema,
+} = require("../validators/message.validators");
 
 // Middleware
 const { authenticate } = require("../middlewares/auth.middleware");
@@ -371,5 +377,36 @@ router.put(
 
 // DELETE /api/v1/admin/settings/:key - Delete setting
 router.delete("/settings/:key", settingsController.deleteSetting);
+
+// === MESSAGES ===
+// GET /api/v1/admin/messages/statistics - Get message statistics
+router.get("/messages/statistics", messagesController.getMessageStatistics);
+
+// POST /api/v1/admin/messages - Create and send message
+router.post(
+    "/messages",
+    validate(createMessageSchema),
+    messagesController.createMessage
+);
+
+// GET /api/v1/admin/messages - Get all messages
+router.get(
+    "/messages",
+    validate(getMessagesQuerySchema),
+    messagesController.getAllMessages
+);
+
+// GET /api/v1/admin/messages/:id - Get message by ID
+router.get("/messages/:id", messagesController.getMessageById);
+
+// PUT /api/v1/admin/messages/:id - Update message
+router.put(
+    "/messages/:id",
+    validate(updateMessageSchema),
+    messagesController.updateMessage
+);
+
+// DELETE /api/v1/admin/messages/:id - Delete message (soft delete)
+router.delete("/messages/:id", messagesController.deleteMessage);
 
 module.exports = router;
