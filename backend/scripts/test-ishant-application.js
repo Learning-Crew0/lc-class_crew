@@ -13,8 +13,8 @@ const ClassApplication = require("../src/models/classApplication.model");
 const { generateToken } = require("../src/utils/crypto.util");
 const config = require("../src/config/env");
 
-// Test against production by default (change to localhost:5000 for local testing)
-const BASE_URL = process.env.BASE_URL || "https://class-crew.onrender.com/api/v1";
+// Test against local server (change to class-crew.onrender.com for production testing)
+const BASE_URL = process.env.BASE_URL || "http://localhost:5000/api/v1";
 
 const colors = {
     green: "\x1b[32m",
