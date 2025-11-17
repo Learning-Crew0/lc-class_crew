@@ -56,10 +56,10 @@ const createDraftApplication = async (userId, courseIds) => {
             0
         );
 
-        // Ensure applicationNumber is null for drafts (fix for corrupted data)
-        // Using null instead of undefined to work with MongoDB sparse index
+        // Ensure applicationNumber is undefined for drafts (fix for corrupted data)
+        // MongoDB sparse index requires undefined (not null) to allow multiple drafts
         if (existingDraft.applicationNumber) {
-            existingDraft.applicationNumber = null;
+            existingDraft.applicationNumber = undefined;
             existingDraft.markModified('applicationNumber');
         }
 

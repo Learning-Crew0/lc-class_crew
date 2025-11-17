@@ -236,11 +236,11 @@ const classApplicationSchema = new mongoose.Schema(
         },
 
         // Application number (auto-generated)
+        // NOTE: Do NOT set default value! Sparse index requires field to be undefined (not null)
         applicationNumber: {
             type: String,
             unique: true,
-            sparse: true, // Allow null/undefined for drafts before submission
-            default: null,
+            sparse: true, // Allows multiple documents WITHOUT this field
         },
 
         // Selected courses with students
