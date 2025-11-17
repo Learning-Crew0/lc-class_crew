@@ -239,7 +239,8 @@ const classApplicationSchema = new mongoose.Schema(
         applicationNumber: {
             type: String,
             unique: true,
-            sparse: true, // Allow null for drafts before submission
+            sparse: true, // Allow null/undefined for drafts before submission
+            default: null,
         },
 
         // Selected courses with students

@@ -56,8 +56,12 @@ const createDraftApplication = async (userId, courseIds) => {
             0
         );
 
-        // Ensure applicationNumber is undefined for drafts (fix for corrupted data)
-        existingDraft.applicationNumber = undefined;
+        // Ensure applicationNumber is null for drafts (fix for corrupted data)
+        // Using null instead of undefined to work with MongoDB sparse index
+        if (existingDraft.applicationNumber) {
+            existingDraft.applicationNumber = null;
+            existingDraft.markModified('applicationNumber');
+        }
 
         await existingDraft.save();
         await existingDraft.populate("courses.course courses.trainingSchedule");
