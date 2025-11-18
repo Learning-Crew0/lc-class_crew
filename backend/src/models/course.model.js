@@ -55,6 +55,11 @@ const courseSchema = new mongoose.Schema(
                 trim: true,
             },
         ],
+        displayTag: {
+            type: String,
+            enum: ["NEWEST", "POPULAR", "ALL"],
+            default: "ALL",
+        },
         price: {
             type: Number,
             required: [true, "Price is required"],
