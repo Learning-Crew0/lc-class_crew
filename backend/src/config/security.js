@@ -36,8 +36,17 @@ const rateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req) => {
-        // Skip rate limiting for health checks and static files
-        return req.path === "/health" || req.path.startsWith("/uploads/");
+        // Skip rate limiting for health checks, static files, and public API routes
+        return (
+            req.path === "/health" ||
+            req.path.startsWith("/uploads/") ||
+            req.path.startsWith("/api/v1/courses") ||
+            req.path.startsWith("/api/v1/products") ||
+            req.path.startsWith("/api/v1/categories") ||
+            req.path.startsWith("/api/v1/positions") ||
+            req.path.startsWith("/api/v1/announcements") ||
+            req.path.startsWith("/api/v1/public")
+        );
     },
 });
 
