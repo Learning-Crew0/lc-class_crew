@@ -14,6 +14,7 @@ const announcementRoutes = require("./announcement.routes");
 const faqRoutes = require("./faq.routes");
 const courseHistoryRoutes = require("./courseHistory.routes");
 const coalitionRoutes = require("./coalition.routes");
+const searchRoutes = require("./search.routes");
 
 const authController = require("../controllers/auth.controller");
 const passwordResetController = require("../controllers/passwordReset.controller");
@@ -129,5 +130,7 @@ router.use("/faqs", faqRoutes);
 router.use("/course-history", courseHistoryRoutes);
 
 router.use("/coalitions", coalitionRoutes);
+
+router.use("/search", searchRoutes);
 
 module.exports = router;

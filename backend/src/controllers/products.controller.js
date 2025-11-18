@@ -1,4 +1,5 @@
 const productService = require("../services/product.service");
+const searchService = require("../services/search.service");
 const {
     successResponse,
     paginatedResponse,
@@ -12,6 +13,26 @@ const getAllProducts = async (req, res, next) => {
         const { products, pagination } = await productService.getAllProducts(
             req.query
         );
+
+        // Log search if search query is present
+        if (req.query.search) {
+            searchService.logSearch(
+                {
+                    keyword: req.query.search,
+                    resultsCount: pagination.totalProducts || 0,
+                    source: req.query.source || "other",
+                    filters: {
+                        category: req.query.category,
+                        minPrice: req.query.minPrice,
+                        maxPrice: req.query.maxPrice,
+                        isActive: req.query.isActive,
+                    },
+                },
+                req.user, // Will be undefined if not authenticated
+                req
+            );
+        }
+
         return paginatedResponse(
             res,
             products,

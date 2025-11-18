@@ -135,3 +135,4 @@ console.log(`${colors.yellow}⚠️  This script will fix corrupted draft applic
 
 fixDraftApplications();
 
+

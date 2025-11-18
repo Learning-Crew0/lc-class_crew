@@ -172,3 +172,4 @@ console.log(`${colors.yellow}Database: ${config.mongodb.uri.replace(/\/\/.*:.*@/
 
 cleanup();
 
+
