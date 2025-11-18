@@ -1,105 +1,63 @@
 const mongoose = require("mongoose");
 
-const attachmentSchema = new mongoose.Schema(
-    {
-        filename: {
-            type: String,
-        },
-        url: {
-            type: String,
-        },
-        size: {
-            type: Number,
-        },
-        mimeType: {
-            type: String,
-        },
-        uploadedAt: {
-            type: Date,
-            default: Date.now,
-        },
-    },
-    { _id: true }
-);
-
+/**
+ * Announcement Schema
+ * 공지사항 (Announcements/Notices)
+ */
 const announcementSchema = new mongoose.Schema(
     {
+        // Auto-incrementing ID for display
+        id: {
+            type: Number,
+            unique: true,
+        },
+
+        // Title (Korean)
         title: {
             type: String,
-            required: [true, "Title is required"],
+            required: [true, "제목을 입력해주세요"],
             trim: true,
-            maxlength: 200,
+            maxlength: [200, "제목은 200자 이내로 입력해주세요"],
         },
+
+        // Content (HTML supported)
         content: {
             type: String,
-            required: [true, "Content is required"],
+            required: [true, "내용을 입력해주세요"],
             trim: true,
+            minlength: [10, "내용은 최소 10자 이상 입력해주세요"],
         },
-        category: {
-            type: String,
-            required: [true, "Category is required"],
-            enum: ["notice", "event", "system", "urgent"],
-            default: "notice",
-        },
-        tags: [
-            {
-                type: String,
-                trim: true,
-            },
-        ],
-        isNew: {
-            type: Boolean,
-            default: true,
-        },
-        isImportant: {
-            type: Boolean,
-            default: false,
-        },
+
+        // Pin to top of list
         isPinned: {
             type: Boolean,
             default: false,
         },
-        status: {
-            type: String,
-            enum: ["published", "draft", "archived"],
-            default: "draft",
-        },
-        publishedAt: {
-            type: Date,
-        },
-        expiresAt: {
-            type: Date,
-        },
-        views: {
-            type: Number,
-            default: 0,
-        },
-        attachments: {
-            type: [attachmentSchema],
-            validate: {
-                validator: function (v) {
-                    return v.length <= 5;
-                },
-                message: "Maximum 5 attachments allowed",
-            },
-        },
-        author: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Admin",
-            required: true,
-        },
-        authorName: {
-            type: String,
-            required: true,
-            trim: true,
-        },
-        lastModifiedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Admin",
-        },
+
+        // Active status
         isActive: {
             type: Boolean,
             default: true,
+        },
+
+        // View count
+        views: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+
+        // Admin who created
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: [true, "생성자 정보가 필요합니다"],
+        },
+
+        // Last admin who updated
+        updatedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
         },
     },
     {
@@ -109,33 +67,46 @@ const announcementSchema = new mongoose.Schema(
     }
 );
 
-announcementSchema.virtual("id").get(function () {
-    return this._id.toHexString();
+// Virtual field: isNew (created within last 7 days)
+announcementSchema.virtual("isNew").get(function () {
+    if (!this.createdAt) return false;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return this.createdAt >= sevenDaysAgo;
 });
 
-announcementSchema.index({ category: 1 });
-announcementSchema.index({ status: 1 });
-announcementSchema.index({ isActive: 1 });
-announcementSchema.index({ isPinned: -1, createdAt: -1 });
-announcementSchema.index({ publishedAt: -1 });
-announcementSchema.index({ title: "text", content: "text" });
+// Auto-increment ID before validating
+announcementSchema.pre("validate", async function (next) {
+    // Only auto-increment for new documents that don't have an id yet
+    if (!this.id && this.isNew) {
+        try {
+            const lastAnnouncement = await this.constructor
+                .findOne()
+                .sort({ id: -1 })
+                .select("id")
+                .lean()
+                .exec();
 
-announcementSchema.pre("save", function (next) {
-    if (this.status === "published" && !this.publishedAt) {
-        this.publishedAt = new Date();
+            if (lastAnnouncement && typeof lastAnnouncement.id === "number") {
+                this.id = lastAnnouncement.id + 1;
+            } else {
+                this.id = 1;
+            }
+        } catch (error) {
+            console.error("Error in auto-increment:", error);
+            return next(error);
+        }
     }
-
-    if (this.publishedAt) {
-        const daysSincePublish = Math.floor(
-            (Date.now() - this.publishedAt.getTime()) / (1000 * 60 * 60 * 24)
-        );
-        this.isNew = daysSincePublish <= 7;
-    }
-
     next();
 });
+
+// Indexes for performance
+announcementSchema.index({ createdAt: -1 });
+announcementSchema.index({ isPinned: -1, createdAt: -1 }); // Pinned first, then by date
+announcementSchema.index({ isActive: 1, createdAt: -1 });
+announcementSchema.index({ id: 1 }, { unique: true });
+announcementSchema.index({ title: "text", content: "text" }); // Text search
 
 const Announcement = mongoose.model("Announcement", announcementSchema);
 
 module.exports = Announcement;
-

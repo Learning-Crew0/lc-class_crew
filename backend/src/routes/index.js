@@ -133,4 +133,6 @@ router.use("/coalitions", coalitionRoutes);
 
 router.use("/search", searchRoutes);
 
+router.use("/announcements", announcementRoutes);
+
 module.exports = router;

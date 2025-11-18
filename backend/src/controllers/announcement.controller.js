@@ -1,102 +1,180 @@
 const announcementService = require("../services/announcement.service");
-const asyncHandler = require("../utils/asyncHandler.util");
-const ApiError = require("../utils/apiError.util");
 const { successResponse } = require("../utils/response.util");
 
-const createAnnouncement = asyncHandler(async (req, res) => {
-    if (!req.user || !req.user.id) {
-        throw ApiError.unauthorized("Authentication required");
+/**
+ * Announcement Controller
+ * Handles HTTP requests for announcement endpoints
+ */
+
+/**
+ * Get all announcements (Public)
+ * GET /api/v1/announcements
+ */
+const getAllAnnouncements = async (req, res, next) => {
+    try {
+        const { announcements, pagination } =
+            await announcementService.getAllAnnouncements(req.query);
+
+        return successResponse(
+            res,
+            { announcements, pagination },
+            "공지사항을 성공적으로 조회했습니다"
+        );
+    } catch (error) {
+        next(error);
     }
+};
 
-    const announcement = await announcementService.createAnnouncement(
-        req.body,
-        req.files,
-        req.user.id
-    );
-    return successResponse(
-        res,
-        announcement,
-        "Announcement created successfully",
-        201
-    );
-});
+/**
+ * Get single announcement (Public)
+ * GET /api/v1/announcements/:id
+ */
+const getAnnouncementById = async (req, res, next) => {
+    try {
+        const announcement = await announcementService.getAnnouncementById(
+            req.params.id,
+            true // Increment views
+        );
 
-const getAllAnnouncements = asyncHandler(async (req, res) => {
-    const result = await announcementService.getAllAnnouncements(req.query);
-    return successResponse(res, result, "Announcements retrieved successfully");
-});
-
-const getAnnouncementById = asyncHandler(async (req, res) => {
-    const incrementView = !req.user || req.user.role !== "admin";
-    const announcement = await announcementService.getAnnouncementById(
-        req.params.id,
-        incrementView
-    );
-    return successResponse(
-        res,
-        announcement,
-        "Announcement retrieved successfully"
-    );
-});
-
-const updateAnnouncement = asyncHandler(async (req, res) => {
-    if (!req.user || !req.user.id) {
-        throw ApiError.unauthorized("Authentication required");
+        return successResponse(
+            res,
+            { announcement },
+            "공지사항을 성공적으로 조회했습니다"
+        );
+    } catch (error) {
+        next(error);
     }
+};
 
-    const announcement = await announcementService.updateAnnouncement(
-        req.params.id,
-        req.body,
-        req.files,
-        req.user.id
-    );
-    return successResponse(
-        res,
-        announcement,
-        "Announcement updated successfully"
-    );
-});
+/**
+ * Create announcement (Admin only)
+ * POST /api/v1/admin/announcements
+ */
+const createAnnouncement = async (req, res, next) => {
+    try {
+        const announcement = await announcementService.createAnnouncement(
+            req.body,
+            req.user._id
+        );
 
-const deleteAnnouncement = asyncHandler(async (req, res) => {
-    const result = await announcementService.deleteAnnouncement(req.params.id);
-    return successResponse(res, result, result.message);
-});
+        return successResponse(
+            res,
+            { announcement },
+            "공지사항이 성공적으로 생성되었습니다",
+            201
+        );
+    } catch (error) {
+        next(error);
+    }
+};
 
-const softDeleteAnnouncement = asyncHandler(async (req, res) => {
-    const result = await announcementService.softDeleteAnnouncement(
-        req.params.id
-    );
-    return successResponse(res, result, result.message);
-});
+/**
+ * Update announcement (Admin only)
+ * PUT /api/v1/admin/announcements/:id
+ */
+const updateAnnouncement = async (req, res, next) => {
+    try {
+        const announcement = await announcementService.updateAnnouncement(
+            req.params.id,
+            req.body,
+            req.user._id
+        );
 
-const deleteAttachment = asyncHandler(async (req, res) => {
-    const result = await announcementService.deleteAttachment(
-        req.params.id,
-        req.params.attachmentId
-    );
-    return successResponse(res, result, result.message);
-});
+        return successResponse(
+            res,
+            { announcement },
+            "공지사항이 성공적으로 수정되었습니다"
+        );
+    } catch (error) {
+        next(error);
+    }
+};
 
-const bulkDeleteAnnouncements = asyncHandler(async (req, res) => {
-    const result = await announcementService.bulkDeleteAnnouncements(
-        req.body.ids
-    );
-    return successResponse(res, result, result.message);
-});
+/**
+ * Delete announcement (Admin only)
+ * DELETE /api/v1/admin/announcements/:id
+ */
+const deleteAnnouncement = async (req, res, next) => {
+    try {
+        await announcementService.deleteAnnouncement(req.params.id);
 
-const getAnnouncementStats = asyncHandler(async (req, res) => {
-    const stats = await announcementService.getAnnouncementStats();
-    return successResponse(res, stats, "Statistics retrieved successfully");
-});
+        return successResponse(
+            res,
+            null,
+            "공지사항이 성공적으로 삭제되었습니다"
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Get announcement statistics (Admin only)
+ * GET /api/v1/admin/announcements/stats
+ */
+const getStatistics = async (req, res, next) => {
+    try {
+        const stats = await announcementService.getStatistics();
+
+        return successResponse(
+            res,
+            { stats },
+            "통계를 성공적으로 조회했습니다"
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Toggle pin status (Admin only)
+ * PATCH /api/v1/admin/announcements/:id/pin
+ */
+const togglePin = async (req, res, next) => {
+    try {
+        const announcement = await announcementService.togglePin(
+            req.params.id,
+            req.user._id
+        );
+
+        return successResponse(
+            res,
+            { announcement },
+            `공지사항이 ${announcement.isPinned ? "고정" : "고정 해제"}되었습니다`
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Toggle active status (Admin only)
+ * PATCH /api/v1/admin/announcements/:id/active
+ */
+const toggleActive = async (req, res, next) => {
+    try {
+        const announcement = await announcementService.toggleActive(
+            req.params.id,
+            req.user._id
+        );
+
+        return successResponse(
+            res,
+            { announcement },
+            `공지사항이 ${announcement.isActive ? "활성화" : "비활성화"}되었습니다`
+        );
+    } catch (error) {
+        next(error);
+    }
+};
 
 module.exports = {
-    createAnnouncement,
     getAllAnnouncements,
     getAnnouncementById,
+    createAnnouncement,
     updateAnnouncement,
     deleteAnnouncement,
-    softDeleteAnnouncement,
-    deleteAttachment,
-    bulkDeleteAnnouncements,
-    getAnnouncementStats,
+    getStatistics,
+    togglePin,
+    toggleActive,
 };

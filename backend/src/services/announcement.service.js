@@ -1,102 +1,85 @@
 const Announcement = require("../models/announcement.model");
 const ApiError = require("../utils/apiError.util");
-const { deleteFile, getFileUrl } = require("../config/fileStorage");
+const {
+    getPaginationParams,
+    createPaginationMeta,
+} = require("../utils/pagination.util");
 
-const normalizeData = (data) => {
-    const normalized = { ...data };
+/**
+ * Announcement Service
+ * Handles business logic for announcements
+ */
 
-    if (typeof normalized.tags === "string") {
-        normalized.tags = normalized.tags
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter(Boolean);
+/**
+ * Get all announcements with pagination and filters
+ */
+const getAllAnnouncements = async (query) => {
+    const { page, limit, skip } = getPaginationParams(query);
+
+    const filter = {};
+
+    // Filter by active status (default: true for public)
+    if (query.isActive !== undefined) {
+        filter.isActive = query.isActive === "true" || query.isActive === true;
+    } else {
+        // Default: only show active announcements to public
+        filter.isActive = true;
     }
 
-    return normalized;
-};
-
-const createAnnouncement = async (announcementData, files, adminId) => {
-    const normalized = normalizeData(announcementData);
-
-    const announcement = new Announcement({
-        ...normalized,
-        author: adminId,
-        attachments: [],
-    });
-
-    if (files && files.length > 0) {
-        if (files.length > 5) {
-            throw ApiError.badRequest("Maximum 5 attachments allowed");
-        }
-
-        announcement.attachments = files.map((file) => ({
-            filename: file.originalname,
-            url: getFileUrl(file.path),
-            size: file.size,
-            mimeType: file.mimetype,
-            uploadedAt: new Date(),
-        }));
+    // Search in title and content
+    if (query.search) {
+        filter.$text = { $search: query.search };
     }
 
-    await announcement.save();
+    // Sorting
+    let sortField = query.sort || "-createdAt";
 
-    return announcement;
-};
-
-const getAllAnnouncements = async (filters = {}) => {
-    const { page = 1, limit = 10, category, status, search, isActive } =
-        filters;
-
-    const query = {};
-
-    if (category) {
-        query.category = category;
+    // Custom sort for pinned items first
+    const sortOptions = {};
+    if (sortField === "-createdAt" || sortField === "createdAt") {
+        sortOptions.isPinned = -1; // Pinned first
+        sortOptions.createdAt = sortField === "-createdAt" ? -1 : 1;
+    } else if (sortField === "-views" || sortField === "views") {
+        sortOptions.isPinned = -1;
+        sortOptions.views = sortField === "-views" ? -1 : 1;
+        sortOptions.createdAt = -1; // Secondary sort
+    } else if (sortField === "-title" || sortField === "title") {
+        sortOptions.isPinned = -1;
+        sortOptions.title = sortField === "-title" ? -1 : 1;
     }
 
-    if (status) {
-        query.status = status;
-    }
+    const announcements = await Announcement.find(filter)
+        .populate("createdBy", "fullName email")
+        .populate("updatedBy", "fullName email")
+        .select("-__v")
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit)
+        .lean({ virtuals: true });
 
-    if (isActive !== undefined) {
-        query.isActive = isActive === "true" || isActive === true;
-    }
-
-    if (search) {
-        query.$or = [
-            { title: { $regex: search, $options: "i" } },
-            { content: { $regex: search, $options: "i" } },
-        ];
-    }
-
-    const total = await Announcement.countDocuments(query);
-    const announcements = await Announcement.find(query)
-        .populate("author", "username fullName")
-        .sort({ isPinned: -1, createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit);
+    const total = await Announcement.countDocuments(filter);
 
     return {
         announcements,
-        pagination: {
-            currentPage: parseInt(page, 10),
-            totalPages: Math.ceil(total / limit),
-            totalAnnouncements: total,
-            limit: parseInt(limit, 10),
-        },
+        pagination: createPaginationMeta(page, limit, total),
     };
 };
 
-const getAnnouncementById = async (id, incrementView = false) => {
-    const announcement = await Announcement.findById(id).populate(
-        "author",
-        "username fullName"
-    );
+/**
+ * Get single announcement by ID and increment view count
+ */
+const getAnnouncementById = async (announcementId, incrementViews = true) => {
+    const announcement = await Announcement.findById(announcementId)
+        .populate("createdBy", "fullName email")
+        .populate("updatedBy", "fullName email")
+        .select("-__v");
 
     if (!announcement) {
-        throw ApiError.notFound("Announcement not found");
+        throw ApiError.notFound("공지사항을 찾을 수 없습니다");
     }
 
-    if (incrementView) {
+    // Increment view count
+    if (incrementViews) {
         announcement.views += 1;
         await announcement.save();
     }
@@ -104,165 +87,69 @@ const getAnnouncementById = async (id, incrementView = false) => {
     return announcement;
 };
 
-const updateAnnouncement = async (id, announcementData, files, adminId) => {
-    const announcement = await Announcement.findById(id);
-
-    if (!announcement) {
-        throw ApiError.notFound("Announcement not found");
-    }
-
-    const normalized = normalizeData(announcementData);
-
-    Object.keys(normalized).forEach((key) => {
-        if (normalized[key] !== undefined) {
-            announcement[key] = normalized[key];
-        }
+/**
+ * Create new announcement (Admin only)
+ */
+const createAnnouncement = async (data, adminId) => {
+    const announcement = await Announcement.create({
+        ...data,
+        createdBy: adminId,
     });
 
-    announcement.lastModifiedBy = adminId;
+    return announcement.populate("createdBy", "fullName email");
+};
 
-    if (files && files.length > 0) {
-        const totalAttachments =
-            (announcement.attachments?.length || 0) + files.length;
-        if (totalAttachments > 5) {
-            throw ApiError.badRequest("Maximum 5 attachments allowed");
-        }
+/**
+ * Update announcement (Admin only)
+ */
+const updateAnnouncement = async (announcementId, updates, adminId) => {
+    const announcement = await Announcement.findById(announcementId);
 
-        const newAttachments = files.map((file) => ({
-            filename: file.originalname,
-            url: getFileUrl(file.path),
-            size: file.size,
-            mimeType: file.mimetype,
-            uploadedAt: new Date(),
-        }));
-
-        announcement.attachments = [
-            ...announcement.attachments,
-            ...newAttachments,
-        ];
+    if (!announcement) {
+        throw ApiError.notFound("공지사항을 찾을 수 없습니다");
     }
 
+    // Update fields
+    Object.keys(updates).forEach((key) => {
+        announcement[key] = updates[key];
+    });
+
+    announcement.updatedBy = adminId;
     await announcement.save();
+
+    return announcement.populate([
+        { path: "createdBy", select: "fullName email" },
+        { path: "updatedBy", select: "fullName email" },
+    ]);
+};
+
+/**
+ * Delete announcement (Admin only)
+ */
+const deleteAnnouncement = async (announcementId) => {
+    const announcement = await Announcement.findByIdAndDelete(announcementId);
+
+    if (!announcement) {
+        throw ApiError.notFound("공지사항을 찾을 수 없습니다");
+    }
 
     return announcement;
 };
 
-const deleteAnnouncement = async (id) => {
-    const announcement = await Announcement.findById(id);
+/**
+ * Get announcement statistics (Admin only)
+ */
+const getStatistics = async () => {
+    const totalAnnouncements = await Announcement.countDocuments();
+    const activeAnnouncements = await Announcement.countDocuments({
+        isActive: true,
+    });
+    const pinnedAnnouncements = await Announcement.countDocuments({
+        isPinned: true,
+    });
 
-    if (!announcement) {
-        throw ApiError.notFound("Announcement not found");
-    }
-
-    if (announcement.attachments && announcement.attachments.length > 0) {
-        for (const attachment of announcement.attachments) {
-            try {
-                await deleteFile(attachment.url);
-            } catch (error) {
-                console.error(
-                    `Failed to delete file: ${attachment.url}`,
-                    error
-                );
-            }
-        }
-    }
-
-    await announcement.deleteOne();
-
-    return {
-        message: "Announcement deleted successfully",
-    };
-};
-
-const softDeleteAnnouncement = async (id) => {
-    const announcement = await Announcement.findById(id);
-
-    if (!announcement) {
-        throw ApiError.notFound("Announcement not found");
-    }
-
-    announcement.isActive = false;
-    await announcement.save();
-
-    return {
-        message: "Announcement archived successfully",
-    };
-};
-
-const deleteAttachment = async (announcementId, attachmentId) => {
-    const announcement = await Announcement.findById(announcementId);
-
-    if (!announcement) {
-        throw ApiError.notFound("Announcement not found");
-    }
-
-    const attachmentIndex = announcement.attachments.findIndex(
-        (att) => att._id.toString() === attachmentId
-    );
-
-    if (attachmentIndex === -1) {
-        throw ApiError.notFound("Attachment not found");
-    }
-
-    const attachment = announcement.attachments[attachmentIndex];
-
-    try {
-        await deleteFile(attachment.url);
-    } catch (error) {
-        console.error(`Failed to delete file: ${attachment.url}`, error);
-    }
-
-    announcement.attachments.splice(attachmentIndex, 1);
-    await announcement.save();
-
-    return {
-        message: "Attachment deleted successfully",
-    };
-};
-
-const bulkDeleteAnnouncements = async (ids) => {
-    const announcements = await Announcement.find({ _id: { $in: ids } });
-
-    for (const announcement of announcements) {
-        if (announcement.attachments && announcement.attachments.length > 0) {
-            for (const attachment of announcement.attachments) {
-                try {
-                    await deleteFile(attachment.url);
-                } catch (error) {
-                    console.error(
-                        `Failed to delete file: ${attachment.url}`,
-                        error
-                    );
-                }
-            }
-        }
-    }
-
-    const result = await Announcement.deleteMany({ _id: { $in: ids } });
-
-    return {
-        message: `${result.deletedCount} announcements deleted successfully`,
-        deletedCount: result.deletedCount,
-    };
-};
-
-const getAnnouncementStats = async () => {
-    const total = await Announcement.countDocuments();
-    const published = await Announcement.countDocuments({ status: "published" });
-    const draft = await Announcement.countDocuments({ status: "draft" });
-    const archived = await Announcement.countDocuments({ status: "archived" });
-    const pinned = await Announcement.countDocuments({ isPinned: true });
-
-    const categoryCounts = await Announcement.aggregate([
-        {
-            $group: {
-                _id: "$category",
-                count: { $sum: 1 },
-            },
-        },
-    ]);
-
-    const totalViews = await Announcement.aggregate([
+    // Calculate total views
+    const viewsAggregation = await Announcement.aggregate([
         {
             $group: {
                 _id: null,
@@ -271,26 +158,78 @@ const getAnnouncementStats = async () => {
         },
     ]);
 
+    const totalViews = viewsAggregation[0]?.totalViews || 0;
+
+    // Get recent announcements (last 5)
+    const recentAnnouncements = await Announcement.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select("title views createdAt")
+        .lean();
+
+    // Get most viewed announcements
+    const mostViewed = await Announcement.find()
+        .sort({ views: -1 })
+        .limit(5)
+        .select("title views createdAt")
+        .lean();
+
     return {
-        total,
-        published,
-        draft,
-        archived,
-        pinned,
-        categories: categoryCounts,
-        totalViews: totalViews[0]?.totalViews || 0,
+        totalAnnouncements,
+        activeAnnouncements,
+        inactiveAnnouncements: totalAnnouncements - activeAnnouncements,
+        pinnedAnnouncements,
+        totalViews,
+        averageViews:
+            totalAnnouncements > 0
+                ? Math.round(totalViews / totalAnnouncements)
+                : 0,
+        recentAnnouncements,
+        mostViewed,
     };
 };
 
-module.exports = {
-    createAnnouncement,
-    getAllAnnouncements,
-    getAnnouncementById,
-    updateAnnouncement,
-    deleteAnnouncement,
-    softDeleteAnnouncement,
-    deleteAttachment,
-    bulkDeleteAnnouncements,
-    getAnnouncementStats,
+/**
+ * Toggle pin status
+ */
+const togglePin = async (announcementId, adminId) => {
+    const announcement = await Announcement.findById(announcementId);
+
+    if (!announcement) {
+        throw ApiError.notFound("공지사항을 찾을 수 없습니다");
+    }
+
+    announcement.isPinned = !announcement.isPinned;
+    announcement.updatedBy = adminId;
+    await announcement.save();
+
+    return announcement;
 };
 
+/**
+ * Toggle active status
+ */
+const toggleActive = async (announcementId, adminId) => {
+    const announcement = await Announcement.findById(announcementId);
+
+    if (!announcement) {
+        throw ApiError.notFound("공지사항을 찾을 수 없습니다");
+    }
+
+    announcement.isActive = !announcement.isActive;
+    announcement.updatedBy = adminId;
+    await announcement.save();
+
+    return announcement;
+};
+
+module.exports = {
+    getAllAnnouncements,
+    getAnnouncementById,
+    createAnnouncement,
+    updateAnnouncement,
+    deleteAnnouncement,
+    getStatistics,
+    togglePin,
+    toggleActive,
+};
