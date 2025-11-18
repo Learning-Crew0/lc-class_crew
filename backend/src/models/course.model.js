@@ -20,26 +20,20 @@ const courseSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
-        // Legacy category field (ObjectId) - kept for backward compatibility
-        categoryLegacy: {
+        // Category field (MongoDB ObjectId)
+        category: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Category",
-        },
-        // New category field (slug-based for filtering)
-        category: {
-            type: String,
             required: [true, "Category is required"],
-            enum: CATEGORY_SLUGS,
         },
         categoryInfo: {
             slug: String,
             koreanName: String,
             englishName: String,
         },
-        // New position/level field
+        // Position/level field (optional slug)
         position: {
             type: String,
-            required: [true, "Position/Level is required"],
             enum: POSITION_SLUGS,
         },
         positionInfo: {
