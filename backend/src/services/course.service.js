@@ -85,7 +85,7 @@ const getAllCourses = async (query) => {
     }
 
     const courses = await Course.find(filter)
-        .populate("category", "title")
+        .populate("category", "title description order")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);

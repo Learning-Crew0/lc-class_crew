@@ -11,24 +11,26 @@ const createCourseSchema = Joi.object({
     shortDescription: Joi.string().trim().max(500).optional(),
     longDescription: Joi.string().trim().optional(),
     description: Joi.string().trim().optional(),
-    // Category slug (required) - must be one of 5 categories
-    category: Joi.string()
-        .trim()
-        .valid(...CATEGORY_SLUGS)
+    // Category - can be either ObjectId (MongoDB) or slug (constants)
+    category: Joi.alternatives()
+        .try(
+            Joi.string().hex().length(24), // MongoDB ObjectId
+            Joi.string()
+                .trim()
+                .valid(...CATEGORY_SLUGS) // Category slug
+        )
         .required()
         .messages({
             "string.empty": "카테고리를 선택해주세요",
             "any.required": "카테고리는 필수입니다",
-            "any.only": "유효한 카테고리를 선택해주세요",
+            "alternatives.match": "유효한 카테고리를 선택해주세요",
         }),
-    // Position slug (required) - must be one of 9 positions
+    // Position slug (optional)
     position: Joi.string()
         .trim()
         .valid(...POSITION_SLUGS)
-        .required()
+        .optional()
         .messages({
-            "string.empty": "직급/직책을 선택해주세요",
-            "any.required": "직급/직책은 필수입니다",
             "any.only": "유효한 직급/직책을 선택해주세요",
         }),
     tagText: Joi.string().trim().max(50).optional(),
@@ -116,13 +118,13 @@ const updateCourseSchema = Joi.object({
     shortDescription: Joi.string().trim().max(500).optional(),
     longDescription: Joi.string().trim().optional(),
     description: Joi.string().trim().optional(),
-    // Category slug (optional for updates)
+    // Category - MongoDB ObjectId (24 character hex string)
     category: Joi.string()
         .trim()
-        .valid(...CATEGORY_SLUGS)
+        .regex(/^[0-9a-fA-F]{24}$/)
         .optional()
         .messages({
-            "any.only": "유효한 카테고리를 선택해주세요",
+            "string.pattern.base": "유효한 카테고리를 선택해주세요",
         }),
     // Position slug (optional for updates)
     position: Joi.string()

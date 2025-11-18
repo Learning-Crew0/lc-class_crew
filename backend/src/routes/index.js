@@ -8,6 +8,7 @@ const coursesRoutes = require("./courses.routes");
 const productRoutes = require("./products.routes");
 const productCategoryRoutes = require("./productCategories.routes");
 const categoryRoutes = require("./category.routes");
+const positionRoutes = require("./position.routes");
 const cartRoutes = require("./cart.routes");
 const classApplicationRoutes = require("./classApplication.routes");
 const enrollmentRoutes = require("./enrollment.routes");
@@ -120,6 +121,8 @@ router.use("/product-categories", productCategoryRoutes);
 
 router.use("/categories", categoryRoutes);
 router.use("/category", categoryRoutes); // Alias for singular form
+
+router.use("/positions", positionRoutes);
 
 router.use("/cart", cartRoutes);
 
