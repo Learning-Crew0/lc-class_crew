@@ -1,5 +1,6 @@
 const Joi = require("joi");
 const { CATEGORY_SLUGS, POSITION_SLUGS } = require("../constants/categories");
+const { COURSE_DISPLAY_TAG_VALUES } = require("../constants/courseTags");
 
 const createCourseSchema = Joi.object({
     title: Joi.string().trim().min(3).max(200).required().messages({
@@ -35,6 +36,13 @@ const createCourseSchema = Joi.object({
     tags: Joi.alternatives()
         .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
         .optional(),
+    displayTag: Joi.string()
+        .valid(...COURSE_DISPLAY_TAG_VALUES)
+        .default("ALL")
+        .optional()
+        .messages({
+            "any.only": "displayTag must be one of NEWEST, POPULAR, or ALL",
+        }),
     price: Joi.alternatives()
         .try(
             Joi.number().min(0),
@@ -129,6 +137,12 @@ const updateCourseSchema = Joi.object({
     tags: Joi.alternatives()
         .try(Joi.array().items(Joi.string().trim()), Joi.string().trim())
         .optional(),
+    displayTag: Joi.string()
+        .valid(...COURSE_DISPLAY_TAG_VALUES)
+        .optional()
+        .messages({
+            "any.only": "displayTag must be one of NEWEST, POPULAR, or ALL",
+        }),
     price: Joi.alternatives()
         .try(
             Joi.number().min(0),

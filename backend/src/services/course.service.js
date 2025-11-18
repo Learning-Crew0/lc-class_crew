@@ -79,6 +79,11 @@ const getAllCourses = async (query) => {
         filter.isFeatured = query.isFeatured === "true";
     }
 
+    // Filter by displayTag (NEWEST, POPULAR, ALL)
+    if (query.displayTag && query.displayTag !== "ALL") {
+        filter.displayTag = query.displayTag;
+    }
+
     const courses = await Course.find(filter)
         .populate("category", "title")
         .sort({ createdAt: -1 })
@@ -305,6 +310,7 @@ const searchCourses = async (filters = {}) => {
     const {
         category,
         position,
+        displayTag,
         sortBy = "createdAt",
         order = "desc",
     } = filters;
@@ -329,6 +335,11 @@ const searchCourses = async (filters = {}) => {
             throw ApiError.badRequest(`Invalid position: ${position}`);
         }
         filter.position = position;
+    }
+
+    // Add displayTag filter (NEWEST, POPULAR, ALL)
+    if (displayTag && displayTag !== "ALL") {
+        filter.displayTag = displayTag;
     }
 
     // Build sort
