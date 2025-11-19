@@ -117,7 +117,8 @@ const adminLogin = async (identifier, password) => {
     admin.lastLogin = Date.now();
     await admin.save();
 
-    const token = generateToken({ id: admin._id, role: "admin" });
+    // Admin tokens last longer (30 days vs 7 days for regular users)
+    const token = generateToken({ id: admin._id, role: "admin" }, "30d");
     const refreshToken = generateRefreshToken({ id: admin._id, role: "admin" });
 
     return {
@@ -236,10 +237,10 @@ const verifyMember = async (phone, email, name) => {
     }
 
     // Check if all information matches
-    const emailMatch =
-        user.email?.toLowerCase() === normalizedEmail;
+    const emailMatch = user.email?.toLowerCase() === normalizedEmail;
     const nameMatch =
-        user.fullName?.trim() === normalizedName || user.username?.trim() === normalizedName;
+        user.fullName?.trim() === normalizedName ||
+        user.username?.trim() === normalizedName;
 
     // If info doesn't match
     if (!emailMatch || !nameMatch) {
@@ -255,6 +256,90 @@ const verifyMember = async (phone, email, name) => {
     };
 };
 
+/**
+ * Refresh access token using refresh token
+ */
+const refreshAccessToken = async (refreshToken) => {
+    try {
+        const decoded = verifyRefreshToken(refreshToken);
+
+        // Find user based on role
+        let user;
+        if (decoded.role === "admin") {
+            user = await Admin.findById(decoded.id);
+        } else {
+            user = await User.findById(decoded.id);
+        }
+
+        if (!user) {
+            throw ApiError.unauthorized("사용자를 찾을 수 없습니다");
+        }
+
+        if (!user.isActive) {
+            throw ApiError.forbidden("비활성화된 계정입니다");
+        }
+
+        // Generate new tokens
+        const newToken = generateToken({ id: user._id, role: decoded.role });
+        const newRefreshToken = generateRefreshToken({
+            id: user._id,
+            role: decoded.role,
+        });
+
+        return {
+            token: newToken,
+            refreshToken: newRefreshToken,
+            user: {
+                id: user._id,
+                email: user.email,
+                role: decoded.role,
+            },
+        };
+    } catch (error) {
+        throw ApiError.unauthorized(
+            "유효하지 않거나 만료된 리프레시 토큰입니다"
+        );
+    }
+};
+
+/**
+ * Verify if a token is valid
+ */
+const verifyAccessToken = async (token) => {
+    try {
+        const decoded = verifyToken(token);
+
+        // Find user based on role
+        let user;
+        if (decoded.role === "admin") {
+            user = await Admin.findById(decoded.id);
+        } else {
+            user = await User.findById(decoded.id);
+        }
+
+        if (!user) {
+            return { valid: false, reason: "User not found" };
+        }
+
+        if (!user.isActive) {
+            return { valid: false, reason: "Account is deactivated" };
+        }
+
+        return {
+            valid: true,
+            user: {
+                id: user._id,
+                email: user.email,
+                username: user.username,
+                role: decoded.role,
+            },
+            expiresAt: new Date(decoded.exp * 1000),
+        };
+    } catch (error) {
+        return { valid: false, reason: error.message };
+    }
+};
+
 module.exports = {
     register,
     login,
@@ -263,4 +348,6 @@ module.exports = {
     updateProfile,
     changePassword,
     verifyMember,
+    refreshAccessToken,
+    verifyAccessToken,
 };

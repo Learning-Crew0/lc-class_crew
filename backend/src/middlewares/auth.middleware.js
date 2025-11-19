@@ -12,28 +12,45 @@ const authenticate = async (req, res, next) => {
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            console.log('[Auth] No authorization header or invalid format');
             return errorResponse(res, "No token provided", 401);
         }
 
         const token = authHeader.split(" ")[1];
 
+        if (!token || token === 'null' || token === 'undefined') {
+            console.log('[Auth] Token is empty, null, or undefined');
+            return errorResponse(res, "Invalid token format", 401);
+        }
+
         // Verify token
-        const decoded = verifyToken(token);
+        let decoded;
+        try {
+            decoded = verifyToken(token);
+        } catch (tokenError) {
+            console.log('[Auth] Token verification failed:', tokenError.message);
+            return errorResponse(res, "Invalid or expired token", 401);
+        }
 
         // Find user based on role
         let user;
         if (decoded.role === "admin") {
             user = await Admin.findById(decoded.id);
+            if (!user) {
+                console.log('[Auth] Admin not found:', decoded.id);
+                return errorResponse(res, "Admin account not found", 401);
+            }
         } else {
             user = await User.findById(decoded.id);
-        }
-
-        if (!user) {
-            return errorResponse(res, "User not found", 401);
+            if (!user) {
+                console.log('[Auth] User not found:', decoded.id);
+                return errorResponse(res, "User account not found", 401);
+            }
         }
 
         if (!user.isActive) {
-            return errorResponse(res, "User account is deactivated", 403);
+            console.log('[Auth] Account deactivated:', decoded.id);
+            return errorResponse(res, "Account is deactivated", 403);
         }
 
         // Attach user to request
@@ -45,7 +62,8 @@ const authenticate = async (req, res, next) => {
 
         next();
     } catch (error) {
-        return errorResponse(res, "Invalid or expired token", 401);
+        console.error('[Auth] Unexpected error:', error);
+        return errorResponse(res, "Authentication failed", 401);
     }
 };
 

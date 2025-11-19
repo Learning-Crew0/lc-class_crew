@@ -46,6 +46,12 @@ router.post(
 
 router.post("/auth/login", validate(loginSchema), authController.login);
 
+// Token Refresh - No validation needed as we check in controller
+router.post("/auth/refresh-token", authController.refreshToken);
+
+// Token Verification - For debugging and frontend token checks
+router.get("/auth/verify-token", authController.verifyToken);
+
 // Verify Member (for personal/corporate inquiry)
 router.post("/auth/verify-member", authController.verifyMember);
 

@@ -1,6 +1,7 @@
 const authService = require("../services/auth.service");
 const { successResponse } = require("../utils/response.util");
 const asyncHandler = require("../utils/asyncHandler.util");
+const ApiError = require("../utils/apiError.util");
 
 const register = asyncHandler(async (req, res) => {
     const result = await authService.register(req.body);
@@ -75,6 +76,30 @@ const verifyMember = asyncHandler(async (req, res) => {
     }
 });
 
+const refreshToken = asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+        throw ApiError.badRequest("리프레시 토큰이 필요합니다");
+    }
+    
+    const result = await authService.refreshAccessToken(refreshToken);
+    return successResponse(res, result, "토큰이 갱신되었습니다");
+});
+
+const verifyToken = asyncHandler(async (req, res) => {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        throw ApiError.badRequest("토큰이 필요합니다");
+    }
+    
+    const token = authHeader.split(" ")[1];
+    const result = await authService.verifyAccessToken(token);
+    
+    return successResponse(res, result, "토큰 검증 완료");
+});
+
 module.exports = {
     register,
     login,
@@ -83,4 +108,6 @@ module.exports = {
     updateProfile,
     changePassword,
     verifyMember,
+    refreshToken,
+    verifyToken,
 };
