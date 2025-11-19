@@ -35,13 +35,42 @@ const getOrCreateCart = async (userId) => {
 };
 
 /**
+ * Clean up cart items with null/deleted courses or schedules
+ * @param {Cart} cart
+ * @returns {Promise<Cart>}
+ */
+const cleanupInvalidCartItems = async (cart) => {
+    const invalidItems = cart.items.filter(
+        (item) =>
+            (item.itemType === "course" && (!item.course || !item.courseSchedule)) ||
+            (item.itemType === "product" && !item.product)
+    );
+
+    if (invalidItems.length > 0) {
+        cart.items = cart.items.filter(
+            (item) =>
+                (item.itemType === "course" && item.course && item.courseSchedule) ||
+                (item.itemType === "product" && item.product)
+        );
+        
+        await cart.save();
+        console.log(`[Cart] Cleaned up ${invalidItems.length} invalid items for user ${cart.user}`);
+    }
+    
+    return cart;
+};
+
+/**
  * Get cart with optional itemType filter
  * @param {String} userId
  * @param {String} itemType - Optional: "course" or "product"
  * @returns {Promise<Object>}
  */
 const getCart = async (userId, itemType = null) => {
-    const cart = await getOrCreateCart(userId);
+    let cart = await getOrCreateCart(userId);
+
+    // Clean up invalid items automatically
+    cart = await cleanupInvalidCartItems(cart);
 
     // Filter items by type if specified
     let items = cart.items;
@@ -300,14 +329,33 @@ const getSelectedCoursesForApplication = async (userId, selectedCourseIds) => {
         throw ApiError.notFound("Cart not found");
     }
 
-    // Filter only selected course items
+    // Clean up any invalid items automatically
+    await cleanupInvalidCartItems(cart);
+
+    // Filter only selected course items (and ensure course is populated)
     const selectedItems = cart.items.filter(
         (item) =>
             item.itemType === "course" &&
+            item.course && // Check if course exists (not null)
+            item.courseSchedule && // Check if schedule exists (not null)
             selectedCourseIds.includes(item.course._id.toString())
     );
 
     if (selectedItems.length === 0) {
+        // Check if any of the requested courses exist in cart but are invalid
+        const requestedButInvalid = cart.items.filter(
+            (item) =>
+                item.itemType === "course" &&
+                (!item.course || !item.courseSchedule) &&
+                selectedCourseIds.includes(item.course?._id?.toString() || "")
+        );
+        
+        if (requestedButInvalid.length > 0) {
+            throw ApiError.badRequest(
+                "Some selected courses are no longer available. Please remove them from your cart and try again."
+            );
+        }
+        
         throw ApiError.badRequest("No valid courses selected");
     }
 
