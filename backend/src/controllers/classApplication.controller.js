@@ -6,7 +6,7 @@ const { successResponse } = require("../utils/response.util");
 
 /**
  * Create draft application from selected courses
- * 
+ *
  * @route POST /api/v1/class-applications/draft
  * @access Private
  */
@@ -36,7 +36,7 @@ const createDraftApplication = asyncHandler(async (req, res) => {
 
 /**
  * Validate student credentials
- * 
+ *
  * @route POST /api/v1/class-applications/validate-student
  * @access Private
  */
@@ -96,7 +96,7 @@ const validateStudent = asyncHandler(async (req, res) => {
 
 /**
  * Add student to a course in application
- * 
+ *
  * @route POST /api/v1/class-applications/:applicationId/add-student
  * @access Private
  */
@@ -127,7 +127,7 @@ const addStudentToCourse = asyncHandler(async (req, res) => {
 
 /**
  * Upload bulk students file
- * 
+ *
  * @route POST /api/v1/class-applications/:applicationId/upload-bulk-students
  * @access Private
  */
@@ -158,7 +158,7 @@ const uploadBulkStudents = asyncHandler(async (req, res) => {
 
 /**
  * Update payment information
- * 
+ *
  * @route PUT /api/v1/class-applications/:applicationId/payment
  * @access Private
  */
@@ -174,12 +174,16 @@ const updatePaymentInfo = asyncHandler(async (req, res) => {
         req.body
     );
 
-    return successResponse(res, application, "Payment information updated successfully");
+    return successResponse(
+        res,
+        application,
+        "Payment information updated successfully"
+    );
 });
 
 /**
  * Submit application
- * 
+ *
  * @route POST /api/v1/class-applications/:applicationId/submit
  * @access Private
  */
@@ -216,7 +220,7 @@ const submitApplication = asyncHandler(async (req, res) => {
 
 /**
  * Get application by ID
- * 
+ *
  * @route GET /api/v1/class-applications/:applicationId
  * @access Private
  */
@@ -232,12 +236,16 @@ const getApplicationById = asyncHandler(async (req, res) => {
         req.user.id
     );
 
-    return successResponse(res, application, "Application retrieved successfully");
+    return successResponse(
+        res,
+        application,
+        "Application retrieved successfully"
+    );
 });
 
 /**
  * Get user's applications
- * 
+ *
  * @route GET /api/v1/class-applications/user/:userId
  * @access Private
  */
@@ -263,7 +271,7 @@ const getUserApplications = asyncHandler(async (req, res) => {
 
 /**
  * Cancel application
- * 
+ *
  * @route POST /api/v1/class-applications/:applicationId/cancel
  * @access Private
  */
@@ -284,12 +292,16 @@ const cancelApplication = asyncHandler(async (req, res) => {
         reason
     );
 
-    return successResponse(res, application, "Application cancelled successfully");
+    return successResponse(
+        res,
+        application,
+        "Application cancelled successfully"
+    );
 });
 
 /**
  * Download bulk upload template
- * 
+ *
  * @route GET /api/v1/class-applications/download-template
  * @access Public
  */
@@ -299,6 +311,55 @@ const downloadTemplate = asyncHandler(async (req, res) => {
     return successResponse(res, template, "Template generated successfully");
 });
 
+/**
+ * Submit complete application (client-side draft approach)
+ * POST /api/v1/class-applications/submit-complete
+ */
+const submitCompleteApplication = asyncHandler(async (req, res) => {
+    if (!req.user || !req.user.id) {
+        throw ApiError.unauthorized("Authentication required");
+    }
+
+    const applicationData = req.body;
+
+    // Validate required fields
+    if (!applicationData.courses || !Array.isArray(applicationData.courses)) {
+        throw ApiError.badRequest("Courses array is required");
+    }
+
+    if (!applicationData.applicantInfo) {
+        throw ApiError.badRequest("Applicant information is required");
+    }
+
+    if (!applicationData.paymentInfo) {
+        throw ApiError.badRequest("Payment information is required");
+    }
+
+    if (!applicationData.agreements) {
+        throw ApiError.badRequest("Agreements are required");
+    }
+
+    const application = await classApplicationService.submitCompleteApplication(
+        req.user.id,
+        applicationData
+    );
+
+    return successResponse(
+        res,
+        {
+            applicationId: application._id,
+            applicationNumber: application.applicationNumber,
+            status: application.status,
+            submittedAt: application.submittedAt,
+            courses: application.courses,
+            totalAmount: application.paymentInfo.totalAmount,
+            paymentMethod: application.paymentInfo.paymentMethod,
+        },
+        "신청이 완료되었습니다",
+        201
+    );
+});
+
 module.exports = {
     createDraftApplication,
     validateStudent,
@@ -306,6 +367,7 @@ module.exports = {
     uploadBulkStudents,
     updatePaymentInfo,
     submitApplication,
+    submitCompleteApplication, // NEW
     getApplicationById,
     getUserApplications,
     cancelApplication,

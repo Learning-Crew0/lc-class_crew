@@ -56,10 +56,16 @@ router.put(
     classApplicationController.updatePaymentInfo
 );
 
-// Submit application
+// Submit application (old method - with draft)
 router.post(
     "/:applicationId/submit",
     classApplicationController.submitApplication
+);
+
+// Submit complete application (new method - client-side draft, one API call)
+router.post(
+    "/submit-complete",
+    classApplicationController.submitCompleteApplication
 );
 
 // Get user's applications

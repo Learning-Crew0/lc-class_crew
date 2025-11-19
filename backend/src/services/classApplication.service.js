@@ -637,6 +637,150 @@ function parsePhone(phoneString) {
     };
 }
 
+/**
+ * Submit complete application (client-side draft approach)
+ * Creates application with all data in one request
+ * 
+ * IMPORTANT: The applicant (person submitting) does NOT need to be one of the students!
+ * Use Cases:
+ * - Self-enrollment: User enrolls themselves
+ * - Team enrollment: Manager enrolls team members (manager may or may not be included)
+ * - HR enrollment: HR enrolls employees (HR is NOT a student)
+ * - Mixed: User enrolls themselves + others
+ * 
+ * @param {String} userId - ID of the authenticated user creating the application
+ * @param {Object} applicationData - Complete application data
+ * @param {Array} applicationData.courses - Courses with students (1-5 students per course for individual enrollment)
+ * @param {Object} applicationData.applicantInfo - Contact info for invoices/payment (can be different from students)
+ * @param {Object} applicationData.paymentInfo - Payment details
+ * @param {Object} applicationData.agreements - Terms acceptance
+ * @returns {Promise<ClassApplication>}
+ */
+const submitCompleteApplication = async (userId, applicationData) => {
+    const { courses, applicantInfo, paymentInfo, agreements } = applicationData;
+
+    // Validation
+    if (!courses || courses.length === 0) {
+        throw ApiError.badRequest("At least one course must be selected");
+    }
+
+    // Validate each course has students
+    for (const course of courses) {
+        if (!course.students || course.students.length === 0) {
+            throw ApiError.badRequest(`Course ${course.courseId} must have at least one student`);
+        }
+        if (course.students.length > INDIVIDUAL_STUDENT_LIMIT) {
+            throw ApiError.badRequest(`Course ${course.courseId} exceeds maximum of ${INDIVIDUAL_STUDENT_LIMIT} students`);
+        }
+    }
+
+    // Validate applicant info
+    if (!applicantInfo || !applicantInfo.name || !applicantInfo.email || !applicantInfo.phone) {
+        throw ApiError.badRequest("Applicant information is required");
+    }
+
+    // Validate payment info
+    if (!paymentInfo || !paymentInfo.paymentMethod) {
+        throw ApiError.badRequest("Payment information is required");
+    }
+
+    // Validate agreements
+    const purchaseTerms = agreements.purchaseTerms || agreements.paymentAndRefundPolicy;
+    const refundPolicy = agreements.refundPolicy;
+    
+    if (!purchaseTerms || !refundPolicy) {
+        throw ApiError.badRequest("All agreements must be accepted");
+    }
+
+    // Build courses array with validation
+    const coursesData = [];
+    let totalAmount = 0;
+
+    for (const courseData of courses) {
+        // Verify course exists
+        const course = await Course.findById(courseData.courseId);
+        if (!course) {
+            throw ApiError.notFound(`Course ${courseData.courseId} not found`);
+        }
+
+        // Verify training schedule exists
+        const schedule = await TrainingSchedule.findById(courseData.trainingScheduleId);
+        if (!schedule) {
+            throw ApiError.notFound(`Training schedule not found for course ${course.title}`);
+        }
+
+        // Process students for this course
+        const students = [];
+        for (const studentData of courseData.students) {
+            // Validate student data
+            await studentValidationService.validateStudent(studentData);
+
+            students.push({
+                userId: studentData.userId,
+                name: studentData.name,
+                email: studentData.email,
+                phone: studentData.phone,
+                company: studentData.company || "",
+                position: studentData.position || "",
+            });
+        }
+
+        const coursePrice = courseData.discountedPrice || courseData.price || course.price;
+        totalAmount += coursePrice;
+
+        coursesData.push({
+            course: course._id,
+            trainingSchedule: schedule._id,
+            courseName: course.title,
+            period: formatPeriod(schedule.startDate, schedule.endDate),
+            price: courseData.price || course.price,
+            discountedPrice: coursePrice,
+            students: students,
+        });
+    }
+
+    // Create application directly as submitted (no draft)
+    const application = new ClassApplication({
+        user: userId,
+        courses: coursesData,
+        status: "submitted",
+        paymentInfo: {
+            totalAmount: totalAmount,
+            paymentMethod: paymentInfo.paymentMethod,
+            taxInvoice: paymentInfo.taxInvoice || {
+                enabled: false
+            },
+            paymentStatus: "pending",
+        },
+        invoiceManager: {
+            name: applicantInfo.name,
+            email: applicantInfo.email,
+            phone: applicantInfo.phone,
+        },
+        agreements: {
+            paymentAndRefundPolicy: purchaseTerms,
+            refundPolicy: refundPolicy,
+            agreedAt: new Date()
+        },
+        submittedAt: new Date(),
+    });
+
+    // Generate application number
+    const count = await ClassApplication.countDocuments({ status: { $ne: "draft" } });
+    application.applicationNumber = `APP-${Date.now()}-${String(count + 1).padStart(4, "0")}`;
+
+    await application.save();
+
+    // Populate course and schedule details
+    await application.populate("courses.course courses.trainingSchedule");
+
+    // Remove courses from cart
+    const courseIds = courses.map(c => c.courseId);
+    await cartService.removeCoursesAfterApplication(userId, courseIds);
+
+    return application;
+};
+
 module.exports = {
     createDraftApplication,
     getApplicationById,
@@ -644,6 +788,7 @@ module.exports = {
     uploadBulkStudents,
     updatePaymentInfo,
     submitApplication,
+    submitCompleteApplication, // NEW
     createEnrollmentsFromApplication,
     getUserApplications,
     cancelApplication,
