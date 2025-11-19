@@ -15,8 +15,8 @@ const BULK_UPLOAD_MINIMUM = 6;
 
 /**
  * Create draft application from selected courses
- * 
- * @param {String} userId 
+ *
+ * @param {String} userId
  * @param {Array<String>} courseIds - Selected course IDs from cart
  * @returns {Promise<ClassApplication>}
  */
@@ -28,15 +28,16 @@ const createDraftApplication = async (userId, courseIds) => {
     // Check if there's already a draft for this user
     const existingDraft = await ClassApplication.findOne({
         user: userId,
-        status: "draft"
+        status: "draft",
     }).sort({ createdAt: -1 }); // Get most recent draft
 
     if (existingDraft) {
         // Update the existing draft with new courses
-        const selectedCourses = await cartService.getSelectedCoursesForApplication(
-            userId,
-            courseIds
-        );
+        const selectedCourses =
+            await cartService.getSelectedCoursesForApplication(
+                userId,
+                courseIds
+            );
 
         existingDraft.courses = selectedCourses.map((item) => ({
             course: item._id,
@@ -60,7 +61,7 @@ const createDraftApplication = async (userId, courseIds) => {
         // MongoDB sparse index requires undefined (not null) to allow multiple drafts
         if (existingDraft.applicationNumber) {
             existingDraft.applicationNumber = undefined;
-            existingDraft.markModified('applicationNumber');
+            existingDraft.markModified("applicationNumber");
         }
 
         await existingDraft.save();
@@ -94,10 +95,7 @@ const createDraftApplication = async (userId, courseIds) => {
         courses,
         status: "draft",
         paymentInfo: {
-            totalAmount: courses.reduce(
-                (sum, c) => sum + c.discountedPrice,
-                0
-            ),
+            totalAmount: courses.reduce((sum, c) => sum + c.discountedPrice, 0),
             paymentMethod: "간편결제", // Default
             paymentStatus: "pending",
         },
@@ -114,8 +112,8 @@ const createDraftApplication = async (userId, courseIds) => {
 
 /**
  * Get application by ID
- * 
- * @param {String} applicationId 
+ *
+ * @param {String} applicationId
  * @param {String} userId - Optional: for ownership verification
  * @returns {Promise<ClassApplication>}
  */
@@ -135,7 +133,9 @@ const getApplicationById = async (applicationId, userId = null) => {
 
     // Verify ownership if userId provided
     if (userId && application.user._id.toString() !== userId) {
-        throw ApiError.forbidden("You do not have permission to access this application");
+        throw ApiError.forbidden(
+            "You do not have permission to access this application"
+        );
     }
 
     return application;
@@ -143,10 +143,10 @@ const getApplicationById = async (applicationId, userId = null) => {
 
 /**
  * Add student to a specific course in application
- * 
- * @param {String} applicationId 
- * @param {String} courseId 
- * @param {Object} studentData 
+ *
+ * @param {String} applicationId
+ * @param {String} courseId
+ * @param {Object} studentData
  * @returns {Promise<ClassApplication>}
  */
 const addStudentToCourse = async (applicationId, courseId, studentData) => {
@@ -184,18 +184,20 @@ const addStudentToCourse = async (applicationId, courseId, studentData) => {
     }
 
     // Validate student
-    const validation = await studentValidationService.validateStudent(studentData);
+    const validation =
+        await studentValidationService.validateStudent(studentData);
 
     if (!validation.valid) {
         throw ApiError.badRequest(validation.error);
     }
 
     // Check enrollment eligibility
-    const eligibility = await studentValidationService.validateEnrollmentEligibility(
-        validation.userId,
-        courseId,
-        courseApp.trainingSchedule.toString()
-    );
+    const eligibility =
+        await studentValidationService.validateEnrollmentEligibility(
+            validation.userId,
+            courseId,
+            courseApp.trainingSchedule.toString()
+        );
 
     if (!eligibility.eligible) {
         throw ApiError.badRequest(eligibility.error);
@@ -218,9 +220,9 @@ const addStudentToCourse = async (applicationId, courseId, studentData) => {
 
 /**
  * Upload bulk students file for a course
- * 
- * @param {String} applicationId 
- * @param {String} courseId 
+ *
+ * @param {String} applicationId
+ * @param {String} courseId
  * @param {Object} file - Multer file object
  * @returns {Promise<Object>}
  */
@@ -273,9 +275,8 @@ const uploadBulkStudents = async (applicationId, courseId, file) => {
                 position: row.Position || row.position || row["직급"],
             };
 
-            const validation = await studentValidationService.validateStudent(
-                studentData
-            );
+            const validation =
+                await studentValidationService.validateStudent(studentData);
 
             return {
                 ...studentData,
@@ -314,9 +315,9 @@ const uploadBulkStudents = async (applicationId, courseId, file) => {
 
 /**
  * Update payment information
- * 
- * @param {String} applicationId 
- * @param {Object} paymentData 
+ *
+ * @param {String} applicationId
+ * @param {Object} paymentData
  * @returns {Promise<ClassApplication>}
  */
 const updatePaymentInfo = async (applicationId, paymentData) => {
@@ -335,7 +336,8 @@ const updatePaymentInfo = async (applicationId, paymentData) => {
         application.paymentInfo.paymentMethod = paymentData.paymentMethod;
     }
     if (paymentData.taxInvoiceRequired !== undefined) {
-        application.paymentInfo.taxInvoiceRequired = paymentData.taxInvoiceRequired;
+        application.paymentInfo.taxInvoiceRequired =
+            paymentData.taxInvoiceRequired;
     }
 
     // Update invoice manager
@@ -350,9 +352,9 @@ const updatePaymentInfo = async (applicationId, paymentData) => {
 
 /**
  * Submit application
- * 
- * @param {String} applicationId 
- * @param {Object} agreements 
+ *
+ * @param {String} applicationId
+ * @param {Object} agreements
  * @returns {Promise<ClassApplication>}
  */
 const submitApplication = async (applicationId, agreements) => {
@@ -368,10 +370,7 @@ const submitApplication = async (applicationId, agreements) => {
 
     // Validate all courses have students
     for (const courseApp of application.courses) {
-        if (
-            courseApp.students.length === 0 &&
-            !courseApp.bulkUploadFile
-        ) {
+        if (courseApp.students.length === 0 && !courseApp.bulkUploadFile) {
             throw ApiError.badRequest(
                 `Course "${courseApp.courseName}" has no students. Please add at least one student.`
             );
@@ -379,9 +378,10 @@ const submitApplication = async (applicationId, agreements) => {
     }
 
     // Validate agreements (accept both frontend and backend field names)
-    const purchaseTerms = agreements.purchaseTerms || agreements.paymentAndRefundPolicy;
+    const purchaseTerms =
+        agreements.purchaseTerms || agreements.paymentAndRefundPolicy;
     const refundPolicy = agreements.refundPolicy;
-    
+
     if (!purchaseTerms || !refundPolicy) {
         throw ApiError.badRequest("All agreements must be accepted");
     }
@@ -390,7 +390,7 @@ const submitApplication = async (applicationId, agreements) => {
     application.agreements = {
         paymentAndRefundPolicy: purchaseTerms,
         refundPolicy: refundPolicy,
-        agreedAt: new Date()
+        agreedAt: new Date(),
     };
 
     // Update status
@@ -414,8 +414,8 @@ const submitApplication = async (applicationId, agreements) => {
 
 /**
  * Create student enrollments from submitted application
- * 
- * @param {String} applicationId 
+ *
+ * @param {String} applicationId
  * @returns {Promise<Array<StudentEnrollment>>}
  */
 const createEnrollmentsFromApplication = async (applicationId) => {
@@ -444,9 +444,10 @@ const createEnrollmentsFromApplication = async (applicationId) => {
                         phone: parsePhone(row.Phone || row.phone),
                     };
 
-                    const validation = await studentValidationService.validateStudent(
-                        studentData
-                    );
+                    const validation =
+                        await studentValidationService.validateStudent(
+                            studentData
+                        );
 
                     return {
                         userId: validation.userId,
@@ -477,8 +478,8 @@ const createEnrollmentsFromApplication = async (applicationId) => {
 
 /**
  * Get user's applications
- * 
- * @param {String} userId 
+ *
+ * @param {String} userId
  * @param {Object} filters - { status, page, limit }
  * @returns {Promise<Object>}
  */
@@ -511,9 +512,9 @@ const getUserApplications = async (userId, filters = {}) => {
 
 /**
  * Cancel application
- * 
- * @param {String} applicationId 
- * @param {String} reason 
+ *
+ * @param {String} applicationId
+ * @param {String} reason
  * @returns {Promise<ClassApplication>}
  */
 const cancelApplication = async (applicationId, reason) => {
@@ -551,7 +552,7 @@ const cancelApplication = async (applicationId, reason) => {
 
 /**
  * Download bulk upload template
- * 
+ *
  * @returns {Object} - Template structure
  */
 const generateBulkUploadTemplate = () => {
@@ -640,14 +641,14 @@ function parsePhone(phoneString) {
 /**
  * Submit complete application (client-side draft approach)
  * Creates application with all data in one request
- * 
+ *
  * IMPORTANT: The applicant (person submitting) does NOT need to be one of the students!
  * Use Cases:
  * - Self-enrollment: User enrolls themselves
  * - Team enrollment: Manager enrolls team members (manager may or may not be included)
  * - HR enrollment: HR enrolls employees (HR is NOT a student)
  * - Mixed: User enrolls themselves + others
- * 
+ *
  * @param {String} userId - ID of the authenticated user creating the application
  * @param {Object} applicationData - Complete application data
  * @param {Array} applicationData.courses - Courses with students (1-5 students per course for individual enrollment)
@@ -667,15 +668,24 @@ const submitCompleteApplication = async (userId, applicationData) => {
     // Validate each course has students
     for (const course of courses) {
         if (!course.students || course.students.length === 0) {
-            throw ApiError.badRequest(`Course ${course.courseId} must have at least one student`);
+            throw ApiError.badRequest(
+                `Course ${course.courseId} must have at least one student`
+            );
         }
         if (course.students.length > INDIVIDUAL_STUDENT_LIMIT) {
-            throw ApiError.badRequest(`Course ${course.courseId} exceeds maximum of ${INDIVIDUAL_STUDENT_LIMIT} students`);
+            throw ApiError.badRequest(
+                `Course ${course.courseId} exceeds maximum of ${INDIVIDUAL_STUDENT_LIMIT} students`
+            );
         }
     }
 
     // Validate applicant info
-    if (!applicantInfo || !applicantInfo.name || !applicantInfo.email || !applicantInfo.phone) {
+    if (
+        !applicantInfo ||
+        !applicantInfo.name ||
+        !applicantInfo.email ||
+        !applicantInfo.phone
+    ) {
         throw ApiError.badRequest("Applicant information is required");
     }
 
@@ -685,9 +695,10 @@ const submitCompleteApplication = async (userId, applicationData) => {
     }
 
     // Validate agreements
-    const purchaseTerms = agreements.purchaseTerms || agreements.paymentAndRefundPolicy;
+    const purchaseTerms =
+        agreements.purchaseTerms || agreements.paymentAndRefundPolicy;
     const refundPolicy = agreements.refundPolicy;
-    
+
     if (!purchaseTerms || !refundPolicy) {
         throw ApiError.badRequest("All agreements must be accepted");
     }
@@ -704,9 +715,13 @@ const submitCompleteApplication = async (userId, applicationData) => {
         }
 
         // Verify training schedule exists
-        const schedule = await TrainingSchedule.findById(courseData.trainingScheduleId);
+        const schedule = await TrainingSchedule.findById(
+            courseData.trainingScheduleId
+        );
         if (!schedule) {
-            throw ApiError.notFound(`Training schedule not found for course ${course.title}`);
+            throw ApiError.notFound(
+                `Training schedule not found for course ${course.title}`
+            );
         }
 
         // Process students for this course
@@ -725,7 +740,8 @@ const submitCompleteApplication = async (userId, applicationData) => {
             });
         }
 
-        const coursePrice = courseData.discountedPrice || courseData.price || course.price;
+        const coursePrice =
+            courseData.discountedPrice || courseData.price || course.price;
         totalAmount += coursePrice;
 
         coursesData.push({
@@ -748,7 +764,7 @@ const submitCompleteApplication = async (userId, applicationData) => {
             totalAmount: totalAmount,
             paymentMethod: paymentInfo.paymentMethod,
             taxInvoice: paymentInfo.taxInvoice || {
-                enabled: false
+                enabled: false,
             },
             paymentStatus: "pending",
         },
@@ -760,13 +776,15 @@ const submitCompleteApplication = async (userId, applicationData) => {
         agreements: {
             paymentAndRefundPolicy: purchaseTerms,
             refundPolicy: refundPolicy,
-            agreedAt: new Date()
+            agreedAt: new Date(),
         },
         submittedAt: new Date(),
     });
 
     // Generate application number
-    const count = await ClassApplication.countDocuments({ status: { $ne: "draft" } });
+    const count = await ClassApplication.countDocuments({
+        status: { $ne: "draft" },
+    });
     application.applicationNumber = `APP-${Date.now()}-${String(count + 1).padStart(4, "0")}`;
 
     await application.save();
@@ -774,11 +792,109 @@ const submitCompleteApplication = async (userId, applicationData) => {
     // Populate course and schedule details
     await application.populate("courses.course courses.trainingSchedule");
 
+    // Create actual Enrollment records for each student in each course
+    await createActualEnrollmentsFromApplication(application._id);
+
     // Remove courses from cart
-    const courseIds = courses.map(c => c.courseId);
+    const courseIds = courses.map((c) => c.courseId);
     await cartService.removeCoursesAfterApplication(userId, courseIds);
 
     return application;
+};
+
+/**
+ * Create actual Enrollment records for students in the application
+ * This creates records in the Enrollment model (not StudentEnrollment)
+ * so students can see their courses in the learning status page
+ *
+ * @param {String} applicationId
+ * @returns {Promise<Array<Enrollment>>}
+ */
+const createActualEnrollmentsFromApplication = async (applicationId) => {
+    const application = await ClassApplication.findById(applicationId)
+        .populate("courses.course")
+        .populate("courses.trainingSchedule");
+
+    if (!application) {
+        throw ApiError.notFound("Application not found");
+    }
+
+    const Enrollment = require("../models/enrollment.model");
+    const User = require("../models/user.model");
+    const TrainingSchedule = require("../models/trainingSchedule.model");
+
+    const enrollments = [];
+
+    for (const courseApp of application.courses) {
+        const students = courseApp.students;
+        const course = courseApp.course;
+        const schedule = courseApp.trainingSchedule;
+        const coursePrice =
+            courseApp.discountedPrice || courseApp.price || course.price;
+
+        // Create enrollment for each student
+        for (const student of students) {
+            // Find or create user account for the student
+            let user = await User.findOne({
+                email: `${student.email.username}@${student.email.domain}`,
+            });
+
+            if (!user) {
+                // Create a basic user account if doesn't exist
+                user = await User.create({
+                    name: student.name,
+                    email: `${student.email.username}@${student.email.domain}`,
+                    phone: `${student.phone.prefix}-${student.phone.middle}-${student.phone.last}`,
+                    username: student.email.username,
+                    password: Math.random().toString(36).slice(-8), // Temporary password
+                    isActive: true,
+                });
+            }
+
+            // Check if enrollment already exists
+            const existingEnrollment = await Enrollment.findOne({
+                user: user._id,
+                course: course._id,
+                schedule: schedule._id,
+            });
+
+            if (!existingEnrollment) {
+                // Create new enrollment
+                const enrollment = await Enrollment.create({
+                    user: user._id,
+                    course: course._id,
+                    schedule: schedule._id,
+                    enrollmentDate: new Date(),
+                    paymentStatus: "completed", // Default to completed (no payment system yet)
+                    amountPaid: coursePrice || 0,
+                    paymentMethod:
+                        application.paymentInfo?.paymentMethod || "other",
+                    status: "수강예정", // Scheduled to start
+                    progress: 0,
+                });
+
+                enrollments.push(enrollment);
+
+                // Increment training schedule enrollment count
+                await TrainingSchedule.findByIdAndUpdate(schedule._id, {
+                    $inc: { enrolledCount: 1 },
+                });
+
+                console.log(
+                    `✅ Created enrollment ${enrollment.enrollmentNumber} for ${student.name} in ${course.title}`
+                );
+            } else {
+                console.log(
+                    `⚠️ Enrollment already exists for ${student.name} in ${course.title}`
+                );
+            }
+        }
+    }
+
+    console.log(
+        `✅ Created ${enrollments.length} enrollments from application ${application.applicationNumber}`
+    );
+    return enrollments;
 };
 
 module.exports = {
@@ -788,8 +904,9 @@ module.exports = {
     uploadBulkStudents,
     updatePaymentInfo,
     submitApplication,
-    submitCompleteApplication, // NEW
-    createEnrollmentsFromApplication,
+    submitCompleteApplication, // NEW - Client-side draft approach
+    createEnrollmentsFromApplication, // OLD - Creates StudentEnrollment records
+    createActualEnrollmentsFromApplication, // NEW - Creates actual Enrollment records
     getUserApplications,
     cancelApplication,
     generateBulkUploadTemplate,

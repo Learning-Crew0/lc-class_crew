@@ -364,7 +364,7 @@ const getEnrolledCoursesForLearningStatus = async (userId) => {
         user: userId,
         status: { $ne: "취소" }, // Exclude cancelled enrollments
     })
-        .populate("course", "title mainImage isRefundable")
+        .populate("course", "title mainImage refundOptions")
         .populate("schedule", "startDate endDate")
         .sort({ enrollmentDate: -1 });
 
@@ -376,17 +376,30 @@ const getEnrolledCoursesForLearningStatus = async (userId) => {
         수료: 4,
     };
 
-    const courses = enrollments.map((enrollment) => {
+    const courses = enrollments.map((enrollment, index) => {
+        // Determine course type from refundOptions field
+        // If refundOptions contains keywords like "환급", "지원", it's refundable
+        let courseType = "비환급"; // Default to non-refundable
+        if (enrollment.course?.refundOptions) {
+            const refundText = enrollment.course.refundOptions.toLowerCase();
+            if (refundText.includes("환급") || refundText.includes("지원")) {
+                courseType = "환급";
+            }
+        }
+
         const course = {
-            _id: enrollment.course?._id || enrollment._id,
+            no: index + 1, // Row number for display
+            _id: enrollment._id, // Enrollment ID
+            courseId: enrollment.course?._id || null,
+            enrollmentNumber: enrollment.enrollmentNumber, // ENR-xxxxx
             title: enrollment.course?.title || "제목 없음",
-            type: enrollment.course?.isRefundable ? "환급" : "비환급",
-            startDate:
-                enrollment.schedule?.startDate || enrollment.enrollmentDate,
+            type: courseType, // 환급 or 비환급
+            startDate: enrollment.schedule?.startDate || enrollment.enrollmentDate,
             endDate: enrollment.schedule?.endDate || null,
             status: enrollment.status || "수강예정",
             enrolledAt: enrollment.enrollmentDate,
             progress: enrollment.progress || 0,
+            mainImage: enrollment.course?.mainImage || null,
         };
 
         // Only include certificateUrl for completed courses
@@ -403,6 +416,11 @@ const getEnrolledCoursesForLearningStatus = async (userId) => {
             (statusPriority[a.status] || 5) - (statusPriority[b.status] || 5);
         if (priorityDiff !== 0) return priorityDiff;
         return new Date(b.enrolledAt) - new Date(a.enrolledAt);
+    });
+
+    // Re-assign row numbers after sorting
+    courses.forEach((course, index) => {
+        course.no = index + 1;
     });
 
     return courses;
