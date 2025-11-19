@@ -868,7 +868,7 @@ const createActualEnrollmentsFromApplication = async (applicationId) => {
                     paymentStatus: "completed", // Default to completed (no payment system yet)
                     amountPaid: coursePrice || 0,
                     paymentMethod:
-                        application.paymentInfo?.paymentMethod || "other",
+                        application.paymentInfo?.paymentMethod || "간편결제",
                     status: "수강예정", // Scheduled to start
                     progress: 0,
                 });

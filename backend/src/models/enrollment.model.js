@@ -55,7 +55,13 @@ const enrollmentSchema = new mongoose.Schema(
         },
         paymentMethod: {
             type: String,
-            enum: ["card", "bank_transfer", "cash", "other"],
+            enum: [
+                "간편결제", // Simple payment
+                "카드결제", // Card payment
+                "계좌이체", // Bank transfer
+                "무통장입금", // Bank deposit
+                "카드현장결제", // On-site card payment
+            ],
         },
         status: {
             type: String,
