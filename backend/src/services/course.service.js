@@ -5,7 +5,11 @@ const {
     getPaginationParams,
     createPaginationMeta,
 } = require("../utils/pagination.util");
-const { getFileUrl, deleteFileByUrl, BASE_UPLOAD_PATH } = require("../config/fileStorage");
+const {
+    getFileUrl,
+    deleteFileByUrl,
+    BASE_UPLOAD_PATH,
+} = require("../config/fileStorage");
 const {
     getCategoryInfo,
     getPositionInfo,
@@ -28,16 +32,16 @@ const moveTempFileToCourses = (tempUrl) => {
     try {
         // Extract filename from URL
         const filename = path.basename(tempUrl);
-        
+
         // Construct file paths
         const tempPath = path.join(BASE_UPLOAD_PATH, "temp", filename);
         const coursesPath = path.join(BASE_UPLOAD_PATH, "courses", filename);
-        
+
         // Check if temp file exists
         if (fs.existsSync(tempPath)) {
             // Move (rename) the file
             fs.renameSync(tempPath, coursesPath);
-            
+
             // Return the new URL
             return getFileUrl("COURSES", filename);
         } else {
@@ -197,7 +201,9 @@ const createCourse = async (courseData, files) => {
         normalizedData.image = normalizedData.mainImage;
     } else if (normalizedData.mainImage) {
         // Image was uploaded separately to temp folder
-        normalizedData.mainImage = moveTempFileToCourses(normalizedData.mainImage);
+        normalizedData.mainImage = moveTempFileToCourses(
+            normalizedData.mainImage
+        );
         normalizedData.image = normalizedData.mainImage;
     }
 
@@ -209,7 +215,9 @@ const createCourse = async (courseData, files) => {
         );
     } else if (normalizedData.hoverImage) {
         // Image was uploaded separately to temp folder
-        normalizedData.hoverImage = moveTempFileToCourses(normalizedData.hoverImage);
+        normalizedData.hoverImage = moveTempFileToCourses(
+            normalizedData.hoverImage
+        );
     }
 
     const course = await Course.create(normalizedData);
@@ -260,7 +268,10 @@ const updateCourse = async (courseId, updates, files) => {
             files.mainImage[0].filename
         );
         normalizedUpdates.image = normalizedUpdates.mainImage;
-    } else if (normalizedUpdates.mainImage && normalizedUpdates.mainImage !== course.mainImage) {
+    } else if (
+        normalizedUpdates.mainImage &&
+        normalizedUpdates.mainImage !== course.mainImage
+    ) {
         // Image was uploaded separately to temp folder and is different from current image
         const newImageUrl = moveTempFileToCourses(normalizedUpdates.mainImage);
         if (newImageUrl !== normalizedUpdates.mainImage) {
@@ -282,7 +293,10 @@ const updateCourse = async (courseId, updates, files) => {
             "COURSES",
             files.hoverImage[0].filename
         );
-    } else if (normalizedUpdates.hoverImage && normalizedUpdates.hoverImage !== course.hoverImage) {
+    } else if (
+        normalizedUpdates.hoverImage &&
+        normalizedUpdates.hoverImage !== course.hoverImage
+    ) {
         // Image was uploaded separately to temp folder and is different from current image
         const newHoverUrl = moveTempFileToCourses(normalizedUpdates.hoverImage);
         if (newHoverUrl !== normalizedUpdates.hoverImage) {

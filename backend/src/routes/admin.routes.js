@@ -16,6 +16,7 @@ const bannersController = require("../controllers/banners.controller");
 const uploadsController = require("../controllers/uploads.controller");
 const settingsController = require("../controllers/settings.controller");
 const messagesController = require("../controllers/messages.controller");
+const migrationController = require("../controllers/migration.controller");
 
 // Validators
 const { validate } = require("../middlewares/validate.middleware");
@@ -408,5 +409,9 @@ router.put(
 
 // DELETE /api/v1/admin/messages/:id - Delete message (soft delete)
 router.delete("/messages/:id", messagesController.deleteMessage);
+
+// === MIGRATIONS ===
+// POST /api/v1/admin/migrations/temp-images - Migrate temp images to permanent storage
+router.post("/migrations/temp-images", migrationController.migrateTempImages);
 
 module.exports = router;
