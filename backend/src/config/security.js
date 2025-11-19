@@ -15,17 +15,29 @@ const corsMiddleware = cors({
         // Allow requests with no origin (mobile apps, Postman, etc.)
         if (!origin) return callback(null, true);
 
+        // List of allowed origins
+        const allowedOrigins = [
+            "https://classcrew.vercel.app",
+            "http://localhost:3000",
+            "http://localhost:5173",
+            ...config.cors.origins,
+        ];
+
         if (
-            config.cors.origins.indexOf(origin) !== -1 ||
+            allowedOrigins.indexOf(origin) !== -1 ||
             config.env === "development"
         ) {
+            console.log("[CORS] Allowed origin:", origin);
             callback(null, true);
         } else {
-            callback(new Error("Not allowed by CORS"));
+            console.warn("[CORS] Blocked origin:", origin);
+            callback(new Error(`Not allowed by CORS: ${origin}`));
         }
     },
     credentials: true,
     optionsSuccessStatus: 200,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 });
 
 // Rate limiter
