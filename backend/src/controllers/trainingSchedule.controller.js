@@ -1,5 +1,5 @@
 const trainingScheduleService = require("../services/trainingSchedule.service");
-const asyncHandler = require("../middlewares/asyncHandler.middleware");
+const asyncHandler = require("../utils/asyncHandler.util");
 const ApiError = require("../utils/apiError.util");
 const ExcelJS = require("exceljs");
 const PDFDocument = require("pdfkit");
