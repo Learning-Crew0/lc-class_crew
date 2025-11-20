@@ -13,6 +13,7 @@ const cartRoutes = require("./cart.routes");
 const classApplicationRoutes = require("./classApplication.routes");
 const enrollmentRoutes = require("./enrollment.routes");
 const announcementRoutes = require("./announcement.routes");
+const trainingScheduleRoutes = require("./trainingSchedule.routes");
 const faqRoutes = require("./faq.routes");
 const courseHistoryRoutes = require("./courseHistory.routes");
 const coalitionRoutes = require("./coalition.routes");
@@ -135,6 +136,8 @@ router.use("/cart", cartRoutes);
 router.use("/class-applications", classApplicationRoutes);
 
 router.use("/enrollments", enrollmentRoutes);
+
+router.use("/training-schedules", trainingScheduleRoutes);
 
 router.use("/announcements", announcementRoutes);
 
