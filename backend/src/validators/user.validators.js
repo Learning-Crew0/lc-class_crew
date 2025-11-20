@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { MEMBERSHIP_TYPES, GENDER_TYPES } = require("../constants/memberships");
+const { ALL_MEMBERSHIP_VALUES, GENDER_TYPES } = require("../constants/memberships");
 
 const updateUserSchema = Joi.object({
     email: Joi.string().email().max(254).optional(),
@@ -14,11 +14,7 @@ const updateUserSchema = Joi.object({
         .optional(),
     dob: Joi.date().max("now").optional(),
     memberType: Joi.string()
-        .valid(
-            MEMBERSHIP_TYPES.EMPLOYED,
-            MEMBERSHIP_TYPES.CORPORATE_TRAINING_MANAGER,
-            MEMBERSHIP_TYPES.JOB_SEEKER
-        )
+        .valid(...ALL_MEMBERSHIP_VALUES)
         .optional(),
     profilePicture: Joi.string().uri().optional(),
 });

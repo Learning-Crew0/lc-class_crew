@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const {
     MEMBERSHIP_TYPES,
+    ALL_MEMBERSHIP_VALUES,
     USER_ROLES,
     GENDER_TYPES,
 } = require("../constants/memberships");
@@ -72,9 +73,7 @@ const userSchema = new mongoose.Schema(
             required: [true, "Member type is required"],
             enum: {
                 values: [
-                    MEMBERSHIP_TYPES.EMPLOYED,
-                    MEMBERSHIP_TYPES.CORPORATE_TRAINING_MANAGER,
-                    MEMBERSHIP_TYPES.JOB_SEEKER,
+                    ...ALL_MEMBERSHIP_VALUES,
                     MEMBERSHIP_TYPES.ADMIN,
                 ],
                 message: "Invalid member type",
@@ -135,6 +134,17 @@ const userSchema = new mongoose.Schema(
 
 userSchema.virtual("id").get(function () {
     return this._id.toHexString();
+});
+
+// Normalize Korean memberType to English before saving
+userSchema.pre("save", function (next) {
+    if (this.isModified("memberType")) {
+        const { MEMBERSHIP_TYPES_KOREAN_MAP } = require("../constants/memberships");
+        if (MEMBERSHIP_TYPES_KOREAN_MAP[this.memberType]) {
+            this.memberType = MEMBERSHIP_TYPES_KOREAN_MAP[this.memberType];
+        }
+    }
+    next();
 });
 
 userSchema.pre("save", async function (next) {

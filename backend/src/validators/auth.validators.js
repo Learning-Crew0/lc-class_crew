@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { MEMBERSHIP_TYPES, GENDER_TYPES } = require("../constants/memberships");
+const { MEMBERSHIP_TYPES, ALL_MEMBERSHIP_VALUES, GENDER_TYPES } = require("../constants/memberships");
 
 const registerSchema = Joi.object({
     email: Joi.string().email().max(254).required().messages({
@@ -40,11 +40,7 @@ const registerSchema = Joi.object({
         "any.required": "생년월일을 입력해주세요",
     }),
     memberType: Joi.string()
-        .valid(
-            MEMBERSHIP_TYPES.EMPLOYED,
-            MEMBERSHIP_TYPES.CORPORATE_TRAINING_MANAGER,
-            MEMBERSHIP_TYPES.JOB_SEEKER
-        )
+        .valid(...ALL_MEMBERSHIP_VALUES)
         .required()
         .messages({
             "any.only": "회원구분을 선택해주세요",
@@ -103,11 +99,7 @@ const updateProfileSchema = Joi.object({
         "date.max": "생년월일은 오늘 이전이어야 합니다",
     }),
     memberType: Joi.string()
-        .valid(
-            MEMBERSHIP_TYPES.EMPLOYED,
-            MEMBERSHIP_TYPES.CORPORATE_TRAINING_MANAGER,
-            MEMBERSHIP_TYPES.JOB_SEEKER
-        )
+        .valid(...ALL_MEMBERSHIP_VALUES)
         .optional()
         .messages({
             "any.only": "회원구분을 선택해주세요",

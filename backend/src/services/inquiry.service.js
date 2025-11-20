@@ -167,7 +167,21 @@ const addNote = async (inquiryId, adminId, content) => {
 const getMyEnquiries = async (userId, query) => {
     const { page, limit, skip } = getPaginationParams(query);
 
-    const filter = { user: userId };
+    // Get user's email to also match enquiries created without login
+    const User = require("../models/user.model");
+    const user = await User.findById(userId);
+    
+    if (!user) {
+        throw ApiError.notFound("User not found");
+    }
+
+    // Match by user ID OR email (includes enquiries created before login)
+    const filter = {
+        $or: [
+            { user: userId },
+            { email: user.email }
+        ]
+    };
 
     // Filter by status
     if (query.status) {
