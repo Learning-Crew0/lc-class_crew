@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const trainingScheduleController = require("../controllers/trainingSchedule.controller");
-const { authenticate, requireAdmin } = require("../middlewares/auth.middleware");
+const { authenticate } = require("../middlewares/auth.middleware");
+const requireAdmin = require("../middlewares/admin.middleware");
 const multer = require("multer");
 const path = require("path");
 
