@@ -34,14 +34,18 @@ const enrollUserInSchedule = async (
         throw ApiError.badRequest("해당 일정의 좌석이 모두 찼습니다");
     }
 
+    // Check if user is already enrolled in this course with this schedule
     const existingEnrollment = await Enrollment.findOne({
         user: userId,
         course: courseId,
         schedule: scheduleId,
+        status: { $ne: "취소" }, // Exclude cancelled enrollments
     });
 
     if (existingEnrollment) {
-        throw ApiError.conflict("이미 해당 일정에 등록되어 있습니다");
+        throw ApiError.conflict(
+            "You have already enrolled in this course. Please check your enrollments."
+        );
     }
 
     const enrollment = await Enrollment.create({

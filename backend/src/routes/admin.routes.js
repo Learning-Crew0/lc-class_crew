@@ -334,6 +334,9 @@ router.put(
 // DELETE /api/v1/admin/banners/:id - Delete banner
 router.delete("/banners/:id", bannersController.deleteBanner);
 
+// PATCH /api/v1/admin/banners/reorder - Reorder banners
+router.patch("/banners/reorder", bannersController.reorderBanners);
+
 // === UPLOADS ===
 // POST /api/v1/admin/uploads/single - Upload single file
 router.post(

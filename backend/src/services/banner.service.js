@@ -57,6 +57,17 @@ const getBannerById = async (bannerId) => {
  * Create banner
  */
 const createBanner = async (bannerData) => {
+    // If order is not provided, set it to the highest order + 1 for that position
+    if (!bannerData.order && bannerData.order !== 0) {
+        const highestOrderBanner = await Banner.findOne({
+            position: bannerData.position || "home-hero",
+        })
+            .sort({ order: -1 })
+            .limit(1);
+
+        bannerData.order = highestOrderBanner ? highestOrderBanner.order + 1 : 0;
+    }
+
     const banner = await Banner.create(bannerData);
     return banner;
 };
@@ -140,6 +151,32 @@ const trackClick = async (bannerId) => {
     return banner;
 };
 
+/**
+ * Reorder banners
+ * @param {Array} bannerOrders - Array of { id, order } objects
+ * @returns {Promise<Array>} - Updated banners
+ */
+const reorderBanners = async (bannerOrders) => {
+    const updatePromises = bannerOrders.map(({ id, order }) =>
+        Banner.findByIdAndUpdate(
+            id,
+            { order },
+            { new: true, runValidators: true }
+        )
+    );
+
+    const updatedBanners = await Promise.all(updatePromises);
+
+    // Filter out any null results (banner not found)
+    const validBanners = updatedBanners.filter((banner) => banner !== null);
+
+    if (validBanners.length !== bannerOrders.length) {
+        throw new Error("Some banners were not found");
+    }
+
+    return validBanners;
+};
+
 module.exports = {
     getAllBanners,
     getBannerById,
@@ -149,4 +186,5 @@ module.exports = {
     toggleActiveStatus,
     trackImpression,
     trackClick,
+    reorderBanners,
 };

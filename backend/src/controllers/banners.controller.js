@@ -114,6 +114,23 @@ const trackClick = async (req, res, next) => {
     }
 };
 
+/**
+ * Reorder banners
+ */
+const reorderBanners = async (req, res, next) => {
+    try {
+        const { banners } = req.body; // Array of { id, order }
+        const updatedBanners = await bannerService.reorderBanners(banners);
+        return successResponse(
+            res,
+            updatedBanners,
+            "Banners reordered successfully"
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getAllBanners,
     getBannerById,
@@ -123,4 +140,5 @@ module.exports = {
     toggleActive,
     trackImpression,
     trackClick,
+    reorderBanners,
 };
