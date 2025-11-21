@@ -58,8 +58,10 @@ const normalizeArrayFields = (data) => {
     const arrayFields = [
         "tags",
         "recommendedAudience",
+        "targetAudience", // Handle targetAudience array field
         "whatYouWillLearn",
         "requirements",
+        "promotion", // NEW: Handle promotion array field
     ];
 
     arrayFields.forEach((field) => {
