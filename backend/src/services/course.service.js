@@ -491,6 +491,137 @@ const populateCategoryAndPositionInfo = (data) => {
     return data;
 };
 
+/**
+ * Get courses with advanced filtering (Admin)
+ * Supports filtering by category, position, status, promotion, refundEligible, etc.
+ */
+const getCoursesWithFilters = async (query) => {
+    const { page, limit, skip } = getPaginationParams(query);
+
+    // Build filter object
+    const filter = {};
+
+    // Category filter (accepts both ObjectId and slug)
+    if (query.category) {
+        if (query.category.match(/^[0-9a-fA-F]{24}$/)) {
+            // It's an ObjectId
+            filter.category = query.category;
+        } else {
+            // It's a slug - find category by slug
+            const category = await Category.findOne({ slug: query.category });
+            if (category) {
+                filter.category = category._id;
+            }
+        }
+    }
+
+    // Position filter
+    if (query.position) {
+        filter.position = query.position;
+    }
+
+    // Current status filter
+    if (query.status || query.currentStatus) {
+        filter.currentStatus = query.status || query.currentStatus;
+    }
+
+    // Promotion filter (array field - check if promotion includes the value)
+    if (query.promotion) {
+        filter.promotion = query.promotion;
+    }
+
+    // Refund eligible filter
+    if (query.refundEligible !== undefined) {
+        filter.refundEligible = query.refundEligible === "true";
+    }
+
+    // Display tag filter
+    if (query.displayTag) {
+        filter.displayTag = query.displayTag;
+    }
+
+    // Active status filter
+    if (query.isActive !== undefined) {
+        filter.isActive = query.isActive === "true";
+    }
+
+    // Search by course name
+    if (query.search) {
+        filter.$or = [
+            { title: { $regex: query.search, $options: "i" } },
+            {
+                courseNameFormatted: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+        ];
+    }
+
+    // Determine sort order based on displayTag
+    let sortOrder = { createdAt: -1 }; // Default: newest first
+
+    if (query.displayTag === "NEWEST") {
+        sortOrder = { "thumbnailOrder.newest": 1, createdAt: -1 };
+    } else if (query.displayTag === "POPULAR") {
+        sortOrder = { "thumbnailOrder.popular": 1, enrollmentCount: -1 };
+    } else if (query.displayTag === "ALL") {
+        sortOrder = { "thumbnailOrder.all": 1, createdAt: -1 };
+    }
+
+    // Execute query
+    const courses = await Course.find(filter)
+        .populate("category", "title slug koreanName englishName")
+        .sort(sortOrder)
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+    const total = await Course.countDocuments(filter);
+
+    return {
+        courses,
+        pagination: createPaginationMeta(page, limit, total),
+    };
+};
+
+/**
+ * Reorder course thumbnails within a category (NEWEST, POPULAR, ALL)
+ */
+const reorderCourseThumbnails = async (category, reorders) => {
+    // Validate category
+    const validCategories = ["newest", "popular", "all"];
+    if (!validCategories.includes(category)) {
+        throw ApiError.badRequest(
+            "Invalid category. Must be newest, popular, or all"
+        );
+    }
+
+    // Update each course's thumbnail order
+    const updatePromises = reorders.map(({ courseId, order }) => {
+        return Course.findByIdAndUpdate(
+            courseId,
+            { [`thumbnailOrder.${category}`]: order },
+            { new: true, runValidators: true }
+        );
+    });
+
+    const updatedCourses = await Promise.all(updatePromises);
+
+    // Filter out any null results (course not found)
+    const validCourses = updatedCourses.filter((course) => course !== null);
+
+    if (validCourses.length !== reorders.length) {
+        throw ApiError.notFound("Some courses were not found");
+    }
+
+    return {
+        category,
+        updatedCount: validCourses.length,
+        courses: validCourses,
+    };
+};
+
 module.exports = {
     getAllCourses,
     getCourseById,
@@ -500,4 +631,6 @@ module.exports = {
     getCoursesByCategory,
     searchCourses,
     populateCategoryAndPositionInfo,
+    getCoursesWithFilters,
+    reorderCourseThumbnails,
 };

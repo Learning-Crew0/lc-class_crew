@@ -282,6 +282,54 @@ const searchCourses = asyncHandler(async (req, res) => {
     );
 });
 
+/**
+ * Get courses with advanced filtering (Admin only)
+ * GET /api/v1/admin/courses
+ */
+const getCoursesWithFilters = asyncHandler(async (req, res) => {
+    const result = await courseService.getCoursesWithFilters(req.query);
+    return successResponse(
+        res,
+        result,
+        "코스 목록을 성공적으로 조회했습니다"
+    );
+});
+
+/**
+ * Reorder course thumbnails (Admin only)
+ * PUT /api/v1/admin/courses/reorder-thumbnails
+ */
+const reorderCourseThumbnails = asyncHandler(async (req, res) => {
+    const { category, reorders } = req.body;
+
+    // Validate category
+    if (!["newest", "popular", "all"].includes(category)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid category. Must be newest, popular, or all",
+        });
+    }
+
+    // Validate reorders array
+    if (!Array.isArray(reorders) || reorders.length === 0) {
+        return res.status(400).json({
+            success: false,
+            message: "reorders must be a non-empty array",
+        });
+    }
+
+    const result = await courseService.reorderCourseThumbnails(
+        category,
+        reorders
+    );
+
+    return successResponse(
+        res,
+        result,
+        "Thumbnail order updated successfully"
+    );
+});
+
 module.exports = {
     getAllCourses,
     getCourseById,
@@ -310,4 +358,6 @@ module.exports = {
     upsertNotice,
     getCoursesByCategory,
     searchCourses,
+    getCoursesWithFilters,
+    reorderCourseThumbnails,
 };

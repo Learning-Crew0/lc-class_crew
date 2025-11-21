@@ -60,6 +60,47 @@ const courseSchema = new mongoose.Schema(
             enum: ["NEWEST", "POPULAR", "ALL"],
             default: "ALL",
         },
+        // Promotion badges (NEW - replaces displayTag for frontend display)
+        promotion: {
+            type: [String], // Array to support multiple promotions
+            enum: [
+                "group-listening", // 단체수강
+                "early-bird-discount", // 얼리버드 할인
+                "group-discount", // 단체할인
+            ],
+            default: [],
+        },
+        // Refund eligibility (NEW)
+        refundEligible: {
+            type: Boolean,
+            default: true, // true = Refund, false = Non-refund
+        },
+        // Course name with line breaks preserved (NEW - for thumbnail display)
+        courseNameFormatted: {
+            type: String, // Stores course name with \n for line breaks
+            maxlength: 200,
+            trim: true,
+        },
+        // Thumbnail order within each category (NEW - for homepage ordering)
+        thumbnailOrder: {
+            newest: { type: Number, default: 9999 },
+            popular: { type: Number, default: 9999 },
+            all: { type: Number, default: 9999 },
+        },
+        // Training schedule status (NEW - for course list filtering)
+        currentStatus: {
+            type: String,
+            enum: [
+                "upcoming", // 예정
+                "recruiting", // 모집중
+                "closed", // 마감
+                "confirmed", // 확정
+                "cancelled", // 취소
+                "in-progress", // 진행중
+                "completed", // 종료
+            ],
+            default: "upcoming",
+        },
         price: {
             type: Number,
             required: [true, "Price is required"],
@@ -228,6 +269,13 @@ courseSchema.index({ category: 1, position: 1 }); // Compound index for filterin
 courseSchema.index({ isActive: 1 });
 courseSchema.index({ isFeatured: 1 });
 courseSchema.index({ createdAt: -1 });
+// New indexes for thumbnail ordering and filtering
+courseSchema.index({ "thumbnailOrder.newest": 1 });
+courseSchema.index({ "thumbnailOrder.popular": 1 });
+courseSchema.index({ "thumbnailOrder.all": 1 });
+courseSchema.index({ currentStatus: 1 });
+courseSchema.index({ promotion: 1 });
+courseSchema.index({ refundEligible: 1 });
 
 const Course = mongoose.model("Course", courseSchema);
 

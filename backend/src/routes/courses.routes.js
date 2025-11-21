@@ -264,4 +264,34 @@ router.delete(
     enrollmentController.cancelEnrollment
 );
 
+// ============================================
+// ADMIN COURSE MANAGEMENT ROUTES (NEW)
+// ============================================
+
+/**
+ * @route   GET /api/v1/admin/courses
+ * @desc    Get courses with advanced filtering (Admin only)
+ * @access  Admin
+ * @query   category, position, status, promotion, refundEligible, displayTag, search, page, limit
+ */
+router.get(
+    "/admin/courses",
+    authenticate,
+    requireAdmin,
+    coursesController.getCoursesWithFilters
+);
+
+/**
+ * @route   PUT /api/v1/admin/courses/reorder-thumbnails
+ * @desc    Reorder course thumbnails for homepage display (Admin only)
+ * @access  Admin
+ * @body    { category: "newest"|"popular"|"all", reorders: [{ courseId, order }, ...] }
+ */
+router.put(
+    "/admin/courses/reorder-thumbnails",
+    authenticate,
+    requireAdmin,
+    coursesController.reorderCourseThumbnails
+);
+
 module.exports = router;
