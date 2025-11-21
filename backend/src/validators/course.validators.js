@@ -111,6 +111,56 @@ const createCourseSchema = Joi.object({
                 .custom((value) => value === "true" || value === "1")
         )
         .default(false),
+    // NEW FIELDS for Course Management System
+    promotion: Joi.alternatives()
+        .try(
+            Joi.array().items(
+                Joi.string().valid(
+                    "group-listening",
+                    "early-bird-discount",
+                    "group-discount"
+                )
+            ),
+            Joi.string().custom((value) => {
+                // Handle comma-separated string
+                if (typeof value === "string" && value.trim()) {
+                    return value.split(",").map((v) => v.trim());
+                }
+                return [];
+            })
+        )
+        .optional()
+        .default([]),
+    refundEligible: Joi.alternatives()
+        .try(
+            Joi.boolean(),
+            Joi.string()
+                .valid("true", "false", "1", "0")
+                .custom((value) => value === "true" || value === "1")
+        )
+        .optional()
+        .default(true),
+    courseNameFormatted: Joi.string().trim().max(200).optional(),
+    thumbnailOrder: Joi.object({
+        newest: Joi.number().default(9999),
+        popular: Joi.number().default(9999),
+        all: Joi.number().default(9999),
+    }).optional(),
+    currentStatus: Joi.string()
+        .valid(
+            "upcoming",
+            "recruiting",
+            "closed",
+            "confirmed",
+            "cancelled",
+            "in-progress",
+            "completed"
+        )
+        .optional()
+        .default("upcoming"),
+    mainImage: Joi.string().trim().optional(),
+    hoverImage: Joi.string().trim().optional(),
+    image: Joi.string().trim().optional(),
 });
 
 const updateCourseSchema = Joi.object({
@@ -206,6 +256,53 @@ const updateCourseSchema = Joi.object({
                 .custom((value) => value === "true" || value === "1")
         )
         .optional(),
+    // NEW FIELDS for Course Management System
+    promotion: Joi.alternatives()
+        .try(
+            Joi.array().items(
+                Joi.string().valid(
+                    "group-listening",
+                    "early-bird-discount",
+                    "group-discount"
+                )
+            ),
+            Joi.string().custom((value) => {
+                // Handle comma-separated string
+                if (typeof value === "string" && value.trim()) {
+                    return value.split(",").map((v) => v.trim());
+                }
+                return [];
+            })
+        )
+        .optional(),
+    refundEligible: Joi.alternatives()
+        .try(
+            Joi.boolean(),
+            Joi.string()
+                .valid("true", "false", "1", "0")
+                .custom((value) => value === "true" || value === "1")
+        )
+        .optional(),
+    courseNameFormatted: Joi.string().trim().max(200).optional(),
+    thumbnailOrder: Joi.object({
+        newest: Joi.number().optional(),
+        popular: Joi.number().optional(),
+        all: Joi.number().optional(),
+    }).optional(),
+    currentStatus: Joi.string()
+        .valid(
+            "upcoming",
+            "recruiting",
+            "closed",
+            "confirmed",
+            "cancelled",
+            "in-progress",
+            "completed"
+        )
+        .optional(),
+    mainImage: Joi.string().trim().optional(),
+    hoverImage: Joi.string().trim().optional(),
+    image: Joi.string().trim().optional(),
 });
 
 module.exports = {
