@@ -398,7 +398,8 @@ const getEnrolledCoursesForLearningStatus = async (userId) => {
             enrollmentNumber: enrollment.enrollmentNumber, // ENR-xxxxx
             title: enrollment.course?.title || "제목 없음",
             type: courseType, // 환급 or 비환급
-            startDate: enrollment.schedule?.startDate || enrollment.enrollmentDate,
+            startDate:
+                enrollment.schedule?.startDate || enrollment.enrollmentDate,
             endDate: enrollment.schedule?.endDate || null,
             status: enrollment.status || "수강예정",
             enrolledAt: enrollment.enrollmentDate,
