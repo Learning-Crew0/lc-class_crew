@@ -52,9 +52,25 @@ const getAnnouncementById = async (req, res, next) => {
  */
 const createAnnouncement = async (req, res, next) => {
     try {
+        // Get admin ID from auth middleware (supports multiple formats)
+        const adminId = req.user?.id || req.user?._id || req.admin?._id;
+
+        if (!adminId) {
+            console.error("[Announcement] No admin ID found in request:", {
+                hasUser: !!req.user,
+                hasAdmin: !!req.admin,
+                userId: req.user?.id,
+                userRole: req.user?.role,
+            });
+            return res.status(401).json({
+                success: false,
+                message: "관리자 인증이 필요합니다",
+            });
+        }
+
         const announcement = await announcementService.createAnnouncement(
             req.body,
-            req.user._id,
+            adminId,
             req.files // Pass uploaded files
         );
 
@@ -75,10 +91,20 @@ const createAnnouncement = async (req, res, next) => {
  */
 const updateAnnouncement = async (req, res, next) => {
     try {
+        // Get admin ID from auth middleware (supports multiple formats)
+        const adminId = req.user?.id || req.user?._id || req.admin?._id;
+
+        if (!adminId) {
+            return res.status(401).json({
+                success: false,
+                message: "관리자 인증이 필요합니다",
+            });
+        }
+
         const announcement = await announcementService.updateAnnouncement(
             req.params.id,
             req.body,
-            req.user._id,
+            adminId,
             req.files // Pass uploaded files
         );
 
@@ -134,9 +160,18 @@ const getStatistics = async (req, res, next) => {
  */
 const togglePin = async (req, res, next) => {
     try {
+        const adminId = req.user?.id || req.user?._id || req.admin?._id;
+
+        if (!adminId) {
+            return res.status(401).json({
+                success: false,
+                message: "관리자 인증이 필요합니다",
+            });
+        }
+
         const announcement = await announcementService.togglePin(
             req.params.id,
-            req.user._id
+            adminId
         );
 
         return successResponse(
@@ -155,9 +190,18 @@ const togglePin = async (req, res, next) => {
  */
 const toggleActive = async (req, res, next) => {
     try {
+        const adminId = req.user?.id || req.user?._id || req.admin?._id;
+
+        if (!adminId) {
+            return res.status(401).json({
+                success: false,
+                message: "관리자 인증이 필요합니다",
+            });
+        }
+
         const announcement = await announcementService.toggleActive(
             req.params.id,
-            req.user._id
+            adminId
         );
 
         return successResponse(
@@ -219,11 +263,19 @@ const getPinnedCount = async (req, res, next) => {
 const deleteAttachment = async (req, res, next) => {
     try {
         const { id, attachmentId } = req.params;
+        const adminId = req.user?.id || req.user?._id || req.admin?._id;
+
+        if (!adminId) {
+            return res.status(401).json({
+                success: false,
+                message: "관리자 인증이 필요합니다",
+            });
+        }
 
         const announcement = await announcementService.deleteAttachment(
             id,
             attachmentId,
-            req.user._id
+            adminId
         );
 
         return successResponse(

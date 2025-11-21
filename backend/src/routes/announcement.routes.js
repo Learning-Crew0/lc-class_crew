@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const announcementController = require("../controllers/announcement.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
+const requireAdmin = require("../middlewares/admin.middleware");
 const { validate } = require("../middlewares/validate.middleware");
 const { announcementUploads } = require("../middlewares/upload.middleware");
 const {
@@ -49,7 +50,8 @@ router.get("/:id", announcementController.getAnnouncementById);
 router.post(
     "/",
     authenticate,
-    announcementUploads, // Handle file uploads first
+    requireAdmin, // Ensure user is admin
+    announcementUploads, // Handle file uploads
     validate(createAnnouncementSchema),
     announcementController.createAnnouncement
 );
@@ -62,7 +64,8 @@ router.post(
 router.put(
     "/:id",
     authenticate,
-    announcementUploads, // Handle file uploads first
+    requireAdmin, // Ensure user is admin
+    announcementUploads, // Handle file uploads
     validate(updateAnnouncementSchema),
     announcementController.updateAnnouncement
 );
@@ -72,7 +75,12 @@ router.put(
  * @desc    Delete announcement
  * @access  Admin
  */
-router.delete("/:id", authenticate, announcementController.deleteAnnouncement);
+router.delete(
+    "/:id",
+    authenticate,
+    requireAdmin,
+    announcementController.deleteAnnouncement
+);
 
 /**
  * @route   GET /api/v1/announcements/stats/overview
@@ -82,6 +90,7 @@ router.delete("/:id", authenticate, announcementController.deleteAnnouncement);
 router.get(
     "/stats/overview",
     authenticate,
+    requireAdmin,
     announcementController.getStatistics
 );
 
@@ -90,14 +99,24 @@ router.get(
  * @desc    Toggle pin status
  * @access  Admin
  */
-router.patch("/:id/pin", authenticate, announcementController.togglePin);
+router.patch(
+    "/:id/pin",
+    authenticate,
+    requireAdmin,
+    announcementController.togglePin
+);
 
 /**
  * @route   PATCH /api/v1/announcements/:id/active
  * @desc    Toggle active status
  * @access  Admin
  */
-router.patch("/:id/active", authenticate, announcementController.toggleActive);
+router.patch(
+    "/:id/active",
+    authenticate,
+    requireAdmin,
+    announcementController.toggleActive
+);
 
 /**
  * @route   PATCH /api/v1/announcements/reorder-pinned
@@ -107,6 +126,7 @@ router.patch("/:id/active", authenticate, announcementController.toggleActive);
 router.patch(
     "/reorder-pinned",
     authenticate,
+    requireAdmin,
     announcementController.reorderPinnedAnnouncements
 );
 
@@ -125,6 +145,7 @@ router.get("/pinned-count", announcementController.getPinnedCount);
 router.delete(
     "/:id/attachments/:attachmentId",
     authenticate,
+    requireAdmin,
     announcementController.deleteAttachment
 );
 
