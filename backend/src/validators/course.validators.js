@@ -119,12 +119,27 @@ const createCourseSchema = Joi.object({
                     "group-listening",
                     "early-bird-discount",
                     "group-discount"
-                )
-            ),
+                ).allow("")
+            ).custom((arr) => arr.filter(Boolean)), // Filter out empty strings
             Joi.string().custom((value) => {
-                // Handle comma-separated string
-                if (typeof value === "string" && value.trim()) {
-                    return value.split(",").map((v) => v.trim());
+                // Handle empty string
+                if (!value || !value.trim()) {
+                    return [];
+                }
+                // Handle JSON-stringified array or comma-separated string
+                if (typeof value === "string") {
+                    // Try JSON.parse first (for FormData arrays like '["early-bird-discount"]')
+                    try {
+                        const parsed = JSON.parse(value);
+                        if (Array.isArray(parsed)) {
+                            return parsed.filter(Boolean); // Filter out empty strings
+                        }
+                        // If parsed but not array, wrap it
+                        return parsed ? [parsed] : [];
+                    } catch (e) {
+                        // Fall back to comma-split for simple strings like "tag1,tag2,tag3"
+                        return value.split(",").map((v) => v.trim()).filter(Boolean);
+                    }
                 }
                 return [];
             })
@@ -264,12 +279,27 @@ const updateCourseSchema = Joi.object({
                     "group-listening",
                     "early-bird-discount",
                     "group-discount"
-                )
-            ),
+                ).allow("")
+            ).custom((arr) => arr.filter(Boolean)), // Filter out empty strings
             Joi.string().custom((value) => {
-                // Handle comma-separated string
-                if (typeof value === "string" && value.trim()) {
-                    return value.split(",").map((v) => v.trim());
+                // Handle empty string
+                if (!value || !value.trim()) {
+                    return [];
+                }
+                // Handle JSON-stringified array or comma-separated string
+                if (typeof value === "string") {
+                    // Try JSON.parse first (for FormData arrays like '["early-bird-discount"]')
+                    try {
+                        const parsed = JSON.parse(value);
+                        if (Array.isArray(parsed)) {
+                            return parsed.filter(Boolean); // Filter out empty strings
+                        }
+                        // If parsed but not array, wrap it
+                        return parsed ? [parsed] : [];
+                    } catch (e) {
+                        // Fall back to comma-split for simple strings like "tag1,tag2,tag3"
+                        return value.split(",").map((v) => v.trim()).filter(Boolean);
+                    }
                 }
                 return [];
             })
