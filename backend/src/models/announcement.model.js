@@ -34,11 +34,41 @@ const announcementSchema = new mongoose.Schema(
             default: false,
         },
 
+        // Order of pinned announcements (lower number = higher priority)
+        pinnedOrder: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+
         // Active status
         isActive: {
             type: Boolean,
             default: true,
         },
+
+        // File attachments (images, PDFs, Excel files)
+        attachments: [
+            {
+                fileName: {
+                    type: String,
+                    required: true,
+                },
+                fileUrl: {
+                    type: String,
+                    required: true,
+                },
+                fileType: {
+                    type: String,
+                    enum: ["image", "pdf", "excel"],
+                    required: true,
+                },
+                fileSize: {
+                    type: Number,
+                    required: true,
+                },
+            },
+        ],
 
         // View count
         views: {
@@ -67,12 +97,12 @@ const announcementSchema = new mongoose.Schema(
     }
 );
 
-// Virtual field: isNew (created within last 7 days)
+// Virtual field: isNew (created within last 30 days / 1 month)
 announcementSchema.virtual("isNew").get(function () {
     if (!this.createdAt) return false;
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    return this.createdAt >= sevenDaysAgo;
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return this.createdAt >= thirtyDaysAgo;
 });
 
 // Auto-increment ID before validating
@@ -102,7 +132,7 @@ announcementSchema.pre("validate", async function (next) {
 
 // Indexes for performance
 announcementSchema.index({ createdAt: -1 });
-announcementSchema.index({ isPinned: -1, createdAt: -1 }); // Pinned first, then by date
+announcementSchema.index({ isPinned: -1, pinnedOrder: 1, createdAt: -1 }); // Pinned first (by order), then by date
 announcementSchema.index({ isActive: 1, createdAt: -1 });
 announcementSchema.index({ id: 1 }, { unique: true });
 announcementSchema.index({ title: "text", content: "text" }); // Text search

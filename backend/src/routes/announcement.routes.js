@@ -3,6 +3,7 @@ const router = express.Router();
 const announcementController = require("../controllers/announcement.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
 const { validate } = require("../middlewares/validate.middleware");
+const { announcementUploads } = require("../middlewares/upload.middleware");
 const {
     createAnnouncementSchema,
     updateAnnouncementSchema,
@@ -42,24 +43,26 @@ router.get("/:id", announcementController.getAnnouncementById);
 
 /**
  * @route   POST /api/v1/announcements
- * @desc    Create new announcement
+ * @desc    Create new announcement (with file uploads)
  * @access  Admin
  */
 router.post(
     "/",
     authenticate,
+    announcementUploads, // Handle file uploads first
     validate(createAnnouncementSchema),
     announcementController.createAnnouncement
 );
 
 /**
  * @route   PUT /api/v1/announcements/:id
- * @desc    Update announcement
+ * @desc    Update announcement (with file uploads)
  * @access  Admin
  */
 router.put(
     "/:id",
     authenticate,
+    announcementUploads, // Handle file uploads first
     validate(updateAnnouncementSchema),
     announcementController.updateAnnouncement
 );
@@ -76,7 +79,11 @@ router.delete("/:id", authenticate, announcementController.deleteAnnouncement);
  * @desc    Get announcement statistics
  * @access  Admin
  */
-router.get("/stats/overview", authenticate, announcementController.getStatistics);
+router.get(
+    "/stats/overview",
+    authenticate,
+    announcementController.getStatistics
+);
 
 /**
  * @route   PATCH /api/v1/announcements/:id/pin
@@ -91,5 +98,34 @@ router.patch("/:id/pin", authenticate, announcementController.togglePin);
  * @access  Admin
  */
 router.patch("/:id/active", authenticate, announcementController.toggleActive);
+
+/**
+ * @route   PATCH /api/v1/announcements/reorder-pinned
+ * @desc    Reorder pinned announcements
+ * @access  Admin
+ */
+router.patch(
+    "/reorder-pinned",
+    authenticate,
+    announcementController.reorderPinnedAnnouncements
+);
+
+/**
+ * @route   GET /api/v1/announcements/pinned-count
+ * @desc    Get count of pinned announcements
+ * @access  Public
+ */
+router.get("/pinned-count", announcementController.getPinnedCount);
+
+/**
+ * @route   DELETE /api/v1/announcements/:id/attachments/:attachmentId
+ * @desc    Delete specific attachment from announcement
+ * @access  Admin
+ */
+router.delete(
+    "/:id/attachments/:attachmentId",
+    authenticate,
+    announcementController.deleteAttachment
+);
 
 module.exports = router;

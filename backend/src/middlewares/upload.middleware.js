@@ -150,6 +150,42 @@ const coalitionUploads = multer({
     },
 }).single("file");
 
+// Announcement file filter - allow images, PDF, and Excel files
+const announcementFileFilter = (req, file, cb) => {
+    const allowedTypes = [
+        // Images
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        // PDF
+        "application/pdf",
+        // Excel
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(
+            new Error(
+                "지원하지 않는 파일 형식입니다. 이미지(JPG, PNG, GIF, WebP), PDF, Excel 파일만 업로드 가능합니다."
+            ),
+            false
+        );
+    }
+};
+
+const announcementUploads = multer({
+    storage: createStorage("ANNOUNCEMENTS"),
+    fileFilter: announcementFileFilter,
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit per file
+    },
+}).array("attachments", 5); // Allow up to 5 files
+
 module.exports = {
     uploadSingle,
     uploadMultiple,
@@ -162,5 +198,6 @@ module.exports = {
     categoryUploads,
     classApplicationUploads,
     coalitionUploads,
+    announcementUploads,
     UPLOAD_FOLDERS,
 };
