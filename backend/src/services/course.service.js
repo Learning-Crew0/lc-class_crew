@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Course = require("../models/course.model");
 const Category = require("../models/category.model");
 const ApiError = require("../utils/apiError.util");
@@ -192,8 +193,19 @@ const createCourse = async (courseData, files) => {
     // Validate category and position (done by Joi validator already)
     // Auto-populate categoryInfo and positionInfo
     if (normalizedData.category) {
-        const categoryInfo = getCategoryInfo(normalizedData.category);
-        if (categoryInfo) {
+        // Try to get category info from constants (if slug) or database (if ObjectId)
+        let categoryInfo = getCategoryInfo(normalizedData.category);
+        
+        // If not found in constants, try database lookup (ObjectId)
+        if (!categoryInfo && mongoose.Types.ObjectId.isValid(normalizedData.category)) {
+            const categoryDoc = await Category.findById(normalizedData.category).select('title');
+            if (categoryDoc) {
+                normalizedData.categoryInfo = {
+                    title: categoryDoc.title,
+                    id: categoryDoc._id.toString(),
+                };
+            }
+        } else if (categoryInfo) {
             normalizedData.categoryInfo = {
                 slug: categoryInfo.slug,
                 koreanName: categoryInfo.koreanName,
@@ -257,8 +269,19 @@ const updateCourse = async (courseId, updates, files) => {
 
     // Auto-populate categoryInfo if category is being updated
     if (normalizedUpdates.category) {
-        const categoryInfo = getCategoryInfo(normalizedUpdates.category);
-        if (categoryInfo) {
+        // Try to get category info from constants (if slug) or database (if ObjectId)
+        let categoryInfo = getCategoryInfo(normalizedUpdates.category);
+        
+        // If not found in constants, try database lookup (ObjectId)
+        if (!categoryInfo && mongoose.Types.ObjectId.isValid(normalizedUpdates.category)) {
+            const categoryDoc = await Category.findById(normalizedUpdates.category).select('title');
+            if (categoryDoc) {
+                normalizedUpdates.categoryInfo = {
+                    title: categoryDoc.title,
+                    id: categoryDoc._id.toString(),
+                };
+            }
+        } else if (categoryInfo) {
             normalizedUpdates.categoryInfo = {
                 slug: categoryInfo.slug,
                 koreanName: categoryInfo.koreanName,

@@ -30,6 +30,8 @@ const courseSchema = new mongoose.Schema(
             slug: String,
             koreanName: String,
             englishName: String,
+            title: String, // For database categories
+            id: String, // For database categories
         },
         // Position/level field (optional slug)
         position: {
