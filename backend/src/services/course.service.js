@@ -69,13 +69,13 @@ const normalizeArrayFields = (data) => {
         if (data[field] === undefined || data[field] === null) {
             return;
         }
-        
+
         // If already an array, ensure no empty strings
         if (Array.isArray(data[field])) {
             data[field] = data[field].filter(Boolean);
             return;
         }
-        
+
         // Only process strings
         if (typeof data[field] === "string") {
             // Handle empty string
@@ -83,13 +83,15 @@ const normalizeArrayFields = (data) => {
                 data[field] = [];
                 return;
             }
-            
+
             // Try JSON.parse first (handles stringified arrays like "[\"NEWEST\", \"ALL\"]")
             try {
                 const parsed = JSON.parse(data[field]);
-                data[field] = Array.isArray(parsed) 
-                    ? parsed.filter(Boolean) 
-                    : (parsed ? [parsed] : []);
+                data[field] = Array.isArray(parsed)
+                    ? parsed.filter(Boolean)
+                    : parsed
+                      ? [parsed]
+                      : [];
             } catch (e) {
                 // Fall back to comma-split for simple strings like "tag1, tag2, tag3"
                 data[field] = data[field]

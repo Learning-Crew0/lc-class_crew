@@ -114,13 +114,17 @@ const createCourseSchema = Joi.object({
     // NEW FIELDS for Course Management System
     promotion: Joi.alternatives()
         .try(
-            Joi.array().items(
-                Joi.string().valid(
-                    "group-listening",
-                    "early-bird-discount",
-                    "group-discount"
-                ).allow("")
-            ).custom((arr) => arr.filter(Boolean)), // Filter out empty strings
+            Joi.array()
+                .items(
+                    Joi.string()
+                        .valid(
+                            "group-listening",
+                            "early-bird-discount",
+                            "group-discount"
+                        )
+                        .allow("")
+                )
+                .custom((arr) => arr.filter(Boolean)), // Filter out empty strings
             Joi.string().custom((value) => {
                 // Handle empty string
                 if (!value || !value.trim()) {
@@ -138,7 +142,10 @@ const createCourseSchema = Joi.object({
                         return parsed ? [parsed] : [];
                     } catch (e) {
                         // Fall back to comma-split for simple strings like "tag1,tag2,tag3"
-                        return value.split(",").map((v) => v.trim()).filter(Boolean);
+                        return value
+                            .split(",")
+                            .map((v) => v.trim())
+                            .filter(Boolean);
                     }
                 }
                 return [];
@@ -274,13 +281,17 @@ const updateCourseSchema = Joi.object({
     // NEW FIELDS for Course Management System
     promotion: Joi.alternatives()
         .try(
-            Joi.array().items(
-                Joi.string().valid(
-                    "group-listening",
-                    "early-bird-discount",
-                    "group-discount"
-                ).allow("")
-            ).custom((arr) => arr.filter(Boolean)), // Filter out empty strings
+            Joi.array()
+                .items(
+                    Joi.string()
+                        .valid(
+                            "group-listening",
+                            "early-bird-discount",
+                            "group-discount"
+                        )
+                        .allow("")
+                )
+                .custom((arr) => arr.filter(Boolean)), // Filter out empty strings
             Joi.string().custom((value) => {
                 // Handle empty string
                 if (!value || !value.trim()) {
@@ -298,7 +309,10 @@ const updateCourseSchema = Joi.object({
                         return parsed ? [parsed] : [];
                     } catch (e) {
                         // Fall back to comma-split for simple strings like "tag1,tag2,tag3"
-                        return value.split(",").map((v) => v.trim()).filter(Boolean);
+                        return value
+                            .split(",")
+                            .map((v) => v.trim())
+                            .filter(Boolean);
                     }
                 }
                 return [];
