@@ -195,10 +195,15 @@ const createCourse = async (courseData, files) => {
     if (normalizedData.category) {
         // Try to get category info from constants (if slug) or database (if ObjectId)
         let categoryInfo = getCategoryInfo(normalizedData.category);
-        
+
         // If not found in constants, try database lookup (ObjectId)
-        if (!categoryInfo && mongoose.Types.ObjectId.isValid(normalizedData.category)) {
-            const categoryDoc = await Category.findById(normalizedData.category).select('title');
+        if (
+            !categoryInfo &&
+            mongoose.Types.ObjectId.isValid(normalizedData.category)
+        ) {
+            const categoryDoc = await Category.findById(
+                normalizedData.category
+            ).select("title");
             if (categoryDoc) {
                 normalizedData.categoryInfo = {
                     title: categoryDoc.title,
@@ -271,10 +276,15 @@ const updateCourse = async (courseId, updates, files) => {
     if (normalizedUpdates.category) {
         // Try to get category info from constants (if slug) or database (if ObjectId)
         let categoryInfo = getCategoryInfo(normalizedUpdates.category);
-        
+
         // If not found in constants, try database lookup (ObjectId)
-        if (!categoryInfo && mongoose.Types.ObjectId.isValid(normalizedUpdates.category)) {
-            const categoryDoc = await Category.findById(normalizedUpdates.category).select('title');
+        if (
+            !categoryInfo &&
+            mongoose.Types.ObjectId.isValid(normalizedUpdates.category)
+        ) {
+            const categoryDoc = await Category.findById(
+                normalizedUpdates.category
+            ).select("title");
             if (categoryDoc) {
                 normalizedUpdates.categoryInfo = {
                     title: categoryDoc.title,
