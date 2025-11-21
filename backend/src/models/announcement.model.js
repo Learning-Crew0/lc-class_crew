@@ -97,8 +97,9 @@ const announcementSchema = new mongoose.Schema(
     }
 );
 
-// Virtual field: isNew (created within last 30 days / 1 month)
-announcementSchema.virtual("isNew").get(function () {
+// Virtual field: isRecent (created within last 30 days / 1 month)
+// Note: Renamed from 'isNew' to avoid conflict with Mongoose's built-in isNew property
+announcementSchema.virtual("isRecent").get(function () {
     if (!this.createdAt) return false;
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
