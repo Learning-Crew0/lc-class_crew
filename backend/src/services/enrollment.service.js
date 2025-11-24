@@ -487,9 +487,8 @@ const getAllEnrollmentsAdmin = async (filters) => {
         if (filters.endDate) {
             scheduleQuery.endDate = { $lte: new Date(filters.endDate) };
         }
-        const schedules = await TrainingSchedule.find(scheduleQuery).select(
-            "_id"
-        );
+        const schedules =
+            await TrainingSchedule.find(scheduleQuery).select("_id");
         query.schedule = { $in: schedules.map((s) => s._id) };
     }
 
@@ -676,9 +675,8 @@ const getEnrollmentsForExport = async (filters) => {
         if (filters.endDate) {
             scheduleQuery.endDate = { $lte: new Date(filters.endDate) };
         }
-        const schedules = await TrainingSchedule.find(scheduleQuery).select(
-            "_id"
-        );
+        const schedules =
+            await TrainingSchedule.find(scheduleQuery).select("_id");
         query.schedule = { $in: schedules.map((s) => s._id) };
     }
 

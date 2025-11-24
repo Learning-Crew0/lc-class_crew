@@ -187,11 +187,7 @@ const getEnrolledCourses = asyncHandler(async (req, res) => {
  */
 const getAllEnrollmentsAdmin = asyncHandler(async (req, res) => {
     const result = await enrollmentService.getAllEnrollmentsAdmin(req.query);
-    return successResponse(
-        res,
-        result,
-        "신청 목록을 성공적으로 조회했습니다"
-    );
+    return successResponse(res, result, "신청 목록을 성공적으로 조회했습니다");
 });
 
 /**
