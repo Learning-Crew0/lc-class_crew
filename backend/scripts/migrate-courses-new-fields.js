@@ -112,3 +112,4 @@ const migrateCourses = async () => {
 
 // Run migration
 migrateCourses();
+

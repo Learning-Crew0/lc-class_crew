@@ -5,7 +5,7 @@ const router = express.Router();
 const adminController = require("../controllers/admin.controller");
 const usersController = require("../controllers/users.controller");
 const coursesController = require("../controllers/courses.controller");
-const enrollmentsController = require("../controllers/enrollments.controller");
+const enrollmentController = require("../controllers/enrollment.controller");
 const productsController = require("../controllers/products.controller");
 const productCategoriesController = require("../controllers/productCategories.controller");
 const inquiriesController = require("../controllers/inquiries.controller");
@@ -158,7 +158,32 @@ router.put(
 router.delete("/courses/:id", coursesController.deleteCourse);
 
 // === ENROLLMENTS MANAGEMENT ===
-// Note: Enrollment routes moved to /api/v1/enrollments (see courses.routes.js)
+// GET /api/v1/admin/enrollments - Get all enrollments (admin)
+router.get("/enrollments", enrollmentController.getAllEnrollmentsAdmin);
+
+// GET /api/v1/admin/enrollments/export - Export enrollments to Excel
+router.get(
+    "/enrollments/export",
+    enrollmentController.exportEnrollmentsToExcel
+);
+
+// PATCH /api/v1/admin/enrollments/:enrollmentId/complete - Mark as completed
+router.patch(
+    "/enrollments/:enrollmentId/complete",
+    enrollmentController.markEnrollmentCompleted
+);
+
+// POST /api/v1/admin/enrollments/bulk-update - Bulk update enrollments
+router.post(
+    "/enrollments/bulk-update",
+    enrollmentController.bulkUpdateEnrollments
+);
+
+// POST /api/v1/admin/enrollments/bulk-certificates - Generate bulk certificates
+router.post(
+    "/enrollments/bulk-certificates",
+    enrollmentController.generateBulkCertificates
+);
 
 // === PRODUCTS MANAGEMENT ===
 // GET /api/v1/admin/products - Get all products

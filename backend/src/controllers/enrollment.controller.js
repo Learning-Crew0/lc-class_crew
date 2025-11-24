@@ -181,6 +181,143 @@ const getEnrolledCourses = asyncHandler(async (req, res) => {
     );
 });
 
+/**
+ * Get all enrollments for admin
+ * GET /api/v1/admin/enrollments
+ */
+const getAllEnrollmentsAdmin = asyncHandler(async (req, res) => {
+    const result = await enrollmentService.getAllEnrollmentsAdmin(req.query);
+    return successResponse(
+        res,
+        result,
+        "신청 목록을 성공적으로 조회했습니다"
+    );
+});
+
+/**
+ * Mark enrollment as completed (admin)
+ * PATCH /api/v1/admin/enrollments/:enrollmentId/complete
+ */
+const markEnrollmentCompleted = asyncHandler(async (req, res) => {
+    const enrollment = await enrollmentService.markEnrollmentCompleted(
+        req.params.enrollmentId,
+        req.body
+    );
+    return successResponse(res, { enrollment }, "완료 처리되었습니다");
+});
+
+/**
+ * Bulk update enrollments (admin)
+ * POST /api/v1/admin/enrollments/bulk-update
+ */
+const bulkUpdateEnrollments = asyncHandler(async (req, res) => {
+    const { enrollmentIds, ...updateData } = req.body;
+    const result = await enrollmentService.bulkUpdateEnrollments(
+        enrollmentIds,
+        updateData
+    );
+    return successResponse(
+        res,
+        result,
+        `${result.updatedCount}명이 완료 처리되었습니다`
+    );
+});
+
+/**
+ * Generate bulk certificates (admin)
+ * POST /api/v1/admin/enrollments/bulk-certificates
+ */
+const generateBulkCertificates = asyncHandler(async (req, res) => {
+    const { enrollmentIds } = req.body;
+
+    // TODO: Implement PDF generation for multiple certificates
+    // For now, return a placeholder response
+    throw new Error(
+        "Certificate generation not implemented yet. Please implement PDF generation using pdfkit or similar library."
+    );
+});
+
+/**
+ * Export enrollments to Excel (admin)
+ * GET /api/v1/admin/enrollments/export
+ */
+const exportEnrollmentsToExcel = asyncHandler(async (req, res) => {
+    const ExcelJS = require("exceljs");
+    const enrollments = await enrollmentService.getEnrollmentsForExport(
+        req.query
+    );
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("수강신청목록");
+
+    // Define columns
+    worksheet.columns = [
+        { header: "신청일", key: "createdAt", width: 15 },
+        { header: "과정명", key: "courseName", width: 30 },
+        { header: "교육기간", key: "trainingPeriod", width: 25 },
+        { header: "이름", key: "name", width: 15 },
+        { header: "이메일", key: "email", width: 25 },
+        { header: "전화번호", key: "phone", width: 15 },
+        { header: "회사명", key: "company", width: 20 },
+        { header: "부서", key: "department", width: 15 },
+        { header: "직급", key: "position", width: 15 },
+        { header: "상태", key: "status", width: 12 },
+        { header: "결제방법", key: "paymentMethod", width: 15 },
+        { header: "결제금액", key: "amount", width: 15 },
+        { header: "완료여부", key: "completed", width: 12 },
+    ];
+
+    // Style header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFE0E0E0" },
+    };
+
+    // Add data rows
+    enrollments.forEach((enrollment) => {
+        const schedule = enrollment.schedule;
+        const trainingPeriod = schedule
+            ? `${new Date(schedule.startDate).toLocaleDateString("ko-KR")} ~ ${new Date(schedule.endDate).toLocaleDateString("ko-KR")}`
+            : "N/A";
+
+        worksheet.addRow({
+            createdAt: new Date(enrollment.createdAt).toLocaleDateString(
+                "ko-KR"
+            ),
+            courseName: enrollment.course?.title || "N/A",
+            trainingPeriod: trainingPeriod,
+            name: enrollment.user?.fullName || "N/A",
+            email: enrollment.user?.email || "N/A",
+            phone: enrollment.user?.phone || "N/A",
+            company: enrollment.user?.company || "N/A",
+            department: enrollment.user?.department || "N/A",
+            position: enrollment.user?.memberType || "N/A",
+            status: enrollment.status || "N/A",
+            paymentMethod: enrollment.paymentMethod || "N/A",
+            amount: enrollment.amountPaid
+                ? `₩${enrollment.amountPaid.toLocaleString()}`
+                : "₩0",
+            completed: enrollment.status === "수료" ? "완료" : "미완료",
+        });
+    });
+
+    // Set response headers
+    res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=enrollments-${Date.now()}.xlsx`
+    );
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+});
+
 module.exports = {
     enrollInSchedule,
     getMyEnrollments,
@@ -193,4 +330,10 @@ module.exports = {
     getMyEnrollmentHistory,
     downloadCertificate,
     getEnrolledCourses,
+    // Admin functions
+    getAllEnrollmentsAdmin,
+    markEnrollmentCompleted,
+    bulkUpdateEnrollments,
+    generateBulkCertificates,
+    exportEnrollmentsToExcel,
 };

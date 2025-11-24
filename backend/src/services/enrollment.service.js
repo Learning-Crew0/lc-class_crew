@@ -431,6 +431,275 @@ const getEnrolledCoursesForLearningStatus = async (userId) => {
     return courses;
 };
 
+/**
+ * Get all enrollments for admin with advanced filtering
+ * @param {Object} filters - Filter parameters
+ * @returns {Object} Enrollments and pagination
+ */
+const getAllEnrollmentsAdmin = async (filters) => {
+    const { page, limit, skip } = getPaginationParams(filters);
+
+    const query = {};
+
+    // Filter by course name
+    if (filters.courseName) {
+        const courses = await Course.find({
+            title: { $regex: filters.courseName, $options: "i" },
+        }).select("_id");
+        query.course = { $in: courses.map((c) => c._id) };
+    }
+
+    // Filter by student name
+    if (filters.learnerName) {
+        const users = await User.find({
+            fullName: { $regex: filters.learnerName, $options: "i" },
+        }).select("_id");
+        query.user = { $in: users.map((u) => u._id) };
+    }
+
+    // Filter by student email
+    if (filters.learnerEmail) {
+        const users = await User.find({
+            email: { $regex: filters.learnerEmail, $options: "i" },
+        }).select("_id");
+        query.user = { $in: users.map((u) => u._id) };
+    }
+
+    // Filter by status
+    if (filters.status) {
+        // Map English status to Korean
+        const statusMap = {
+            confirmed: "수강예정",
+            pending: "수강예정",
+            ongoing: "수강중",
+            completed: "수료",
+            cancelled: "취소",
+        };
+        query.status = statusMap[filters.status] || filters.status;
+    }
+
+    // Filter by training schedule date range
+    if (filters.startDate || filters.endDate) {
+        const scheduleQuery = {};
+        if (filters.startDate) {
+            scheduleQuery.startDate = { $gte: new Date(filters.startDate) };
+        }
+        if (filters.endDate) {
+            scheduleQuery.endDate = { $lte: new Date(filters.endDate) };
+        }
+        const schedules = await TrainingSchedule.find(scheduleQuery).select(
+            "_id"
+        );
+        query.schedule = { $in: schedules.map((s) => s._id) };
+    }
+
+    // Get enrollments
+    const enrollments = await Enrollment.find(query)
+        .populate({
+            path: "user",
+            select: "fullName email phone company department memberType",
+        })
+        .populate({
+            path: "course",
+            select: "title mainImage price",
+        })
+        .populate({
+            path: "schedule",
+            select: "scheduleName startDate endDate",
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const total = await Enrollment.countDocuments(query);
+
+    // Format enrollments for admin view
+    const formattedEnrollments = enrollments.map((enrollment) => {
+        const user = enrollment.user;
+        const schedule = enrollment.schedule;
+
+        return {
+            _id: enrollment._id,
+            studentInfo: {
+                name: user?.fullName || "N/A",
+                email: user?.email || "N/A",
+                phone: user?.phone || "N/A",
+                company: user?.company || "N/A",
+                department: user?.department || "N/A",
+                position: user?.memberType || "N/A",
+            },
+            course: {
+                _id: enrollment.course?._id,
+                title: enrollment.course?.title || "N/A",
+            },
+            trainingSchedule: schedule
+                ? {
+                      _id: schedule._id,
+                      startDate: schedule.startDate,
+                      endDate: schedule.endDate,
+                      scheduleName: schedule.scheduleName,
+                  }
+                : null,
+            status: enrollment.status,
+            paymentInfo: {
+                method: enrollment.paymentMethod || "N/A",
+                amount: enrollment.amountPaid || 0,
+                status: enrollment.paymentStatus || "pending",
+            },
+            completed: enrollment.status === "수료",
+            completionDate: enrollment.completedAt,
+            certificateIssued: enrollment.certificateIssued,
+            enrollmentNumber: enrollment.enrollmentNumber,
+            createdAt: enrollment.createdAt,
+            updatedAt: enrollment.updatedAt,
+        };
+    });
+
+    return {
+        enrollments: formattedEnrollments,
+        pagination: createPaginationMeta(page, limit, total),
+    };
+};
+
+/**
+ * Mark enrollment as completed (admin)
+ * @param {string} enrollmentId
+ * @param {Object} data - { completed, completionDate, certificateIssued }
+ * @returns {Object} Updated enrollment
+ */
+const markEnrollmentCompleted = async (enrollmentId, data) => {
+    const enrollment = await Enrollment.findById(enrollmentId);
+    if (!enrollment) {
+        throw ApiError.notFound("수강 정보를 찾을 수 없습니다");
+    }
+
+    if (data.completed) {
+        enrollment.status = "수료";
+        enrollment.completedAt = data.completionDate
+            ? new Date(data.completionDate)
+            : new Date();
+        enrollment.progress = 100;
+        enrollment.certificateEligible = true;
+    }
+
+    if (data.certificateIssued !== undefined) {
+        enrollment.certificateIssued = data.certificateIssued;
+        if (data.certificateIssued && !enrollment.certificateIssuedAt) {
+            enrollment.certificateIssuedAt = new Date();
+        }
+    }
+
+    await enrollment.save();
+    return enrollment;
+};
+
+/**
+ * Bulk update enrollments (admin)
+ * @param {Array} enrollmentIds
+ * @param {Object} updateData
+ * @returns {Object} Update result
+ */
+const bulkUpdateEnrollments = async (enrollmentIds, updateData) => {
+    const updates = {};
+
+    if (updateData.completed) {
+        updates.status = "수료";
+        updates.completedAt = updateData.completionDate
+            ? new Date(updateData.completionDate)
+            : new Date();
+        updates.progress = 100;
+        updates.certificateEligible = true;
+    }
+
+    if (updateData.issueCertificates) {
+        updates.certificateIssued = true;
+        updates.certificateIssuedAt = new Date();
+    }
+
+    const result = await Enrollment.updateMany(
+        { _id: { $in: enrollmentIds } },
+        { $set: updates }
+    );
+
+    return {
+        updatedCount: result.modifiedCount,
+        failedIds: [],
+    };
+};
+
+/**
+ * Get enrollments for export (admin)
+ * @param {Object} filters
+ * @returns {Array} Enrollments for export
+ */
+const getEnrollmentsForExport = async (filters) => {
+    const query = {};
+
+    // Apply same filters as getAllEnrollmentsAdmin but without pagination
+    if (filters.courseName) {
+        const courses = await Course.find({
+            title: { $regex: filters.courseName, $options: "i" },
+        }).select("_id");
+        query.course = { $in: courses.map((c) => c._id) };
+    }
+
+    if (filters.learnerName) {
+        const users = await User.find({
+            fullName: { $regex: filters.learnerName, $options: "i" },
+        }).select("_id");
+        query.user = { $in: users.map((u) => u._id) };
+    }
+
+    if (filters.learnerEmail) {
+        const users = await User.find({
+            email: { $regex: filters.learnerEmail, $options: "i" },
+        }).select("_id");
+        query.user = { $in: users.map((u) => u._id) };
+    }
+
+    if (filters.status) {
+        const statusMap = {
+            confirmed: "수강예정",
+            pending: "수강예정",
+            ongoing: "수강중",
+            completed: "수료",
+            cancelled: "취소",
+        };
+        query.status = statusMap[filters.status] || filters.status;
+    }
+
+    if (filters.startDate || filters.endDate) {
+        const scheduleQuery = {};
+        if (filters.startDate) {
+            scheduleQuery.startDate = { $gte: new Date(filters.startDate) };
+        }
+        if (filters.endDate) {
+            scheduleQuery.endDate = { $lte: new Date(filters.endDate) };
+        }
+        const schedules = await TrainingSchedule.find(scheduleQuery).select(
+            "_id"
+        );
+        query.schedule = { $in: schedules.map((s) => s._id) };
+    }
+
+    const enrollments = await Enrollment.find(query)
+        .populate({
+            path: "user",
+            select: "fullName email phone company department memberType",
+        })
+        .populate({
+            path: "course",
+            select: "title",
+        })
+        .populate({
+            path: "schedule",
+            select: "scheduleName startDate endDate",
+        })
+        .sort({ createdAt: -1 });
+
+    return enrollments;
+};
+
 module.exports = {
     enrollUserInSchedule,
     getUserEnrollments,
@@ -443,4 +712,9 @@ module.exports = {
     getMyEnrollmentHistory,
     getCertificateInfo,
     getEnrolledCoursesForLearningStatus,
+    // Admin functions
+    getAllEnrollmentsAdmin,
+    markEnrollmentCompleted,
+    bulkUpdateEnrollments,
+    getEnrollmentsForExport,
 };
