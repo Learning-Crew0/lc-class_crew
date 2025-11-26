@@ -11,6 +11,8 @@
     "seed": "node src/seeds/seed-admin.js",
     "seed:all": "node src/seeds/seed-sample-data.js",
     "seed:schedules": "node scripts/seed-training-schedules.js",
+    "seed:subcategories": "node src/scripts/seed-subcategories.js",
+    "migrate:instructors": "node src/scripts/migrate-instructor-fields.js",
     "link:enquiries": "node scripts/link-enquiries-to-users.js",
     "migrate:courses": "node scripts/migrate-courses-new-fields.js",
     "format": "prettier --write \"src/**/*.js\"",
