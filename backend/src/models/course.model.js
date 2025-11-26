@@ -33,6 +33,12 @@ const courseSchema = new mongoose.Schema(
             title: String, // For database categories
             id: String, // For database categories
         },
+        // Subcategory field (MongoDB ObjectId)
+        subcategory: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Subcategory",
+            required: false,
+        },
         // Position/level field (optional slug)
         position: {
             type: String,
@@ -268,6 +274,7 @@ courseSchema.index({ title: "text", description: "text" });
 courseSchema.index({ category: 1 });
 courseSchema.index({ position: 1 });
 courseSchema.index({ category: 1, position: 1 }); // Compound index for filtering
+courseSchema.index({ category: 1, subcategory: 1 }); // Compound index for category + subcategory filtering
 courseSchema.index({ isActive: 1 });
 courseSchema.index({ isFeatured: 1 });
 courseSchema.index({ createdAt: -1 });

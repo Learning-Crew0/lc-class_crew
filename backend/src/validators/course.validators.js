@@ -25,6 +25,15 @@ const createCourseSchema = Joi.object({
             "any.required": "카테고리는 필수입니다",
             "alternatives.match": "유효한 카테고리를 선택해주세요",
         }),
+    // Subcategory - MongoDB ObjectId (optional)
+    subcategory: Joi.string()
+        .hex()
+        .length(24)
+        .optional()
+        .messages({
+            "string.hex": "유효한 서브카테고리 ID를 입력해주세요",
+            "string.length": "유효한 서브카테고리 ID를 입력해주세요",
+        }),
     // Position slug (optional)
     position: Joi.string()
         .trim()
@@ -197,6 +206,16 @@ const updateCourseSchema = Joi.object({
         .optional()
         .messages({
             "string.pattern.base": "유효한 카테고리를 선택해주세요",
+        }),
+    // Subcategory - MongoDB ObjectId (optional)
+    subcategory: Joi.string()
+        .hex()
+        .length(24)
+        .optional()
+        .allow(null, "")
+        .messages({
+            "string.hex": "유효한 서브카테고리 ID를 입력해주세요",
+            "string.length": "유효한 서브카테고리 ID를 입력해주세요",
         }),
     // Position slug (optional for updates)
     position: Joi.string()

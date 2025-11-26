@@ -91,8 +91,8 @@ const normalizeArrayFields = (data) => {
                 data[field] = Array.isArray(parsed)
                     ? parsed.filter(Boolean)
                     : parsed
-                      ? [parsed]
-                      : [];
+                        ? [parsed]
+                        : [];
             } catch (e) {
                 // Fall back to comma-split for simple strings like "tag1, tag2, tag3"
                 data[field] = data[field]
@@ -150,6 +150,7 @@ const getAllCourses = async (query) => {
 
     const courses = await Course.find(filter)
         .populate("category", "title description order")
+        .populate("subcategory", "name slug order")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
@@ -163,10 +164,9 @@ const getAllCourses = async (query) => {
 };
 
 const getCourseById = async (courseId, includeRelated = false) => {
-    let query = Course.findById(courseId).populate(
-        "category",
-        "title description"
-    );
+    let query = Course.findById(courseId)
+        .populate("category", "title description")
+        .populate("subcategory", "name slug order");
 
     if (includeRelated) {
         query = query
@@ -227,6 +227,27 @@ const createCourse = async (courseData, files) => {
                 koreanName: positionInfo.koreanName,
                 englishName: positionInfo.englishName,
             };
+        }
+    }
+
+    // Validate subcategory belongs to category (if provided)
+    if (normalizedData.subcategory && normalizedData.category) {
+        const Subcategory = require("../models/subcategory.model");
+        const subcategoryDoc = await Subcategory.findById(
+            normalizedData.subcategory
+        );
+
+        if (!subcategoryDoc) {
+            throw ApiError.badRequest("서브카테고리를 찾을 수 없습니다");
+        }
+
+        if (
+            subcategoryDoc.category.toString() !==
+            normalizedData.category.toString()
+        ) {
+            throw ApiError.badRequest(
+                "선택한 서브카테고리가 해당 카테고리에 속하지 않습니다"
+            );
         }
     }
 
@@ -425,6 +446,7 @@ const getCoursesByCategory = async (categorySlug, query = {}) => {
     // Query courses
     const courses = await Course.find(filter)
         .populate("trainingSchedules")
+        .populate("subcategory", "name slug order")
         .sort(sort)
         .skip(skip)
         .limit(limit);
@@ -489,6 +511,7 @@ const searchCourses = async (filters = {}) => {
     // Query courses
     const courses = await Course.find(filter)
         .populate("trainingSchedules")
+        .populate("subcategory", "name slug order")
         .sort(sort)
         .skip(skip)
         .limit(limit);
@@ -627,6 +650,7 @@ const getCoursesWithFilters = async (query) => {
     // Execute query
     const courses = await Course.find(filter)
         .populate("category", "title slug koreanName englishName")
+        .populate("subcategory", "name slug order")
         .sort(sortOrder)
         .skip(skip)
         .limit(limit)
