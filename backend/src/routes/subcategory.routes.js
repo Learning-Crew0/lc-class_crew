@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const subcategoryController = require("../controllers/subcategory.controller");
 const { authenticate } = require("../middlewares/auth.middleware");
-const { requireAdmin } = require("../middlewares/admin.middleware");
+const requireAdmin = require("../middlewares/admin.middleware");
 const { validate } = require("../middlewares/validate.middleware");
 const {
     createSubcategorySchema,
