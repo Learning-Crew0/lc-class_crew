@@ -4,8 +4,8 @@ const ApiError = require("../utils/apiError.util");
 const { getFileUrl, deleteFileByUrl } = require("../config/fileStorage");
 
 const normalizeArrayFields = (data) => {
-    const arrayFields = ["certificates", "attendanceHistory", "education"];
-    
+    const arrayFields = ["education", "expertise", "certificates", "experience", "attendanceHistory"];
+
     arrayFields.forEach(field => {
         if (data[field]) {
             if (typeof data[field] === "string") {
@@ -13,6 +13,11 @@ const normalizeArrayFields = (data) => {
             }
         }
     });
+
+    // Map legacy attendanceHistory to experience if experience is not provided
+    if (data.attendanceHistory && !data.experience) {
+        data.experience = data.attendanceHistory;
+    }
 
     return data;
 };

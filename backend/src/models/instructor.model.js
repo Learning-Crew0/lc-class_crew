@@ -20,19 +20,36 @@ const instructorSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        // 학력 및 경력 (Education and Career)
+        education: [
+            {
+                type: String,
+                trim: true,
+            },
+        ],
+        // 전문분야 (Professional Expertise)
+        expertise: [
+            {
+                type: String,
+                trim: true,
+            },
+        ],
+        // 자격 및 저서 (Certificates and Publications)
         certificates: [
             {
                 type: String,
                 trim: true,
             },
         ],
-        attendanceHistory: [
+        // 출강이력 (Teaching Experience/Attendance History)
+        experience: [
             {
                 type: String,
                 trim: true,
             },
         ],
-        education: [
+        // Legacy field - kept for backward compatibility
+        attendanceHistory: [
             {
                 type: String,
                 trim: true,
