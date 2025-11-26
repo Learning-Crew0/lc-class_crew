@@ -7,9 +7,9 @@ const MEMBERSHIP_TYPES = {
 
 // Korean to English mapping for frontend compatibility
 const MEMBERSHIP_TYPES_KOREAN_MAP = {
-    "재직자": "employed",
-    "기업교육담당자": "corporate_training",
-    "취업준비생": "job_seeker",
+    재직자: "employed",
+    기업교육담당자: "corporate_training",
+    취업준비생: "job_seeker",
 };
 
 // All valid memberType values (English + Korean)
